@@ -7,9 +7,21 @@ void main() {
     final Gio gio = Gio.normal(
       baseUrl: 'http://weshoptest.graspyun.com:5000',
       validCode: 0,
+      messageKey: 'msg',
     );
     gio.interceptors.add(LogInterceptor(request: true, responseBody: true));
-    final Response<IResponse<dynamic>> response = await gio.get<IResponse<dynamic>>('/manage/agreement/list');
-    print(response.data.data);
+    try {
+      final Response<dynamic> response = await gio.get<dynamic>('/manage/agreement/list');
+      expect(response.data.data, isA<List<dynamic>>());
+    } catch(e) {
+      print('网络异常-$e');
+    }
+
+    try {
+      await gio.put<IResponse<dynamic>>('/manage/agreement/list');
+    } catch (e) {
+      expect(e.code, -1);
+      expect(e.message, contains('404'));
+    }
   });
 }

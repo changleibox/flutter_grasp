@@ -32,6 +32,7 @@ mixin DioExtendsMixin on DioMixin {
       requestEncoder: requestOptions.requestEncoder,
       responseDecoder: requestOptions.responseDecoder,
       validateCode: baseOptions is GioBaseOptions ? baseOptions.validateCode : null,
+      dataKeyOptions: baseOptions is GioBaseOptions ? baseOptions.dataKeyOptions : null,
     );
   }
 }

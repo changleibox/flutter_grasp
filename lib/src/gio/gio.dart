@@ -14,6 +14,9 @@ import 'entry_stub.dart'
 const int _kValidStatus = 200;
 const int _kValidCode = 200;
 const int _kTimeout = 90 * 1000;
+const String _kCodeKey = 'code';
+const String _kMessageKey = 'message';
+const String _kDataKey = 'data';
 
 typedef ValidateCode = bool Function(int code);
 
@@ -26,32 +29,26 @@ dynamic _parseJson(String text) {
 }
 
 class IResponse<T> {
-  const IResponse(this.code, this.message, this.data);
+  const IResponse._(
+    this.code,
+    this.message,
+    this.data,
+    this._originalData,
+  );
 
   final int code;
   final String message;
   final T data;
+  final Map<String, dynamic> _originalData;
 
-  static IResponse<T> convert<T>(Response<dynamic> response) {
-    if (response == null || response.data is! Map) {
-      return null;
-    }
-    final Map<String, dynamic> dataMap = response?.data as Map<String, dynamic>;
-    if (dataMap == null) {
-      return null;
-    }
-    final int code = dataMap['code'] as int;
-    final String message = dataMap['msg'] as String;
-    final T data = dataMap['data'] as T;
-    if (code != null || message != null || data != null) {
-      return IResponse<T>(code, message, data);
-    }
-    return null;
+  @override
+  String toString() {
+    return _originalData?.toString() ?? super.toString();
   }
 }
 
-class HttpError extends DioError {
-  HttpError({
+class GioError extends DioError {
+  GioError._({
     RequestOptions request,
     Response<dynamic> response,
     DioErrorType type = DioErrorType.DEFAULT,
@@ -72,7 +69,7 @@ class HttpError extends DioError {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    return identical(this, other) || other is HttpError && other._code == _code;
+    return identical(this, other) || other is GioError && other._code == _code;
   }
 
   @override
@@ -80,12 +77,12 @@ class HttpError extends DioError {
   int get hashCode => _code;
 
   static DioError _assureDioError(dynamic err) {
-    if (err is HttpError) {
+    if (err is GioError) {
       return err;
     } else if (err is DioError) {
-      return HttpError._convert(err);
+      return GioError._convert(err);
     } else {
-      final HttpError _err = HttpError();
+      final GioError _err = GioError._();
       if (err is Error) {
         _err.error = err;
       }
@@ -100,17 +97,17 @@ class HttpError extends DioError {
   }
 
   static DioError _convert(DioError error) {
-    if (error is HttpError) {
+    if (error is GioError) {
       return error;
     }
     try {
       int code = -1;
       final Response<dynamic> response = error.response;
-      if (error.type == DioErrorType.RESPONSE && response != null) {
+      if (response != null) {
         final dynamic data = response.data;
         code = data['code'] as int;
       }
-      return HttpError(
+      return GioError._(
         request: error.request,
         response: response,
         type: error.type,
@@ -132,22 +129,23 @@ class ConvertInterceptor extends InterceptorsWrapper {
   @override
   Future<dynamic> onError(DioError err) async {
     final Response<dynamic> response = err?.response;
-    final dynamic iResponse = IResponse.convert<dynamic>(response);
-    if (iResponse != null) {
-      return HttpError._assureDioError(iResponse);
+    final RequestOptions requestOptions = response?.request;
+    final IResponse<dynamic> iResponse = _convert<dynamic>(response, requestOptions);
+    if (iResponse == null) {
+      return GioError._convert(err);
     } else {
-      return HttpError._convert(err);
+      return GioError._assureDioError(iResponse);
     }
   }
 
   @override
   Future<dynamic> onResponse(Response<dynamic> response) async {
     final RequestOptions requestOptions = response.request;
-    final dynamic iResponse = IResponse.convert<dynamic>(response);
-    if (iResponse != null && iResponse is IResponse && !_validateCode(iResponse, requestOptions)) {
-      return HttpError._assureDioError(iResponse);
+    final IResponse<dynamic> iResponse = _convert<dynamic>(response, requestOptions);
+    if (!_validateCode(iResponse, requestOptions)) {
+      return GioError._assureDioError(iResponse);
     }
-    return iResponse;
+    return response..data = iResponse ?? response.data;
   }
 
   bool _validateCode(IResponse<dynamic> iResponse, RequestOptions options) {
@@ -155,6 +153,24 @@ class ConvertInterceptor extends InterceptorsWrapper {
       return true;
     }
     return (options as GioRequestOptions).validateCode(iResponse.code);
+  }
+
+  IResponse<T> _convert<T>(Response<dynamic> response, RequestOptions options) {
+    if (response == null || response.data is! Map) {
+      return null;
+    }
+    final Map<String, dynamic> dataMap = response?.data as Map<String, dynamic>;
+    if (dataMap == null) {
+      return null;
+    }
+    final DataKeyOptions keyOptions = (options is GioRequestOptions ? options : null)?.dataKeyOptions;
+    final int code = dataMap[keyOptions?.codeKey ?? _kCodeKey] as int;
+    final String message = dataMap[keyOptions?.messageKey ?? _kMessageKey] as String;
+    final T data = dataMap[keyOptions?.dataKey ?? _kDataKey] as T;
+    if (code != null || message != null || data != null) {
+      return IResponse<T>._(code, message, data, dataMap);
+    }
+    return null;
   }
 }
 
@@ -172,7 +188,17 @@ abstract class Gio with DioMixin implements Dio {
     int receiveTimeout = _kTimeout,
     int validStatus = _kValidStatus,
     int validCode = _kValidCode,
+    String codeKey = _kCodeKey,
+    String messageKey = _kMessageKey,
+    String dataKey = _kDataKey,
   }) {
+    assert(connectTimeout != null);
+    assert(receiveTimeout != null);
+    assert(validStatus != null);
+    assert(validCode != null);
+    assert(codeKey != null);
+    assert(messageKey != null);
+    assert(dataKey != null);
     return Gio(GioBaseOptions(
       baseUrl: baseUrl,
       connectTimeout: connectTimeout,
@@ -181,8 +207,27 @@ abstract class Gio with DioMixin implements Dio {
       responseType: ResponseType.json,
       validateStatus: (int status) => status == validStatus,
       validateCode: (int code) => code == validCode,
+      dataKeyOptions: DataKeyOptions(
+        codeKey: codeKey,
+        messageKey: messageKey,
+        dataKey: dataKey,
+      ),
     ));
   }
+}
+
+class DataKeyOptions {
+  const DataKeyOptions({
+    this.codeKey = _kCodeKey,
+    this.messageKey = _kMessageKey,
+    this.dataKey = _kDataKey,
+  })  : assert(codeKey != null),
+        assert(messageKey != null),
+        assert(dataKey != null);
+
+  final String codeKey;
+  final String messageKey;
+  final String dataKey;
 }
 
 class GioBaseOptions extends BaseOptions {
@@ -204,6 +249,7 @@ class GioBaseOptions extends BaseOptions {
     RequestEncoder requestEncoder,
     ResponseDecoder responseDecoder,
     this.validateCode,
+    this.dataKeyOptions = const DataKeyOptions(),
   }) : super(
           method: method,
           connectTimeout: connectTimeout,
@@ -224,6 +270,7 @@ class GioBaseOptions extends BaseOptions {
         );
 
   final ValidateCode validateCode;
+  final DataKeyOptions dataKeyOptions;
 
   /// Create a Option from current instance with merging attributes.
   @override
@@ -246,6 +293,7 @@ class GioBaseOptions extends BaseOptions {
     RequestEncoder requestEncoder,
     ResponseDecoder responseDecoder,
     ValidateCode validateCode,
+    DataKeyOptions dataKeyOptions,
   }) {
     return GioBaseOptions(
       method: method ?? this.method,
@@ -265,6 +313,7 @@ class GioBaseOptions extends BaseOptions {
       requestEncoder: requestEncoder,
       responseDecoder: responseDecoder ?? this.responseDecoder,
       validateCode: validateCode ?? this.validateCode,
+      dataKeyOptions: dataKeyOptions ?? this.dataKeyOptions,
     );
   }
 }
@@ -293,6 +342,7 @@ class GioRequestOptions extends RequestOptions {
     RequestEncoder requestEncoder,
     ResponseDecoder responseDecoder,
     this.validateCode,
+    this.dataKeyOptions = const DataKeyOptions(),
   }) : super(
           method: method,
           sendTimeout: sendTimeout,
@@ -318,6 +368,7 @@ class GioRequestOptions extends RequestOptions {
         );
 
   final ValidateCode validateCode;
+  final DataKeyOptions dataKeyOptions;
 
   /// Create a Option from current instance with merging attributes.
   @override
@@ -344,6 +395,7 @@ class GioRequestOptions extends RequestOptions {
     RequestEncoder requestEncoder,
     ResponseDecoder responseDecoder,
     ValidateCode validateCode,
+    DataKeyOptions dataKeyOptions,
   }) {
     return GioRequestOptions(
       method: method ?? this.method,
@@ -368,6 +420,7 @@ class GioRequestOptions extends RequestOptions {
       requestEncoder: requestEncoder,
       responseDecoder: responseDecoder ?? this.responseDecoder,
       validateCode: validateCode ?? this.validateCode,
+      dataKeyOptions: dataKeyOptions ?? this.dataKeyOptions,
     );
   }
 }
