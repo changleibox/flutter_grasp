@@ -5,8 +5,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+
 import 'entry_stub.dart'
     if (dart.library.html) 'entry/gio_for_browser.dart'
     if (dart.library.io) 'entry/gio_for_native.dart';
@@ -28,7 +29,7 @@ dynamic _parseJson(String text) {
   return compute<String, dynamic>(_parseAndDecode, text);
 }
 
-class IResponse<T> {
+class IResponse {
   const IResponse._(
     this.code,
     this.message,
@@ -38,7 +39,7 @@ class IResponse<T> {
 
   final int code;
   final String message;
-  final T data;
+  final dynamic data;
   final Map<String, dynamic> _originalData;
 
   @override
@@ -130,32 +131,32 @@ class ConvertInterceptor extends InterceptorsWrapper {
   Future<dynamic> onError(DioError err) async {
     final Response<dynamic> response = err?.response;
     final RequestOptions requestOptions = response?.request;
-    final IResponse<dynamic> iResponse = _convert<dynamic>(response, requestOptions);
+    final IResponse iResponse = _convert<dynamic>(response, requestOptions);
     if (iResponse == null) {
-      return GioError._convert(err);
+      throw GioError._convert(err);
     } else {
-      return GioError._assureDioError(iResponse);
+      throw GioError._assureDioError(iResponse);
     }
   }
 
   @override
   Future<dynamic> onResponse(Response<dynamic> response) async {
     final RequestOptions requestOptions = response.request;
-    final IResponse<dynamic> iResponse = _convert<dynamic>(response, requestOptions);
+    final IResponse iResponse = _convert<dynamic>(response, requestOptions);
     if (!_validateCode(iResponse, requestOptions)) {
-      return GioError._assureDioError(iResponse);
+      throw GioError._assureDioError(iResponse);
     }
     return response..data = iResponse ?? response.data;
   }
 
-  bool _validateCode(IResponse<dynamic> iResponse, RequestOptions options) {
+  bool _validateCode(IResponse iResponse, RequestOptions options) {
     if (iResponse == null || options is! GioRequestOptions) {
       return true;
     }
     return (options as GioRequestOptions).validateCode(iResponse.code);
   }
 
-  IResponse<T> _convert<T>(Response<dynamic> response, RequestOptions options) {
+  IResponse _convert<T>(Response<dynamic> response, RequestOptions options) {
     if (response == null || response.data is! Map) {
       return null;
     }
@@ -166,9 +167,9 @@ class ConvertInterceptor extends InterceptorsWrapper {
     final DataKeyOptions keyOptions = (options is GioRequestOptions ? options : null)?.dataKeyOptions;
     final int code = dataMap[keyOptions?.codeKey ?? _kCodeKey] as int;
     final String message = dataMap[keyOptions?.messageKey ?? _kMessageKey] as String;
-    final T data = dataMap[keyOptions?.dataKey ?? _kDataKey] as T;
+    final dynamic data = dataMap[keyOptions?.dataKey ?? _kDataKey];
     if (code != null || message != null || data != null) {
-      return IResponse<T>._(code, message, data, dataMap);
+      return IResponse._(code, message, data, dataMap);
     }
     return null;
   }
