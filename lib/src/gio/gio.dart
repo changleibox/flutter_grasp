@@ -131,7 +131,7 @@ class ConvertInterceptor extends InterceptorsWrapper {
   Future<dynamic> onError(DioError err) async {
     final Response<dynamic> response = err?.response;
     final RequestOptions requestOptions = response?.request;
-    final IResponse iResponse = _convert<dynamic>(response, requestOptions);
+    final IResponse iResponse = _convert(response, requestOptions);
     if (iResponse == null) {
       throw GioError._convert(err);
     } else {
@@ -142,7 +142,7 @@ class ConvertInterceptor extends InterceptorsWrapper {
   @override
   Future<dynamic> onResponse(Response<dynamic> response) async {
     final RequestOptions requestOptions = response.request;
-    final IResponse iResponse = _convert<dynamic>(response, requestOptions);
+    final IResponse iResponse = _convert(response, requestOptions);
     if (!_validateCode(iResponse, requestOptions)) {
       throw GioError._assureDioError(iResponse);
     }
@@ -156,8 +156,8 @@ class ConvertInterceptor extends InterceptorsWrapper {
     return (options as GioRequestOptions).validateCode(iResponse.code);
   }
 
-  IResponse _convert<T>(Response<dynamic> response, RequestOptions options) {
-    if (response == null || response.data is! Map) {
+  IResponse _convert(Response<dynamic> response, RequestOptions options) {
+    if (response == null || response.data is! Map<String, dynamic>) {
       return null;
     }
     final Map<String, dynamic> dataMap = response?.data as Map<String, dynamic>;
