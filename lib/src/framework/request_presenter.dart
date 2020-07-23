@@ -88,7 +88,7 @@ mixin RequestPresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
   /// 异步加载实现方法
   @protected
   Future<E> request(bool showProgress, CancelToken cancelToken) async {
-    return await onLoad(showProgress, cancelToken) as Future<E>;
+    return await onLoad(showProgress, cancelToken) as E;
   }
 
   /// 异步加载实现方法
