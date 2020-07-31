@@ -30,9 +30,9 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
     final int pointerIndex = newValueText.indexOf('.');
     final int length = newValueText.length;
     final String beforePointer = newValueText.substring(0, pointerIndex == -1 ? length : pointerIndex);
-    final String parsed = int.tryParse(beforePointer)?.toString();
-    if (parsed == null) {
-      return oldValue;
+    String parsed = beforePointer.replaceFirst(RegExp(r'^0+'), '');
+    if (parsed.isEmpty && beforePointer.isNotEmpty) {
+      parsed = '0';
     }
     if (_decimalDigitsRegExp != null) {
       newValueText = _decimalDigitsRegExp.stringMatch(newValueText);
