@@ -15,6 +15,7 @@ export 'src/framework/presenter.dart';
 export 'src/framework/request_presenter.dart';
 export 'src/framework/tab_presenter.dart';
 export 'src/gio/gio.dart' hide ConvertInterceptor;
+export 'src/service/text_input.dart';
 export 'src/util/base64_utils.dart';
 export 'src/util/date_time_utils.dart';
 export 'src/util/qiniu_utils.dart';
