@@ -3,7 +3,6 @@ library flutter_grasp;
 // dio的包
 export 'package:dio/adapter.dart';
 export 'package:dio/dio.dart';
-export 'package:intl/intl.dart';
 export 'package:url_launcher/url_launcher.dart';
 
 export 'src/framework/framework.dart';
