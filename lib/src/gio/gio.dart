@@ -96,6 +96,7 @@ class GioError extends DioError {
         }
 
         response?.data = err.data;
+        response?.statusMessage = err.message;
 
         _err.error = err.message;
         _err._code = err.code;
