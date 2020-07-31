@@ -11,15 +11,15 @@ void main() {
     );
     gio.interceptors.add(LogInterceptor(request: true, responseBody: true));
     try {
-      final Response<IResponse> response = await gio.get<IResponse>('/manage/agreement/list');
-      expect(response.data.data, isA<List<dynamic>>());
+      final Response<dynamic> response = await gio.get<dynamic>('/manage/agreement/list');
+      expect(response.data, isA<List<dynamic>>());
     } catch (e) {
       print('网络异常-$e');
     }
 
     try {
-      await gio.put<IResponse>('/manage/agreement/list');
-    } catch (e) {
+      await gio.put<dynamic>('/manage/agreement/list');
+    } on GioError catch (e) {
       expect(e.code, -1);
       expect(e.message, contains('404'));
     }

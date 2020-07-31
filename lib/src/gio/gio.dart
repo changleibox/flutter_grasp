@@ -77,7 +77,7 @@ class GioError extends DioError {
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => _code;
 
-  static DioError _assureDioError(dynamic err) {
+  static DioError _assureDioError(dynamic err, [dynamic origin]) {
     if (err is GioError) {
       return err;
     } else if (err is DioError) {
@@ -88,8 +88,18 @@ class GioError extends DioError {
         _err.error = err;
       }
       if (err is IResponse) {
+        Response<dynamic> response;
+        if (origin is Response<dynamic>) {
+          response = origin;
+        } else if (origin is DioError) {
+          response = origin.response;
+        }
+
+        response?.data = err.data;
+
         _err.error = err.message;
         _err._code = err.code;
+        _err.response = response;
       } else {
         _err.error = err;
       }
@@ -135,7 +145,7 @@ class ConvertInterceptor extends InterceptorsWrapper {
     if (iResponse == null) {
       throw GioError._convert(err);
     } else {
-      throw GioError._assureDioError(iResponse);
+      throw GioError._assureDioError(iResponse, err);
     }
   }
 
@@ -144,9 +154,9 @@ class ConvertInterceptor extends InterceptorsWrapper {
     final RequestOptions requestOptions = response.request;
     final IResponse iResponse = _convert(response, requestOptions);
     if (!_validateCode(iResponse, requestOptions)) {
-      throw GioError._assureDioError(iResponse);
+      throw GioError._assureDioError(iResponse, response);
     }
-    return response..data = iResponse ?? response.data;
+    return response..data = iResponse?.data ?? response.data;
   }
 
   bool _validateCode(IResponse iResponse, RequestOptions options) {
