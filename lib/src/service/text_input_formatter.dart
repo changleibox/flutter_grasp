@@ -14,6 +14,7 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
     this.decimalDigits = 2,
     this.maxValue,
   })  : assert(decimalDigits != null && decimalDigits >= 0 || decimalDigits == -1),
+        _decimalDigitsRegExp = decimalDigits < 0 ? null : RegExp('\\d+\\.?\\d{0,$decimalDigits}'),
         super.allow(RegExp(_regExp(decimalDigits)));
 
   /// 此参数等于0，相当于只能输入整数，等于-1，相当于不限制小数位数，默认等于2
@@ -21,6 +22,7 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
 
   /// 最大值，不设置的时候相当于不限制最大值
   final double maxValue;
+  final RegExp _decimalDigitsRegExp;
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
@@ -35,6 +37,9 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
     String parsed = beforePointer.replaceFirst(RegExp(r'^0+'), '');
     if (parsed.isEmpty && beforePointer.isNotEmpty) {
       parsed = '0';
+    }
+    if (_decimalDigitsRegExp != null) {
+      newValueText = _decimalDigitsRegExp.stringMatch(newValueText);
     }
     newValueText = newValueText.replaceFirst(beforePointer, parsed);
     int offset = editingValue.selection.baseOffset;
@@ -53,16 +58,7 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
     );
   }
 
-  static String _regExp(int decimalDigits) {
-    if (decimalDigits == 0) {
-      return r'\d+';
-    }
-    String maxDecimalDigits = '';
-    if (decimalDigits != -1) {
-      maxDecimalDigits = decimalDigits.toString();
-    }
-    return '^\\d+\\.?\\d{0,$maxDecimalDigits}';
-  }
+  static String _regExp(int decimalDigits) => decimalDigits == 0 ? r'\d+' : '\\d+\\.?\\d*';
 }
 
 /// 可以设置最大值和负数，但是没有经过严格测试，请谨慎使用
@@ -71,6 +67,7 @@ class SymbolDecimalTextInputFormatter extends FilteringTextInputFormatter {
     this.decimalDigits = 2,
     this.maxValue,
   })  : assert(decimalDigits != null && decimalDigits >= 0 || decimalDigits == -1),
+        _decimalDigitsRegExp = decimalDigits < 0 ? null : RegExp('-?\\d*\\.?\\d{0,$decimalDigits}'),
         super.allow(RegExp(_regExp(decimalDigits)));
 
   /// 此参数等于0，相当于只能输入整数，等于-1，相当于不限制小数位数，默认等于2
@@ -78,6 +75,7 @@ class SymbolDecimalTextInputFormatter extends FilteringTextInputFormatter {
 
   /// 最大值，不设置的时候相当于不限制最大值
   final double maxValue;
+  final RegExp _decimalDigitsRegExp;
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
@@ -96,6 +94,9 @@ class SymbolDecimalTextInputFormatter extends FilteringTextInputFormatter {
     if (!parsed.startsWith('-') && beforePointer.startsWith('-')) {
       parsed = '-' + parsed;
     }
+    if (_decimalDigitsRegExp != null) {
+      newValueText = _decimalDigitsRegExp.stringMatch(newValueText);
+    }
     newValueText = newValueText.replaceFirst(beforePointer, parsed);
     int offset = editingValue.selection.baseOffset;
     if (parsed != beforePointer) {
@@ -113,14 +114,5 @@ class SymbolDecimalTextInputFormatter extends FilteringTextInputFormatter {
     );
   }
 
-  static String _regExp(int decimalDigits) {
-    if (decimalDigits == 0) {
-      return r'^-?\d*';
-    }
-    String maxDecimalDigits = '';
-    if (decimalDigits != -1) {
-      maxDecimalDigits = decimalDigits.toString();
-    }
-    return '^-?((\\d+\\.\\d{0,$maxDecimalDigits})|(\\d+))?';
-  }
+  static String _regExp(int decimalDigits) => decimalDigits == 0 ? r'-?\d*' : r'-?(\d+\.)?\d*';
 }
