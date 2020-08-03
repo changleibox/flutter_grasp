@@ -2,6 +2,10 @@
  * Copyright (c) 2020 CHANGLEI. All rights reserved.
  */
 
+import 'dart:async';
+import 'dart:ui' as ui;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
@@ -57,27 +61,27 @@ class CustomTextInput implements CustomTextInputClient {
 
   @override
   Future<void> requestExistingInputState() {
-    return _sendPlatformMessage('TextInputClient.requestExistingInputState');
+    return _handlePlatformMessage('TextInputClient.requestExistingInputState');
   }
 
   @override
   Future<void> updateEditingStateWithTag(TextEditingValue value) {
-    return _sendPlatformMessage('TextInputClient.updateEditingStateWithTag', value.toJSON());
+    return _handlePlatformMessage('TextInputClient.updateEditingStateWithTag', value.toJSON());
   }
 
   @override
   Future<void> updateEditingValue(TextEditingValue value) {
-    return _sendPlatformMessage('TextInputClient.updateEditingState', value.toJSON());
+    return _handlePlatformMessage('TextInputClient.updateEditingState', value.toJSON());
   }
 
   @override
   Future<void> performAction(TextInputAction action) {
-    return _sendPlatformMessage('TextInputClient.performAction', action.toString());
+    return _handlePlatformMessage('TextInputClient.performAction', action.toString());
   }
 
   @override
   Future<void> updateFloatingCursor(RawFloatingCursorPoint point) {
-    return _sendPlatformMessage('TextInputClient.updateFloatingCursor', <dynamic>[
+    return _handlePlatformMessage('TextInputClient.updateFloatingCursor', <dynamic>[
       point.state.toString(),
       _toTextPointJson(point.state, point.offset),
     ]);
@@ -85,15 +89,15 @@ class CustomTextInput implements CustomTextInputClient {
 
   @override
   Future<void> showAutocorrectionPromptRect(int start, int end) {
-    return _sendPlatformMessage('TextInputClient.showAutocorrectionPromptRect', <dynamic>[start, end]);
+    return _handlePlatformMessage('TextInputClient.showAutocorrectionPromptRect', <dynamic>[start, end]);
   }
 
   @override
   Future<void> connectionClosed() {
-    return _sendPlatformMessage('TextInputClient.onConnectionClosed');
+    return _handlePlatformMessage('TextInputClient.onConnectionClosed');
   }
 
-  Future<void> _sendPlatformMessage(String name, [dynamic arguments]) async {
+  Future<void> _handlePlatformMessage(String name, [dynamic arguments]) async {
     assert(isRegistered);
     assert(_client > 0);
     await _textInput.binaryMessenger.handlePlatformMessage(
@@ -101,6 +105,35 @@ class CustomTextInput implements CustomTextInputClient {
       _textInput.codec.encodeMethodCall(_methodCall(name, arguments)),
       null,
     );
+  }
+
+  /// ui.window is accessed directly instead of using ServicesBinding.instance.window
+  /// because this method might be invoked before any binding is initialized.
+  /// This issue was reported in #27541. It is not ideal to statically access
+  /// ui.window because the Window may be dependency injected elsewhere with
+  /// a different instance. However, static access at this location seems to be
+  /// the least bad option.
+  Future<ByteData> sendPlatformMessage(MethodCall methodCall) {
+    final Completer<ByteData> completer = Completer<ByteData>();
+    // ui.window is accessed directly instead of using ServicesBinding.instance.window
+    // because this method might be invoked before any binding is initialized.
+    // This issue was reported in #27541. It is not ideal to statically access
+    // ui.window because the Window may be dependency injected elsewhere with
+    // a different instance. However, static access at this location seems to be
+    // the least bad option.
+    ui.window.sendPlatformMessage(_textInput.name, _textInput.codec.encodeMethodCall(methodCall), (ByteData reply) {
+      try {
+        completer.complete(reply);
+      } catch (exception, stack) {
+        FlutterError.reportError(FlutterErrorDetails(
+          exception: exception,
+          stack: stack,
+          library: 'services library',
+          context: ErrorDescription('during a platform message response callback'),
+        ));
+      }
+    });
+    return completer.future;
   }
 
   MethodCall _methodCall(String name, dynamic arguments) {
