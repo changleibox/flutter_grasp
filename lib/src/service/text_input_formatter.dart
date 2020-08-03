@@ -52,8 +52,8 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
 }
 
 /// 可以设置最大值和负数，但是没有经过严格测试，请谨慎使用
-class SupportDecimalTextInputFormatter extends FilteringTextInputFormatter {
-  SupportDecimalTextInputFormatter({
+class SymbolDecimalTextInputFormatter extends FilteringTextInputFormatter {
+  SymbolDecimalTextInputFormatter({
     this.decimalDigits = 2,
     this.maxValue,
   })  : assert(decimalDigits != null && decimalDigits >= 0 || decimalDigits == -1),
