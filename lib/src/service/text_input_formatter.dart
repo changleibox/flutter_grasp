@@ -61,7 +61,7 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
     if (decimalDigits != -1) {
       maxDecimalDigits = decimalDigits.toString();
     }
-    return '\\d+\\.?\\d{0,$maxDecimalDigits}$';
+    return '\\d+\\.?\\d{0,$maxDecimalDigits}\$';
   }
 }
 
