@@ -157,7 +157,7 @@ class ConvertInterceptor extends InterceptorsWrapper {
     if (!_validateCode(iResponse, requestOptions)) {
       throw GioError._assureDioError(iResponse, response);
     }
-    return response..data = iResponse?.data ?? response.data;
+    return response..data = iResponse == null ? response.data : iResponse.data;
   }
 
   bool _validateCode(IResponse iResponse, RequestOptions options) {
