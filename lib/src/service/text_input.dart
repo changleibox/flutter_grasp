@@ -16,7 +16,10 @@ class CustomTextInput implements CustomTextInputClient {
   /// 处理自定义键盘输入
   CustomTextInput({this.connection});
 
-  static const MethodChannel _textInput = SystemChannels.textInput;
+  final MethodChannel _textInput = const OptionalMethodChannel(
+    'flutter/textinput',
+    JSONMethodCodec(),
+  );
 
   /// 接收textField连接键盘的时候
   final CustomTextInputConnection connection;
