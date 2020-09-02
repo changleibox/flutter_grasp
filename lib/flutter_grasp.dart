@@ -22,6 +22,7 @@ export 'src/util/date_time_utils.dart';
 export 'src/util/qiniu_utils.dart';
 export 'src/util/strings.dart';
 export 'src/util/utils.dart';
+export 'src/widget/animated_widget_group.dart';
 export 'src/widget/child_delegate.dart';
 export 'src/widget/keep_alive_widget.dart';
 export 'src/widget/key_value.dart';
