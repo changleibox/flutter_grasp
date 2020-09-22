@@ -51,7 +51,7 @@ TextInputFormatter mobileFormatter({bool canInputHidenMobile = false}) {
       ? FilteringTextInputFormatter.allow(RegExp(
           r'\d|\*',
         ))
-      : WhitelistingTextInputFormatter.digitsOnly;
+      : FilteringTextInputFormatter.digitsOnly;
 }
 
 Future<bool> callPhone(BuildContext context, String phone) async {
