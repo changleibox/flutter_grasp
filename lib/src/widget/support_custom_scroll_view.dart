@@ -13,7 +13,7 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 typedef SupportRefreshCallback = Future<void> Function();
 
 /// 创建占位图
-typedef PlaceholderBuilder = Widget Function(BuildContext context, bool isLoading);
+typedef PlaceholderBuilder = Widget Function(BuildContext context, bool isLoading, Axis scrollDirection);
 
 /// 加载配置，可以设置刷新controller实现手动刷新，下拉刷新回调和加载更多回调和是否有下一页标签
 class LoadOptions {
@@ -124,7 +124,11 @@ class LoadNextWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isVertical = scrollDirection == Axis.vertical;
-    String text = isLoading && hasNext ? '正在加载更多' : hasNext ? '上拉加载更多' : '我是有底线的';
+    String text = isLoading && hasNext
+        ? '正在加载更多'
+        : hasNext
+            ? '上拉加载更多'
+            : '我是有底线的';
     if (!isVertical) {
       text = List<String>.generate(text.length, (int index) => text[index]).join('\n');
     }
@@ -288,9 +292,13 @@ class SupportCustomScrollView extends StatefulWidget {
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
   final PlaceholderBuilder placeholderBuilder;
 
-  static Widget buildPlaceholder(BuildContext context, bool isLoading) {
-    return DefaultPagePlaceholderView(
-      isLoading: isLoading,
+  static Widget buildPlaceholder(BuildContext context, bool isLoading, Axis scrollDirection) {
+    final bool isVertical = scrollDirection == Axis.vertical;
+    return SizedBox.fromSize(
+      size: isVertical ? const Size.fromHeight(300) : const Size.fromWidth(300),
+      child: DefaultPagePlaceholderView(
+        isLoading: isLoading,
+      ),
     );
   }
 
@@ -433,10 +441,7 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
     }
     if (!_showSlivers) {
       final Widget sliver = SliverToBoxAdapter(
-        child: SizedBox.fromSize(
-          size: isVertical ? const Size.fromHeight(300) : const Size.fromWidth(300),
-          child: widget.placeholderBuilder(context, _isLoading),
-        ),
+        child: widget.placeholderBuilder(context, _isLoading, widget.scrollDirection),
       );
       slivers.add(buildSliver(sliver, true, true));
     }
