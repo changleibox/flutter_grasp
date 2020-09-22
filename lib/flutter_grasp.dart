@@ -44,6 +44,7 @@ export 'src/widget/keep_alive_widget.dart';
 export 'src/widget/key_value.dart';
 export 'src/widget/page_placeholder_view.dart';
 export 'src/widget/sliver_list_view.dart';
+export 'src/widget/snapping_telos_scroll_physics.dart';
 export 'src/widget/support_custom_scroll_view.dart';
 export 'src/widget/support_list_view.dart';
 export 'src/widget/support_nested_scroll_view.dart';
