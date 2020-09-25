@@ -446,6 +446,8 @@ class SupportNestedScrollViewState extends State<SupportNestedScrollView> {
               _lastHasScrolledBody,
             ),
             handle: _absorberHandle,
+            clipBehavior: widget.clipBehavior,
+            restorationId: widget.restorationId,
           );
         },
       ),
@@ -461,7 +463,9 @@ class _NestedScrollViewCustomScrollView extends CustomScrollView {
     @required ScrollController controller,
     @required List<Widget> slivers,
     @required this.handle,
+    @required Clip clipBehavior,
     DragStartBehavior dragStartBehavior = DragStartBehavior.start,
+    String restorationId,
   }) : super(
           scrollDirection: scrollDirection,
           reverse: reverse,
@@ -469,6 +473,8 @@ class _NestedScrollViewCustomScrollView extends CustomScrollView {
           controller: controller,
           slivers: slivers,
           dragStartBehavior: dragStartBehavior,
+          restorationId: restorationId,
+          clipBehavior: clipBehavior,
         );
 
   final SliverOverlapAbsorberHandle handle;
@@ -604,7 +610,7 @@ class _NestedScrollCoordinator implements ScrollActivityDelegate, ScrollHoldCont
 
   bool get hasScrolledBody {
     for (final _NestedScrollPosition position in _innerPositions) {
-      assert(position.minScrollExtent != null && position.pixels != null);
+      assert(position.minScrollExtent != null && position.hasPixels);
       if (position.pixels > position.minScrollExtent) {
         return true;
       }
