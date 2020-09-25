@@ -1123,7 +1123,7 @@ class _NestedScrollPosition extends ScrollPosition implements ScrollActivityDele
     assert(minScrollExtent != null);
     assert(maxScrollExtent != null);
     final _NestedScrollPosition outerPosition = coordinator._outerPosition;
-    final double outerMaxScrollExtent = outerPosition.maxScrollExtent;
+    final double outerMaxScrollExtent = outerPosition.hasContentDimensions ? outerPosition.maxScrollExtent : null;
     final double outerPixels = outerPosition.pixels;
     final PinnedHeaderSliverHeightBuilder pinnedHeaderSliverHeightBuilder =
         coordinator._state.widget.pinnedHeaderSliverHeightBuilder;
