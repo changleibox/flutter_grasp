@@ -541,8 +541,8 @@ class _NestedScrollMetrics extends FixedScrollMetrics {
     double correctionOffset,
   }) {
     return _NestedScrollMetrics(
-      minScrollExtent: minScrollExtent ?? this.minScrollExtent,
-      maxScrollExtent: maxScrollExtent ?? this.maxScrollExtent,
+      minScrollExtent: minScrollExtent ?? (hasContentDimensions ? this.minScrollExtent : null),
+      maxScrollExtent: maxScrollExtent ?? (hasContentDimensions ? this.maxScrollExtent : null),
       pixels: pixels ?? this.pixels,
       viewportDimension: viewportDimension ?? this.viewportDimension,
       axisDirection: axisDirection ?? this.axisDirection,
