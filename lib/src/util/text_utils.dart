@@ -2,7 +2,9 @@
  * Copyright © 2019 CHANGLEI. All rights reserved.
  */
 
-class Strings {
+class TextUtils {
+  TextUtils._();
+
   static String format(String format, List<Object> args) {
     if (format == null || args == null || args.isEmpty) {
       return format;

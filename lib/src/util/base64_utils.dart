@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 
 class Base64Utils {
+  Base64Utils._();
+
   static String base64Encode(String data) {
     final List<int> content = convert.utf8.encode(data);
     final String digest = convert.base64Encode(content);

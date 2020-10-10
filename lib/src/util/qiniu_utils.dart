@@ -7,6 +7,8 @@ const List<String> FORMATS = <String>['jpg', 'gif', 'png', 'webp'];
 const List<int> COLORS = <int>[2, 4, 8, 16, 32, 64, 128, 256];
 
 class QiniuUtils {
+  QiniuUtils._();
+
   static bool isInvalidValue(double value) {
     return value == null || value.isInfinite || value.isNaN || value <= 0;
   }
@@ -27,7 +29,7 @@ class QiniuUtils {
     bool interlace,
     int colors,
   }) {
-    if (Strings.isEmpty(url) || Uri.parse(url).host.contains('qiniu')) {
+    if (TextUtils.isEmpty(url) || Uri.parse(url).host.contains('qiniu')) {
       return url;
     }
     assert(mode >= 0 && mode <= 5);
@@ -46,7 +48,7 @@ class QiniuUtils {
     if (colors != null) {
       params.addAll(<dynamic>['colors', colors]);
     }
-    if (Strings.isNotEmpty(format)) {
+    if (TextUtils.isNotEmpty(format)) {
       params.addAll(<dynamic>['format', format]);
     }
     final Size size = MediaQuery.of(context).size;

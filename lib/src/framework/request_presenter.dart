@@ -36,7 +36,7 @@ mixin RequestPresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
 
   /// 搜索的文本是否改变
   bool isQueryChanged(String queryText) {
-    queryText = Strings.isEmpty(queryText) ? null : queryText;
+    queryText = TextUtils.isEmpty(queryText) ? null : queryText;
     return queryText != this.queryText;
   }
 
@@ -52,7 +52,7 @@ mixin RequestPresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
     if (!isQueryChanged(queryText)) {
       return;
     }
-    _queryText = Strings.isEmpty(queryText) ? null : queryText;
+    _queryText = TextUtils.isEmpty(queryText) ? null : queryText;
     return _load(false);
   }
 

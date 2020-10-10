@@ -24,7 +24,7 @@ export 'src/service/text_input_formatter.dart';
 export 'src/util/base64_utils.dart';
 export 'src/util/date_time_utils.dart';
 export 'src/util/qiniu_utils.dart';
-export 'src/util/strings.dart';
+export 'src/util/text_utils.dart';
 export 'src/util/utils.dart';
 export 'src/vector_math/color_matrix.dart';
 export 'src/vector_math/image_filter.dart';

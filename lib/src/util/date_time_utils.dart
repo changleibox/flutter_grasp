@@ -5,6 +5,8 @@ const int _nh = 1000 * 60 * 60; // 一小时的毫秒数
 const int _nm = 1000 * 60; // 一分钟的毫秒数
 
 class DateTimeUtils {
+  DateTimeUtils._();
+
   static DateTime alignment(DateTime dateTime) {
     return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute);
   }

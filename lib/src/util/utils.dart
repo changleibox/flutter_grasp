@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
 
 bool isMobileNo(String mobile) {
-  if (Strings.isEmpty(mobile) || mobile.length != 11) {
+  if (TextUtils.isEmpty(mobile) || mobile.length != 11) {
     return false;
   }
   final RegExp exp = RegExp(
@@ -18,7 +18,7 @@ bool isMobileNo(String mobile) {
 }
 
 bool isHidenMobileNo(String mobile) {
-  if (Strings.isEmpty(mobile) || mobile.length != 11) {
+  if (TextUtils.isEmpty(mobile) || mobile.length != 11) {
     return false;
   }
   final RegExp exp = RegExp(
@@ -28,7 +28,7 @@ bool isHidenMobileNo(String mobile) {
 }
 
 bool isLandlineNumber(String mobile) {
-  if (Strings.isEmpty(mobile) || mobile.length < 11) {
+  if (TextUtils.isEmpty(mobile) || mobile.length < 11) {
     return false;
   }
   final RegExp exp = RegExp(
@@ -56,7 +56,7 @@ TextInputFormatter mobileFormatter({bool canInputHidenMobile = false}) {
 
 Future<bool> callPhone(BuildContext context, String phone) async {
   final String url = 'tel:$phone';
-  if (Strings.isEmpty(phone) || await canLaunch(url)) {
+  if (TextUtils.isEmpty(phone) || await canLaunch(url)) {
     return await launch(url);
   } else {
     throw '电话号码出现异常';
