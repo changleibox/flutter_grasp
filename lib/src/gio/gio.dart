@@ -117,7 +117,9 @@ class GioError extends DioError {
       final Response<dynamic> response = error.response;
       if (response != null) {
         final dynamic data = response.data;
-        code = data['code'] as int;
+        final RequestOptions options = response.request;
+        final DataKeyOptions keyOptions = (options is GioRequestOptions ? options : null)?.dataKeyOptions;
+        code = data[keyOptions?.codeKey ?? _kCodeKey] as int;
       }
       return GioError._(
         request: error.request,
