@@ -2,6 +2,8 @@
  * Copyright (c) 2020 CHANGLEI. All rights reserved.
  */
 
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_grasp/src/widget/animated_drag_target.dart';
 import 'package:flutter_grasp/src/widget/animated_draggable.dart';
@@ -97,7 +99,7 @@ class DraggableSortState extends State<DraggableSort> {
       final int delta = widget.itemCount - oldWidget.itemCount;
       _itemKeys.addAll(List<GlobalKey>.generate(delta, (int n) => _createKey(n)));
     } else if (widget.itemCount < oldWidget.itemCount) {
-      _itemKeys.removeRange(widget.itemCount, oldWidget.itemCount);
+      _itemKeys.removeRange(widget.itemCount, math.min(oldWidget.itemCount, _itemKeys.length));
     }
     super.didUpdateWidget(oldWidget);
   }
