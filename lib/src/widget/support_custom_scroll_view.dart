@@ -394,7 +394,7 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
     final bool isVertical = widget.scrollDirection == Axis.vertical;
     EdgeInsetsGeometry effectivePadding = widget.padding;
     EdgeInsetsGeometry mediaQueryPadding;
-    final MediaQueryData mediaQuery = MediaQuery.of(context, nullOk: true);
+    final MediaQueryData mediaQuery = MediaQuery.of(context);
     if (widget.padding == null && mediaQuery != null) {
       // Automatically pad sliver with padding from MediaQuery.
       final EdgeInsets mediaQueryHorizontalPadding = mediaQuery.padding.copyWith(top: 0.0, bottom: 0.0);
