@@ -11,6 +11,13 @@ typedef DraggableSortGroupCallback = void Function(int fromGroupIndex, int toGro
 
 typedef DraggableSortGroupHandler = bool Function(int fromGroupIndex, int toGroupIndex, int fromIndex, int toIndex);
 
+typedef DraggableSortGroupFeedbackBuilder = Widget Function(
+  BuildContext context,
+  int groupIndex,
+  int index,
+  Widget child,
+);
+
 /// Created by changlei on 2020/8/20.
 ///
 /// 一组拖动排序
@@ -40,7 +47,7 @@ class DraggableSortGroup extends StatefulWidget {
   final List<int> itemCounts;
 
   /// 构建拖动的feedback
-  final DraggableFeedbackBuilder feedbackBuilder;
+  final DraggableSortGroupFeedbackBuilder feedbackBuilder;
 
   @override
   DraggableSortGroupState createState() => DraggableSortGroupState();
@@ -192,7 +199,10 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
       onDragEnd: _onDragEnd,
       onSortHandler: _onSortHandler,
       builder: widget.builder,
-      feedbackBuilder: widget.feedbackBuilder,
+      feedbackBuilder: (BuildContext context, int index, Widget child) {
+        final _GroupIndexes indexes = _collapseIndex(index);
+        return widget.feedbackBuilder?.call(context, indexes.groupIndex, indexes.index, child);
+      },
     );
   }
 }

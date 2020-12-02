@@ -13,7 +13,7 @@ typedef DraggableSortCallback = void Function(int fromIndex, int toIndex);
 
 typedef DraggableSortHandler = int Function(int fromIndex, int toIndex);
 
-typedef DraggableFeedbackBuilder = Widget Function(BuildContext context, Widget child);
+typedef DraggableSortFeedbackBuilder = Widget Function(BuildContext context, int index, Widget child);
 
 /// Created by changlei on 2020/8/12.
 ///
@@ -81,7 +81,7 @@ class DraggableSort extends StatefulWidget {
   final ValueChanged<DragSortData> onDragEnd;
 
   /// 构建拖动的feedback
-  final DraggableFeedbackBuilder feedbackBuilder;
+  final DraggableSortFeedbackBuilder feedbackBuilder;
 
   @override
   DraggableSortState createState() => DraggableSortState();
@@ -195,6 +195,14 @@ class DraggableSortState extends State<DraggableSort> {
     assert(index >= 0 && _itemKeys.length > index);
     assert(child != null);
     final DragSortData dragSortData = DragSortData(this, index);
+    Widget feedback;
+    if (widget.feedbackBuilder != null) {
+      feedback = Builder(
+        builder: (BuildContext context) {
+          return widget.feedbackBuilder(context, index, child);
+        },
+      );
+    }
     return KeyedSubtree(
       key: _itemKeys[index],
       child: AnimatedLongPressDraggable<DragSortData>(
@@ -205,7 +213,7 @@ class DraggableSortState extends State<DraggableSort> {
         onDragCompleted: () => _onDragCompleted(dragSortData),
         duration: const Duration(milliseconds: 300),
         curve: Curves.linearToEaseOut,
-        feedback: widget.feedbackBuilder?.call(context, child),
+        feedback: feedback,
         child: AnimatedDragTarget<DragSortData>(
           duration: const Duration(milliseconds: 300),
           curve: Curves.linearToEaseOut,
