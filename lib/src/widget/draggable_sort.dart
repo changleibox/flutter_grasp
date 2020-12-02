@@ -13,6 +13,8 @@ typedef DraggableSortCallback = void Function(int fromIndex, int toIndex);
 
 typedef DraggableSortHandler = int Function(int fromIndex, int toIndex);
 
+typedef DraggableFeedbackBuilder = Widget Function(BuildContext context, Widget child);
+
 /// Created by changlei on 2020/8/12.
 ///
 /// 拖动排序
@@ -28,6 +30,7 @@ class DraggableSort extends StatefulWidget {
     this.onDraggableCanceled,
     this.onDragCompleted,
     this.onDragEnd,
+    this.feedbackBuilder,
   })  : assert(builder != null),
         assert(itemCount != null && itemCount >= 0),
         super(key: key);
@@ -76,6 +79,9 @@ class DraggableSort extends StatefulWidget {
   /// This function will only be called while this widget is still mounted to
   /// the tree (i.e. [State.mounted] is true).
   final ValueChanged<DragSortData> onDragEnd;
+
+  /// 构建拖动的feedback
+  final DraggableFeedbackBuilder feedbackBuilder;
 
   @override
   DraggableSortState createState() => DraggableSortState();
@@ -199,6 +205,7 @@ class DraggableSortState extends State<DraggableSort> {
         onDragCompleted: () => _onDragCompleted(dragSortData),
         duration: const Duration(milliseconds: 300),
         curve: Curves.linearToEaseOut,
+        feedback: widget.feedbackBuilder?.call(context, child),
         child: AnimatedDragTarget<DragSortData>(
           duration: const Duration(milliseconds: 300),
           curve: Curves.linearToEaseOut,

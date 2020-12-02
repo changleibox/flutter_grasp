@@ -22,6 +22,7 @@ class DraggableSortGroup extends StatefulWidget {
     @required this.itemCounts,
     this.onDragSort,
     this.onSortHandler,
+    this.feedbackBuilder,
   })  : assert(builder != null),
         assert(itemCounts != null),
         super(key: key);
@@ -37,6 +38,9 @@ class DraggableSortGroup extends StatefulWidget {
 
   /// 每个item对应的数量
   final List<int> itemCounts;
+
+  /// 构建拖动的feedback
+  final DraggableFeedbackBuilder feedbackBuilder;
 
   @override
   DraggableSortGroupState createState() => DraggableSortGroupState();
@@ -188,6 +192,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
       onDragEnd: _onDragEnd,
       onSortHandler: _onSortHandler,
       builder: widget.builder,
+      feedbackBuilder: widget.feedbackBuilder,
     );
   }
 }
