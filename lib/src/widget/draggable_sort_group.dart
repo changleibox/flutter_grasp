@@ -192,6 +192,13 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
 
   @override
   Widget build(BuildContext context) {
+    DraggableSortFeedbackBuilder feedbackBuilder;
+    if (widget.feedbackBuilder != null) {
+      feedbackBuilder = (BuildContext context, int index, Widget child) {
+        final _GroupIndexes indexes = _collapseIndex(index);
+        return widget.feedbackBuilder(context, indexes.groupIndex, indexes.index, child);
+      };
+    }
     return DraggableSort(
       key: _sortKey,
       itemCount: _itemCount,
@@ -199,10 +206,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
       onDragEnd: _onDragEnd,
       onSortHandler: _onSortHandler,
       builder: widget.builder,
-      feedbackBuilder: (BuildContext context, int index, Widget child) {
-        final _GroupIndexes indexes = _collapseIndex(index);
-        return widget.feedbackBuilder?.call(context, indexes.groupIndex, indexes.index, child);
-      },
+      feedbackBuilder: feedbackBuilder,
     );
   }
 }
