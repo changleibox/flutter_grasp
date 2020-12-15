@@ -30,6 +30,7 @@ class SupportListView extends StatelessWidget {
     this.dragStartBehavior = DragStartBehavior.start,
     this.loadOptionsBuilder = const DefaultLoadOptionsBuilder(),
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.loadNextBuilder = SupportCustomScrollView.buildLoadNext,
     this.placeholderBuilder = SupportCustomScrollView.buildPlaceholder,
   })  : assert(loadOptionsBuilder != null),
         _sliverListView = SliverListView(
@@ -63,6 +64,7 @@ class SupportListView extends StatelessWidget {
     this.dragStartBehavior = DragStartBehavior.start,
     this.loadOptionsBuilder = const DefaultLoadOptionsBuilder(),
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.loadNextBuilder = SupportCustomScrollView.buildLoadNext,
     this.placeholderBuilder = SupportCustomScrollView.buildPlaceholder,
   })  : assert(loadOptionsBuilder != null),
         assert(itemCount == null || itemCount >= 0),
@@ -97,6 +99,7 @@ class SupportListView extends StatelessWidget {
     this.cacheExtent,
     this.loadOptionsBuilder = const DefaultLoadOptionsBuilder(),
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.loadNextBuilder = SupportCustomScrollView.buildLoadNext,
     this.placeholderBuilder = SupportCustomScrollView.buildPlaceholder,
   })  : assert(loadOptionsBuilder != null),
         assert(itemBuilder != null),
@@ -133,6 +136,7 @@ class SupportListView extends StatelessWidget {
     this.dragStartBehavior,
     this.loadOptionsBuilder = const DefaultLoadOptionsBuilder(),
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.loadNextBuilder = SupportCustomScrollView.buildLoadNext,
     this.placeholderBuilder = SupportCustomScrollView.buildPlaceholder,
   })  : assert(loadOptionsBuilder != null),
         assert(childrenDelegate != null),
@@ -158,6 +162,7 @@ class SupportListView extends StatelessWidget {
   final SliverListView _sliverListView;
   final LoadOptionsBuilder loadOptionsBuilder;
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
+  final LoadNextBuilder loadNextBuilder;
   final PlaceholderBuilder placeholderBuilder;
 
   bool get _hasElements => _sliverListView.estimatedChildCount > 0;
@@ -178,6 +183,7 @@ class SupportListView extends StatelessWidget {
       padding: padding,
       hasElements: _hasElements,
       keyboardDismissBehavior: keyboardDismissBehavior,
+      loadNextBuilder: loadNextBuilder,
       placeholderBuilder: placeholderBuilder,
       slivers: <Widget>[
         _sliverListView,

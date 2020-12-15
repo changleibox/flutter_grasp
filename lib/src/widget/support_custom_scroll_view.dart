@@ -15,6 +15,9 @@ typedef SupportRefreshCallback = Future<void> Function();
 /// 创建占位图
 typedef PlaceholderBuilder = Widget Function(BuildContext context, bool isLoading, Axis scrollDirection);
 
+/// 创建加载更多控件
+typedef LoadNextBuilder = Widget Function(BuildContext context, bool hasNext, bool isLoading, Axis scrollDirection);
+
 /// 加载配置，可以设置刷新controller实现手动刷新，下拉刷新回调和加载更多回调和是否有下一页标签
 class LoadOptions {
   const LoadOptions({
@@ -215,8 +218,10 @@ class SupportCustomScrollView extends StatefulWidget {
     bool hasNext = false,
     this.hasElements = true,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.loadNextBuilder = buildLoadNext,
     this.placeholderBuilder = buildPlaceholder,
   })  : assert(hasElements != null),
+        assert(loadNextBuilder != null),
         assert(placeholderBuilder != null),
         loadOptions = LoadOptions(
           onRefresh: onRefresh,
@@ -243,9 +248,11 @@ class SupportCustomScrollView extends StatefulWidget {
     this.padding,
     this.hasElements = true,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.loadNextBuilder = buildLoadNext,
     this.placeholderBuilder = buildPlaceholder,
   })  : assert(hasElements != null),
         assert(builder != null),
+        assert(loadNextBuilder != null),
         assert(placeholderBuilder != null),
         loadOptions = builder.loadOptions ?? const LoadOptions(),
         super(key: key);
@@ -268,9 +275,11 @@ class SupportCustomScrollView extends StatefulWidget {
     this.padding,
     this.hasElements = true,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.loadNextBuilder = buildLoadNext,
     this.placeholderBuilder = buildPlaceholder,
   })  : assert(hasElements != null),
         assert(loadOptions != null),
+        assert(loadNextBuilder != null),
         assert(placeholderBuilder != null),
         super(key: key);
 
@@ -290,7 +299,16 @@ class SupportCustomScrollView extends StatefulWidget {
   final LoadOptions loadOptions;
   final bool hasElements;
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
+  final LoadNextBuilder loadNextBuilder;
   final PlaceholderBuilder placeholderBuilder;
+
+  static Widget buildLoadNext(BuildContext context, bool hasNext, bool isLoading, Axis scrollDirection) {
+    return LoadNextWidget(
+      hasNext: hasNext,
+      isLoading: isLoading,
+      scrollDirection: scrollDirection,
+    );
+  }
 
   static Widget buildPlaceholder(BuildContext context, bool isLoading, Axis scrollDirection) {
     final bool isVertical = scrollDirection == Axis.vertical;
@@ -447,11 +465,7 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
     }
     if (_showLoadNext) {
       final Widget sliver = SliverToBoxAdapter(
-        child: LoadNextWidget(
-          hasNext: _hasNext,
-          isLoading: _isLoading,
-          scrollDirection: widget.scrollDirection,
-        ),
+        child: widget.loadNextBuilder(context, _hasNext, _isLoading, widget.scrollDirection),
       );
       slivers.add(buildSliver(sliver, false, true));
     }
