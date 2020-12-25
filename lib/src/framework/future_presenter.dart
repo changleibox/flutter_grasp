@@ -9,7 +9,7 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 /// Created by changlei on 2020-02-13.
 ///
 /// presenter的异步请求扩展类
-mixin RequestPresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
+mixin FuturePresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
   CancelToken _cancelToken;
   bool _isLoading = false;
   String _queryText;
@@ -140,4 +140,4 @@ mixin RequestPresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
 }
 
 /// presenter的异步请求扩展类
-abstract class RequestPresenter<T extends StatefulWidget, E> extends Presenter<T> with RequestPresenterMixin<T, E> {}
+abstract class FuturePresenter<T extends StatefulWidget, E> extends Presenter<T> with FuturePresenterMixin<T, E> {}

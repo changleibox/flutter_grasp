@@ -8,7 +8,7 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 /// Created by changlei on 2020-02-13.
 ///
 /// [Iterable]类型的的异步请求扩展类
-abstract class IterablePresenter<T extends StatefulWidget, E> extends RequestPresenter<T, Iterable<E>>
+abstract class IterablePresenter<T extends StatefulWidget, E> extends FuturePresenter<T, Iterable<E>>
     implements LoadOptionsBuilder {
   final ManualRefreshScrollController _refreshController = ManualRefreshScrollController();
   final List<E> _objects = <E>[];

@@ -6,12 +6,12 @@ export 'package:dio/dio.dart';
 export 'package:url_launcher/url_launcher.dart';
 
 export 'src/framework/framework.dart';
+export 'src/framework/future_presenter.dart';
 export 'src/framework/iterable_presenter.dart';
 export 'src/framework/list_presenter.dart';
 export 'src/framework/object_presenter.dart';
 export 'src/framework/page_response_presenter.dart';
 export 'src/framework/presenter.dart';
-export 'src/framework/request_presenter.dart';
 export 'src/framework/tab_presenter.dart';
 export 'src/gio/gio.dart' hide ConvertInterceptor;
 export 'src/rendering/animated_boundary.dart';
