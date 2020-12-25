@@ -18,8 +18,22 @@ const int normalPageSize = 20;
 ///
 /// [Iterable]类型的的异步请求扩展类
 abstract class PageResponsePresenter<T extends StatefulWidget, E> extends IterablePresenter<T, E> {
-  int _currentPage = normalFirstPage;
-  int _currentPageSize = normalPageSize;
+  /// [Iterable]类型的的异步请求扩展类
+  PageResponsePresenter({
+    int normalFirstPage = normalFirstPage,
+    int normalPageSize = normalPageSize,
+  })  : assert(normalFirstPage != null),
+        assert(normalPageSize != null),
+        _normalFirstPage = normalFirstPage,
+        _normalPageSize = normalPageSize,
+        _currentPage = normalFirstPage,
+        _currentPageSize = normalPageSize;
+
+  final int _normalFirstPage;
+  final int _normalPageSize;
+
+  int _currentPage;
+  int _currentPageSize;
   bool _hasNext = false;
 
   /// 当前页数
@@ -32,7 +46,7 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
   bool get hasNext => _hasNext;
 
   /// 是否是第一页
-  bool get isFirstPage => _currentPage == normalFirstPage;
+  bool get isFirstPage => _currentPage == _normalFirstPage;
 
   @override
   LoadOptions get loadOptions => super.loadOptions.copyWith(
@@ -42,10 +56,10 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
 
   /// 刷新数据，可以指定一个pageSize
   Future<void> onRefreshAsPageSize(int size) {
-    _currentPage = normalFirstPage;
+    _currentPage = _normalFirstPage;
     // _currentPageSize = max(size, normalPageSize);
     // 去掉原来的动态pageSize功能，改成固定pageSize
-    _currentPageSize = normalPageSize;
+    _currentPageSize = _normalPageSize;
     return super.onRefresh();
   }
 
@@ -66,8 +80,8 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
 
   @override
   Future<void> onRefresh() async {
-    _currentPage = normalFirstPage;
-    _currentPageSize = normalPageSize;
+    _currentPage = _normalFirstPage;
+    _currentPageSize = _normalPageSize;
     return super.onRefresh();
   }
 
@@ -76,14 +90,14 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
     if (!isQueryChanged(queryText)) {
       return;
     }
-    _currentPage = normalFirstPage;
-    _currentPageSize = normalPageSize;
+    _currentPage = _normalFirstPage;
+    _currentPageSize = _normalPageSize;
     return super.onQuery(queryText);
   }
 
   /// 加载下一页
   Future<void> onLoadNext() async {
-    _currentPageSize = normalPageSize;
+    _currentPageSize = _normalPageSize;
     return super.onRefresh();
   }
 
@@ -106,11 +120,11 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
   List<E> _callback(List<E> pageResponse) {
     final List<E> existedObjects = List<E>.of(super.objects);
     if (pageResponse == null) {
-      _currentPage = normalFirstPage;
+      _currentPage = _normalFirstPage;
       existedObjects.clear();
       _hasNext = false;
     } else {
-      final bool isFirstPage = _currentPage == normalFirstPage;
+      final bool isFirstPage = _currentPage == _normalFirstPage;
       _hasNext = pageResponse.length == _currentPageSize;
       if (_hasNext) {
         _currentPage++;
