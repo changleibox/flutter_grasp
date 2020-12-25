@@ -46,6 +46,10 @@ class IResponse {
   String toString() {
     return _originalData?.toString() ?? super.toString();
   }
+
+  dynamic operator [](String key) {
+    return _originalData[key];
+  }
 }
 
 class GioError extends DioError {

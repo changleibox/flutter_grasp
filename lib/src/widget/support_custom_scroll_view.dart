@@ -459,13 +459,21 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
     }
     if (!_showSlivers) {
       final Widget sliver = SliverToBoxAdapter(
-        child: widget.placeholderBuilder(context, _isLoading, widget.scrollDirection),
+        child: Builder(
+          builder: (BuildContext context) {
+            return widget.placeholderBuilder(context, _isLoading, widget.scrollDirection);
+          },
+        ),
       );
       slivers.add(buildSliver(sliver, true, true));
     }
     if (_showLoadNext) {
       final Widget sliver = SliverToBoxAdapter(
-        child: widget.loadNextBuilder(context, _hasNext, _isLoading, widget.scrollDirection),
+        child: Builder(
+          builder: (BuildContext context) {
+            return widget.loadNextBuilder(context, _hasNext, _isLoading, widget.scrollDirection);
+          },
+        ),
       );
       slivers.add(buildSliver(sliver, false, true));
     }
