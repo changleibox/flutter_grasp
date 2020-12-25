@@ -4,6 +4,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
 
 /// Created by changlei on 2020-02-13.
@@ -111,7 +112,11 @@ mixin FuturePresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
 
   /// 加载错误的时候
   @protected
-  void onError(Object error, StackTrace stackTrace) {}
+  void onError(Object error, StackTrace stackTrace) {
+    if (kDebugMode) {
+      throw error;
+    }
+  }
 
   /// 加载完成的时候，无论错误、正确都会回调
   @protected
