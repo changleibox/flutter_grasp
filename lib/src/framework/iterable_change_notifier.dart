@@ -10,7 +10,9 @@ import 'package:flutter_grasp/src/framework/future_change_notifier.dart';
 ///
 /// [Iterable]类型的的异步请求扩展类
 abstract class IterableChangeNotifier<E> extends FutureChangeNotifier<Iterable<E>> implements LoadOptionsBuilder {
-  final ManualRefreshScrollController _refreshController = ManualRefreshScrollController();
+  final RefreshScrollController _refreshController = ManualRefreshScrollController(
+    style: RefreshControllerStyle.material,
+  );
   final List<E> _objects = <E>[];
 
   /// 异步加载返回的数据

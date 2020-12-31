@@ -11,7 +11,9 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 /// [Object]类型的的异步请求扩展类
 abstract class ObjectPresenter<T extends StatefulWidget, E> extends FuturePresenter<T, E>
     implements LoadOptionsBuilder {
-  final RefreshScrollController _refreshController = ManualRefreshScrollController();
+  final RefreshScrollController _refreshController = ManualRefreshScrollController(
+    style: RefreshControllerStyle.material,
+  );
 
   E _object;
 

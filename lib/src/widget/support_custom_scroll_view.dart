@@ -178,6 +178,12 @@ class CupertinoRefreshScrollController implements RefreshScrollController {
 
 /// 另一种方式的手动刷新控制器，效果为在没有数据和正在加载时，显示'正在加载……'
 class ManualRefreshScrollController implements RefreshScrollController {
+  ManualRefreshScrollController({RefreshControllerStyle style}) : style = style ?? _defaultStyle;
+
+  /// 刷新器的样式
+  @override
+  final RefreshControllerStyle style;
+
   AsyncCallback _onManualRefresh;
 
   @override
@@ -202,8 +208,7 @@ class ManualRefreshScrollController implements RefreshScrollController {
   @override
   Key get _refreshKey => null;
 
-  @override
-  RefreshControllerStyle get style {
+  static RefreshControllerStyle get _defaultStyle {
     if (Platform.isIOS || Platform.isMacOS || Platform.isLinux) {
       return RefreshControllerStyle.cupertino;
     }
