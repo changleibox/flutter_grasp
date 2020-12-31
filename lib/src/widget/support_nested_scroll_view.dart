@@ -739,7 +739,7 @@ class _NestedScrollCoordinator implements ScrollActivityDelegate, ScrollHoldCont
   ScrollActivity createInnerBallisticScrollActivity(_NestedScrollPosition position, double velocity) {
     return position.createBallisticScrollActivity(
       position.physics.createBallisticSimulation(
-        velocity == 0 ? position as ScrollMetrics : _getMetrics(position, velocity),
+        velocity == 0 ? position : _getMetrics(position, velocity),
         velocity,
       ),
       mode: velocity == 0 ? _NestedBallisticScrollActivityMode.independent : _NestedBallisticScrollActivityMode.inner,

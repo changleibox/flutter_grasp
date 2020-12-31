@@ -2,18 +2,14 @@
  * Copyright (c) 2020 CHANGLEI. All rights reserved.
  */
 
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
+import 'package:flutter_grasp/src/widget/load_next_widget.dart';
 import 'package:flutter_grasp/src/widget/support_refresh_indicator.dart';
-
-const double _defaultRefreshTriggerPullDistance = 100.0;
-const Duration _defaultDuration = Duration(milliseconds: 300);
 
 /// 刷新回调
 typedef SupportRefreshCallback = Future<void> Function();
@@ -23,15 +19,6 @@ typedef PlaceholderBuilder = Widget Function(BuildContext context, bool isLoadin
 
 /// 创建加载更多控件
 typedef LoadNextBuilder = Widget Function(BuildContext context, bool hasNext, bool isLoading, Axis scrollDirection);
-
-/// 刷新控制器样式
-enum RefreshControllerStyle {
-  /// material
-  material,
-
-  /// cupertino
-  cupertino,
-}
 
 /// 加载配置，可以设置刷新controller实现手动刷新，下拉刷新回调和加载更多回调和是否有下一页标签
 class LoadOptions {
@@ -81,221 +68,6 @@ class DefaultLoadOptionsBuilder implements LoadOptionsBuilder {
 
   LoadOptionsBuilder copyWith({LoadOptions loadOptions}) {
     return DefaultLoadOptionsBuilder(loadOptions: loadOptions ?? _loadOptions);
-  }
-}
-
-/// 手动刷新控制器，效果为[RefreshIndicator]的效果
-abstract class RefreshScrollController {
-  Key get _refreshKey;
-
-  Future<void> onRefresh();
-
-  @protected
-  void attach(_SupportCustomScrollViewState state);
-
-  bool get hasClients;
-
-  void dispose();
-
-  RefreshControllerStyle get style;
-}
-
-/// Material风格的刷新控制器
-class MaterialRefreshScrollController implements RefreshScrollController {
-  @override
-  final GlobalKey<RefreshIndicatorState> _refreshKey = GlobalKey<RefreshIndicatorState>();
-
-  @override
-  Future<void> onRefresh() {
-    final RefreshIndicatorState currentState = _refreshKey.currentState;
-    if (currentState == null) {
-      return Future<void>.value();
-    }
-    return currentState.show();
-  }
-
-  @override
-  void attach(_SupportCustomScrollViewState state) {}
-
-  @override
-  bool get hasClients => _refreshKey.currentState != null;
-
-  @override
-  void dispose() {}
-
-  @override
-  RefreshControllerStyle get style => RefreshControllerStyle.material;
-}
-
-/// Cupertino风格的刷新控制器
-class CupertinoRefreshScrollController implements RefreshScrollController {
-  @override
-  final GlobalKey _refreshKey = GlobalKey<State<StatefulWidget>>();
-
-  @override
-  Future<void> onRefresh() {
-    return moveTo(-_defaultRefreshTriggerPullDistance, clamp: false);
-  }
-
-  Future<void> moveToTop() {
-    return moveTo(0);
-  }
-
-  Future<void> moveTo(double to, {bool clamp = true}) {
-    assert(to != null);
-    assert(clamp != null);
-    if (!hasClients) {
-      return Future<void>.value();
-    }
-    return position.moveTo(
-      to,
-      duration: _defaultDuration,
-      curve: Curves.linearToEaseOut,
-      clamp: clamp,
-    );
-  }
-
-  @override
-  void attach(_SupportCustomScrollViewState state) {}
-
-  @override
-  bool get hasClients => position != null;
-
-  ScrollPosition get position {
-    final BuildContext currentContext = _refreshKey.currentContext;
-    if (currentContext == null) {
-      return null;
-    }
-    return Scrollable.of(currentContext)?.position;
-  }
-
-  @override
-  void dispose() {}
-
-  @override
-  RefreshControllerStyle get style => RefreshControllerStyle.cupertino;
-}
-
-/// 另一种方式的手动刷新控制器，效果为在没有数据和正在加载时，显示'正在加载……'
-class ManualRefreshScrollController implements RefreshScrollController {
-  ManualRefreshScrollController({RefreshControllerStyle style}) : style = style ?? _defaultStyle;
-
-  /// 刷新器的样式
-  @override
-  final RefreshControllerStyle style;
-
-  AsyncCallback _onManualRefresh;
-
-  @override
-  Future<void> onRefresh() {
-    if (_onManualRefresh == null) {
-      return Future<void>.value();
-    }
-    return _onManualRefresh();
-  }
-
-  @override
-  void attach(_SupportCustomScrollViewState state) {
-    _onManualRefresh = state._onRefresh;
-  }
-
-  @override
-  bool get hasClients => _onManualRefresh != null;
-
-  @override
-  void dispose() {}
-
-  @override
-  Key get _refreshKey => null;
-
-  static RefreshControllerStyle get _defaultStyle {
-    if (Platform.isIOS || Platform.isMacOS || Platform.isLinux) {
-      return RefreshControllerStyle.cupertino;
-    }
-    return RefreshControllerStyle.material;
-  }
-}
-
-/// 加载更多控件，显示在最底部
-class LoadNextWidget extends StatelessWidget {
-  const LoadNextWidget({
-    Key key,
-    this.scrollDirection = Axis.vertical,
-    this.hasNext = false,
-    this.isLoading = false,
-  }) : super(key: key);
-
-  final Axis scrollDirection;
-  final bool hasNext;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isVertical = scrollDirection == Axis.vertical;
-    String text = isLoading && hasNext
-        ? '正在加载更多'
-        : hasNext
-            ? '上拉加载更多'
-            : '我是有底线的';
-    if (!isVertical) {
-      text = List<String>.generate(text.length, (int index) => text[index]).join('\n');
-    }
-
-    final Widget divider = isVertical
-        ? Expanded(
-            child: Container(
-              height: 1.0 / MediaQuery.of(context).devicePixelRatio,
-              color: Theme.of(context).dividerColor,
-            ),
-          )
-        : Expanded(
-            child: Container(
-              width: 1.0 / MediaQuery.of(context).devicePixelRatio,
-              color: Theme.of(context).dividerColor,
-            ),
-          );
-
-    return SizedBox(
-      width: isVertical ? double.infinity : 44,
-      height: isVertical ? 44 : double.infinity,
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: isVertical ? 10 : 0,
-            vertical: isVertical ? 0 : 10,
-          ),
-          child: WidgetGroup.spacing(
-            alignment: MainAxisAlignment.center,
-            direction: isVertical ? Axis.horizontal : Axis.vertical,
-            spacing: 10,
-            children: <Widget>[
-              divider,
-              WidgetGroup.spacing(
-                mainAxisSize: MainAxisSize.min,
-                alignment: MainAxisAlignment.center,
-                direction: isVertical ? Axis.horizontal : Axis.vertical,
-                spacing: 4,
-                children: <Widget>[
-                  if (hasNext && isLoading)
-                    const CupertinoActivityIndicator(
-                      radius: 8,
-                    ),
-                  Text(
-                    text,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: CupertinoColors.label,
-                    ),
-                  ),
-                ],
-              ),
-              divider,
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -500,14 +272,14 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
 
   @override
   void initState() {
-    widget.loadOptions.controller?.attach(this);
+    widget.loadOptions.controller?.attach(_onRefresh);
     super.initState();
   }
 
   @override
   void didUpdateWidget(SupportCustomScrollView oldWidget) {
     if (widget.loadOptions.controller != oldWidget.loadOptions.controller) {
-      widget.loadOptions.controller?.attach(this);
+      widget.loadOptions.controller?.attach(_onRefresh);
     }
     super.didUpdateWidget(oldWidget);
   }
@@ -558,7 +330,7 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
     final List<Widget> slivers = <Widget>[];
     if (_showRefresh && controller?.style == RefreshControllerStyle.cupertino) {
       final Widget child = SupportSliverRefreshIndicator(
-        key: controller?._refreshKey,
+        key: controller?.refreshKey,
         onRefresh: _onRefresh,
       );
       slivers.add(child);
@@ -615,7 +387,7 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
     }
     if (_showRefresh && controller?.style != RefreshControllerStyle.cupertino) {
       child = RefreshIndicator(
-        key: controller?._refreshKey,
+        key: controller?.refreshKey,
         onRefresh: _onRefresh,
         child: child,
       );

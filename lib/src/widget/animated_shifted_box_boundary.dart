@@ -29,7 +29,7 @@ class AnimatedShiftedBoxBoundary extends RepaintBoundary {
   /// child's key (if the wrapped child has a non-null key) or from the wrapped
   /// child's index in the list.
   static List<AnimatedShiftedBoxBoundary> wrapAll(List<Widget> widgets) {
-    final List<AnimatedShiftedBoxBoundary> result = List<AnimatedShiftedBoxBoundary>(widgets.length);
+    final List<AnimatedShiftedBoxBoundary> result = <AnimatedShiftedBoxBoundary>[]..length = widgets.length;
     for (int i = 0; i < result.length; ++i) {
       result[i] = AnimatedShiftedBoxBoundary.wrap(widgets[i], i);
     }

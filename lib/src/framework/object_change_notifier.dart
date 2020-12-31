@@ -11,7 +11,7 @@ import 'package:flutter_grasp/src/framework/future_change_notifier.dart';
 ///
 /// [Object]类型的的异步请求扩展类
 abstract class ObjectChangeNotifier<E> extends FutureChangeNotifier<E> implements LoadOptionsBuilder {
-  final RefreshScrollController _refreshController = ManualRefreshScrollController(
+  final RefreshScrollController _refreshController = RefreshScrollController.manual(
     style: RefreshControllerStyle.material,
   );
 
