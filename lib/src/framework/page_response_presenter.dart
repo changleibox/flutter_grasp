@@ -140,7 +140,7 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
 
   @override
   void setObjects(Iterable<E> objects) {
-    _currentPage = normalFirstPage;
+    _currentPage = _normalFirstPage;
     _hasNext = false;
     super.setObjects(objects);
   }

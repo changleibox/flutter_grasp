@@ -9,12 +9,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
 import 'package:flutter_grasp/src/framework/iterable_change_notifier.dart';
 
-/// 默认的分页加载起始页
-const int normalFirstPage = 1;
-
-/// 默认每页加载的条数
-const int normalPageSize = 20;
-
 /// Created by changlei on 2020-02-13.
 ///
 /// [Iterable]类型的的异步请求扩展类
