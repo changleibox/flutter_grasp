@@ -121,7 +121,7 @@ class _PagePlaceholderViewState extends State<PagePlaceholderView> with SingleTi
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: CupertinoColors.label,
+                    color: CupertinoColors.systemGrey,
                   ),
                 ),
             ],
