@@ -12,10 +12,16 @@ import 'package:flutter/widgets.dart';
 /// 有动画的overlay
 class AnimatedOverlay {
   /// 有动画的overlay
-  AnimatedOverlay(this.context);
+  AnimatedOverlay(
+    this.context, {
+    this.rootOverlay = false,
+  }) : assert(rootOverlay != null);
 
   /// context
   final BuildContext context;
+
+  /// 是否是根overlay
+  final bool rootOverlay;
 
   AnimationController _controller;
   OverlayEntry _overlay;
@@ -50,7 +56,7 @@ class AnimatedOverlay {
       _dispose();
     }
 
-    final OverlayState overlayState = Overlay.of(context, rootOverlay: true);
+    final OverlayState overlayState = Overlay.of(context, rootOverlay: rootOverlay);
     final AnimationController toolbarController = AnimationController(
       vsync: overlayState,
       duration: transitionDuration,
