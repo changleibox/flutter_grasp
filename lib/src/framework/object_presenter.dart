@@ -30,6 +30,12 @@ abstract class ObjectPresenter<T extends StatefulWidget, E> extends FuturePresen
   bool get isNotEmpty => _object != null;
 
   @override
+  void dispose() {
+    super.dispose();
+    _refreshController.dispose();
+  }
+
+  @override
   LoadOptions get loadOptions {
     return LoadOptions(
       controller: _refreshController,

@@ -30,6 +30,12 @@ abstract class ObjectChangeNotifier<E> extends FutureChangeNotifier<E> implement
   bool get isNotEmpty => _object != null;
 
   @override
+  void dispose() {
+    super.dispose();
+    _refreshController.dispose();
+  }
+
+  @override
   LoadOptions get loadOptions {
     return LoadOptions(
       controller: _refreshController,
