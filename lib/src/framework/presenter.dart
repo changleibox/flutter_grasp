@@ -70,7 +70,7 @@ abstract class Presenter<T extends StatefulWidget> implements StateAbstractMetho
   @protected
   @mustCallSuper
   @override
-  void markNeedsBuild({VoidCallback fn}) => _state?.markNeedsBuild(fn: fn);
+  void markNeedsBuild([VoidCallback fn]) => _state?.markNeedsBuild(fn);
 
   @mustCallSuper
   @override

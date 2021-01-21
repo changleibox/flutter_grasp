@@ -38,7 +38,7 @@ abstract class StateAbstractMethod<T extends StatefulWidget> {
   void didChangeDependencies();
 
   /// 同state.setState
-  void markNeedsBuild({VoidCallback fn});
+  void markNeedsBuild([VoidCallback fn]);
 
   /// 页面在第一次绘制完成时回调
   void onPostFrame(Duration timeStamp);
@@ -65,7 +65,7 @@ abstract class PageState<T extends StatefulWidget> extends State<T> implements S
   @protected
   @mustCallSuper
   @override
-  void markNeedsBuild({VoidCallback fn}) {
+  void markNeedsBuild([VoidCallback fn]) {
     if (!mounted) {
       return;
     }
