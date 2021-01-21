@@ -18,6 +18,8 @@ export 'src/framework/page_response_change_notifier.dart';
 export 'src/framework/page_response_presenter.dart';
 export 'src/framework/presenter.dart';
 export 'src/framework/tab_presenter.dart';
+export 'src/framework/void_change_notifier.dart';
+export 'src/framework/void_presenter.dart';
 export 'src/gio/gio.dart' hide ConvertInterceptor;
 export 'src/rendering/animated_boundary.dart';
 export 'src/rendering/animated_offset.dart';
