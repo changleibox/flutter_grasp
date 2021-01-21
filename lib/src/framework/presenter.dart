@@ -65,10 +65,6 @@ abstract class Presenter<T extends StatefulWidget> implements StateAbstractMetho
 
   @mustCallSuper
   @override
-  void onBuild(BuildContext context) {}
-
-  @mustCallSuper
-  @override
   void didChangeDependencies() {}
 
   @protected
@@ -80,22 +76,7 @@ abstract class Presenter<T extends StatefulWidget> implements StateAbstractMetho
   @override
   void onPostFrame(Duration timeStamp) {}
 
-  @override
-  Future<bool> onBackPressed() async => true;
-
-  @mustCallSuper
-  @override
-  void onRootTap() {}
-
   @protected
   @override
   void hideKeyboard() => _state?.hideKeyboard();
-
-  @protected
-  @mustCallSuper
-  @override
-  void requestFocus([FocusNode node]) => _state?.requestFocus(node);
-
-  @override
-  bool get needCallBackPressed => false;
 }
