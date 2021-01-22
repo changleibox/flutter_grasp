@@ -16,7 +16,6 @@ export 'src/framework/object_change_notifier.dart';
 export 'src/framework/object_presenter.dart';
 export 'src/framework/page_response_change_notifier.dart';
 export 'src/framework/page_response_presenter.dart';
-export 'src/framework/presenter.dart';
 export 'src/framework/tab_presenter.dart';
 export 'src/framework/void_change_notifier.dart';
 export 'src/framework/void_presenter.dart';

@@ -4,8 +4,6 @@
 
 import 'package:flutter/cupertino.dart';
 
-import 'presenter.dart';
-
 /// Created by changlei on 2020-02-13.
 ///
 /// state和presenter的抽象模板
@@ -85,7 +83,7 @@ abstract class PresenterState<T extends StatefulWidget, P extends Presenter<T>> 
   PresenterState() {
     _presenter = createPresenter();
     assert(_presenter != null);
-    _presenter?.state = this;
+    _presenter._state = this;
   }
 
   P _presenter;
@@ -150,4 +148,72 @@ abstract class PresenterState<T extends StatefulWidget, P extends Presenter<T>> 
     super.didChangeDependencies();
     presenter?.didChangeDependencies();
   }
+}
+
+/// 绑定在[state]上处理逻辑
+abstract class Presenter<T extends StatefulWidget> implements StateAbstractMethod<T> {
+  /// 绑定的state
+  StateAbstractMethod<T> _state;
+
+  @protected
+  @mustCallSuper
+  @override
+  bool get mounted => _state?.mounted;
+
+  @protected
+  @mustCallSuper
+  @override
+  T get widget => _state?.widget;
+
+  @protected
+  @mustCallSuper
+  @override
+  BuildContext get context => _state?.context;
+
+  /// 此方法不要在initState中调用
+  @protected
+  @mustCallSuper
+  RouteSettings get settings => ModalRoute.of(context).settings;
+
+  /// 此方法不要在initState中调用
+  @protected
+  @mustCallSuper
+  dynamic get arguments => settings.arguments;
+
+  @mustCallSuper
+  @override
+  void initState() {}
+
+  @mustCallSuper
+  @override
+  void didUpdateWidget(covariant T oldWidget) {}
+
+  @mustCallSuper
+  @override
+  void reassemble() {}
+
+  @mustCallSuper
+  @override
+  void deactivate() {}
+
+  @mustCallSuper
+  @override
+  void dispose() {}
+
+  @mustCallSuper
+  @override
+  void didChangeDependencies() {}
+
+  @protected
+  @mustCallSuper
+  @override
+  void markNeedsBuild([VoidCallback fn]) => _state?.markNeedsBuild(fn);
+
+  @mustCallSuper
+  @override
+  void onPostFrame(Duration timeStamp) {}
+
+  @protected
+  @override
+  void hideKeyboard() => _state?.hideKeyboard();
 }
