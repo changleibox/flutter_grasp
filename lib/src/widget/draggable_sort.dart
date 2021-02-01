@@ -31,6 +31,7 @@ class DraggableSort extends StatefulWidget {
     this.onDragCompleted,
     this.onDragEnd,
     this.feedbackBuilder,
+    this.axis,
   })  : assert(builder != null),
         assert(itemCount != null && itemCount >= 0),
         super(key: key);
@@ -82,6 +83,19 @@ class DraggableSort extends StatefulWidget {
 
   /// 构建拖动的feedback
   final DraggableSortFeedbackBuilder feedbackBuilder;
+
+  /// The [Axis] to restrict this draggable's movement, if specified.
+  ///
+  /// When axis is set to [Axis.horizontal], this widget can only be dragged
+  /// horizontally. Behavior is similar for [Axis.vertical].
+  ///
+  /// Defaults to allowing drag on both [Axis.horizontal] and [Axis.vertical].
+  ///
+  /// When null, allows drag on both [Axis.horizontal] and [Axis.vertical].
+  ///
+  /// For the direction of gestures this widget competes with to start a drag
+  /// event, see [Draggable.affinity].
+  final Axis axis;
 
   @override
   DraggableSortState createState() => DraggableSortState();
@@ -214,6 +228,7 @@ class DraggableSortState extends State<DraggableSort> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.linearToEaseOut,
         feedback: feedback,
+        axis: widget.axis,
         child: AnimatedDragTarget<DragSortData>(
           duration: const Duration(milliseconds: 300),
           curve: Curves.linearToEaseOut,

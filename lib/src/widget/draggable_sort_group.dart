@@ -30,6 +30,7 @@ class DraggableSortGroup extends StatefulWidget {
     this.onDragSort,
     this.onSortHandler,
     this.feedbackBuilder,
+    this.axis,
   })  : assert(builder != null),
         assert(itemCounts != null),
         super(key: key);
@@ -48,6 +49,19 @@ class DraggableSortGroup extends StatefulWidget {
 
   /// 构建拖动的feedback
   final DraggableSortGroupFeedbackBuilder feedbackBuilder;
+
+  /// The [Axis] to restrict this draggable's movement, if specified.
+  ///
+  /// When axis is set to [Axis.horizontal], this widget can only be dragged
+  /// horizontally. Behavior is similar for [Axis.vertical].
+  ///
+  /// Defaults to allowing drag on both [Axis.horizontal] and [Axis.vertical].
+  ///
+  /// When null, allows drag on both [Axis.horizontal] and [Axis.vertical].
+  ///
+  /// For the direction of gestures this widget competes with to start a drag
+  /// event, see [Draggable.affinity].
+  final Axis axis;
 
   @override
   DraggableSortGroupState createState() => DraggableSortGroupState();
@@ -207,6 +221,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
       onSortHandler: _onSortHandler,
       builder: widget.builder,
       feedbackBuilder: feedbackBuilder,
+      axis: widget.axis,
     );
   }
 }
