@@ -177,6 +177,14 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
     size = constraints.constrain(child.size);
   }
 
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    if (child == null || constraints.isTight) {
+      return constraints.smallest;
+    }
+    return constraints.constrain(child.getDryLayout(constraints));
+  }
+
   /// 重启动画
   void restartAnimation() {
     _lastValue = _controller.lowerBound;

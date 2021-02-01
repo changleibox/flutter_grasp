@@ -74,6 +74,14 @@ class RenderAnimatedBoundary extends RenderAnimatedShiftedBox {
     size = constraints.constrain(newSize);
   }
 
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    if (child == null || constraints.isTight) {
+      return constraints.smallest;
+    }
+    return constraints.constrain(_animatedRect?.size ?? child.getDryLayout(constraints));
+  }
+
   Rect _getBounding(RenderBox box) {
     if (box == null || !hasSize || !attached || !box.hasSize || !box.attached) {
       return null;
