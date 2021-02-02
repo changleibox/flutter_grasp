@@ -81,6 +81,9 @@ abstract class CompatibleState<T extends StatefulWidget> extends State<T> implem
 
 /// 用来绑定[Presenter]和[State]
 abstract class HostStatefulWidget extends StatefulWidget {
+  /// Initializes [key] for subclasses.
+  const HostStatefulWidget({Key key}) : super(key: key);
+
   @override
   HostStatefulElement createElement() => HostStatefulElement(this);
 
