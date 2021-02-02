@@ -80,10 +80,7 @@ abstract class CompatibleState<T extends StatefulWidget> extends State<T> implem
 }
 
 /// 用来绑定[Presenter]和[State]
-abstract class HostStatefulWidget extends StatefulWidget {
-  /// Initializes [key] for subclasses.
-  const HostStatefulWidget({Key key}) : super(key: key);
-
+mixin HostProvider on StatefulWidget {
   @override
   HostStatefulElement createElement() => HostStatefulElement(this);
 
@@ -96,10 +93,16 @@ abstract class HostStatefulWidget extends StatefulWidget {
   Presenter<StatefulWidget> createPresenter();
 }
 
+/// 用来绑定[Presenter]和[State]
+abstract class HostStatefulWidget extends StatefulWidget with HostProvider {
+  /// Initializes [key] for subclasses.
+  const HostStatefulWidget({Key key}) : super(key: key);
+}
+
 /// An [Element] that uses a [HostStatefulWidget] as its configuration.
 class HostStatefulElement extends StatefulElement {
   /// Creates an element that uses the given widget as its configuration.
-  HostStatefulElement(HostStatefulWidget widget)
+  HostStatefulElement(HostProvider widget)
       : presenter = widget.createPresenter(),
         super(widget) {
     assert(() {
@@ -153,8 +156,8 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
   P get presenter {
     assert(() {
       if (_presenter == null) {
-        if (widget is! HostStatefulWidget) {
-          throw FlutterError('The ${widget.runtimeType} must be a subtype of HostStatefulWidget.');
+        if (widget is! HostProvider) {
+          throw FlutterError('The ${widget.runtimeType} must be a subtype of HostProvider.');
         } else {
           throw FlutterError('The createPresenter function for $widget returned an old or invalid presenter '
               'instance: $_presenter, which is not null, violating the contract '
@@ -227,19 +230,6 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
     super.debugFillProperties(properties);
     properties.add(ObjectFlagProperty<Presenter<T>>('_presenter', _presenter, ifNull: 'no presenter'));
   }
-}
-
-/// 用来绑定[State]和[Presenter]，推荐使用[HostState]，此方式已过时，请用[HostState]替换
-@deprecated
-abstract class PresenterState<T extends StatefulWidget, P extends Presenter<T>> extends HostState<T, P> {
-  PresenterState() {
-    _presenter = createPresenter();
-    assert(_presenter != null);
-    _presenter._state = this;
-  }
-
-  @protected
-  P createPresenter();
 }
 
 /// 绑定在[State]上处理逻辑
