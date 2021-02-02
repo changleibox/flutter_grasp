@@ -3,11 +3,12 @@
  */
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 
 /// Created by changlei on 2020-02-13.
 ///
-/// state和presenter的抽象模板
-abstract class StateAbstractMethod<T extends StatefulWidget> {
+/// [State]和[Presenter]的抽象模板
+abstract class StateMethods<T extends StatefulWidget> {
   /// 页面是否有效
   bool get mounted;
 
@@ -45,8 +46,8 @@ abstract class StateAbstractMethod<T extends StatefulWidget> {
   void hideKeyboard();
 }
 
-/// [StateAbstractMethod]的[state]具体实现类
-abstract class PageState<T extends StatefulWidget> extends State<T> implements StateAbstractMethod<T> {
+/// [StateMethods]的[State]具体实现类
+abstract class CompatibleState<T extends StatefulWidget> extends State<T> implements StateMethods<T> {
   @protected
   @mustCallSuper
   @override
@@ -78,20 +79,89 @@ abstract class PageState<T extends StatefulWidget> extends State<T> implements S
   }
 }
 
-/// 用来绑定state和presenter
-abstract class PresenterState<T extends StatefulWidget, P extends Presenter<T>> extends PageState<T> {
-  PresenterState() {
-    _presenter = createPresenter();
-    assert(_presenter != null);
-    _presenter._state = this;
+/// 用来绑定[Presenter]和[State]
+abstract class HostStatefulWidget extends StatefulWidget {
+  @override
+  HostStatefulElement createElement() => HostStatefulElement(this);
+
+  @override
+  HostState<StatefulWidget, Presenter<StatefulWidget>> createState();
+
+  /// presenter
+  @protected
+  @factory
+  Presenter<StatefulWidget> createPresenter();
+}
+
+/// An [Element] that uses a [HostStatefulWidget] as its configuration.
+class HostStatefulElement extends StatefulElement {
+  /// Creates an element that uses the given widget as its configuration.
+  HostStatefulElement(HostStatefulWidget widget)
+      : presenter = widget.createPresenter(),
+        super(widget) {
+    assert(() {
+      if (!presenter._debugTypesAreRight(widget)) {
+        throw FlutterError.fromParts(<DiagnosticsNode>[
+          ErrorSummary('HostStatefulWidget.createPresenter must return a subtype of Presenter<${widget.runtimeType}>'),
+          ErrorDescription('The createPresenter function for ${widget.runtimeType} returned a presenter '
+              'of type ${presenter.runtimeType}, which is not a subtype of '
+              'Presenter<${widget.runtimeType}>, violating the contract for createPresenter.'),
+        ]);
+      }
+      return true;
+    }());
+    final HostState<StatefulWidget, Presenter<StatefulWidget>> presenterState =
+        state as HostState<StatefulWidget, Presenter<StatefulWidget>>;
+    assert(
+      presenter._state == null,
+      'The createPresenter function for $widget returned an old or invalid presenter '
+      'instance: ${presenter._state}, which is not null, violating the contract '
+      'for createPresenter.',
+    );
+    presenter._state = presenterState;
+    assert(
+      presenterState._presenter == null,
+      'The createPresenter function for $widget returned an old or invalid presenter '
+      'instance: ${presenterState._presenter}, which is not null, violating the contract '
+      'for createPresenter.',
+    );
+    presenterState._presenter = presenter;
   }
 
+  /// The [Presenter] instance associated with this location in the tree.
+  ///
+  /// There is a one-to-one relationship between [Presenter] objects and the
+  /// [HostStatefulElement] objects that hold them. The [Presenter] objects are created
+  /// by [HostStatefulElement] in [mount].
+  final Presenter<StatefulWidget> presenter;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Presenter<StatefulWidget>>('presenter', presenter, defaultValue: null));
+  }
+}
+
+/// 用来绑定state和presenter
+abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> extends CompatibleState<T> {
   P _presenter;
 
-  @protected
-  P createPresenter();
-
-  P get presenter => _presenter;
+  /// presenter
+  P get presenter {
+    assert(() {
+      if (_presenter == null) {
+        if (widget is! HostStatefulWidget) {
+          throw FlutterError('The ${widget.runtimeType} must be a subtype of HostStatefulWidget.');
+        } else {
+          throw FlutterError('The createPresenter function for $widget returned an old or invalid presenter '
+              'instance: $_presenter, which is not null, violating the contract '
+              'for createPresenter.');
+        }
+      }
+      return true;
+    }());
+    return _presenter;
+  }
 
   @mustCallSuper
   @protected
@@ -148,12 +218,31 @@ abstract class PresenterState<T extends StatefulWidget, P extends Presenter<T>> 
     super.didChangeDependencies();
     presenter?.didChangeDependencies();
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<Presenter<T>>('_presenter', _presenter, ifNull: 'no presenter'));
+  }
 }
 
-/// 绑定在[state]上处理逻辑
-abstract class Presenter<T extends StatefulWidget> implements StateAbstractMethod<T> {
+/// 用来绑定[State]和[Presenter]，推荐使用[HostState]，此方式已过时，请用[HostState]替换
+@deprecated
+abstract class PresenterState<T extends StatefulWidget, P extends Presenter<T>> extends HostState<T, P> {
+  PresenterState() {
+    _presenter = createPresenter();
+    assert(_presenter != null);
+    _presenter._state = this;
+  }
+
+  @protected
+  P createPresenter();
+}
+
+/// 绑定在[State]上处理逻辑
+abstract class Presenter<T extends StatefulWidget> implements StateMethods<T> {
   /// 绑定的state
-  StateAbstractMethod<T> _state;
+  StateMethods<T> _state;
 
   @protected
   @mustCallSuper
@@ -170,12 +259,10 @@ abstract class Presenter<T extends StatefulWidget> implements StateAbstractMetho
   @override
   BuildContext get context => _state?.context;
 
-  /// 此方法不要在initState中调用
   @protected
   @mustCallSuper
   RouteSettings get settings => ModalRoute.of(context).settings;
 
-  /// 此方法不要在initState中调用
   @protected
   @mustCallSuper
   dynamic get arguments => settings.arguments;
@@ -216,4 +303,8 @@ abstract class Presenter<T extends StatefulWidget> implements StateAbstractMetho
   @protected
   @override
   void hideKeyboard() => _state?.hideKeyboard();
+
+  /// Verifies that the [Presenter] that was created is one that expects to be
+  /// created for that particular [Widget].
+  bool _debugTypesAreRight(Widget widget) => widget is T;
 }
