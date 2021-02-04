@@ -3,6 +3,7 @@
  */
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/physics.dart';
 
 /// Created by changlei on 2020/7/27.
 ///
@@ -11,31 +12,34 @@ class SnappingTelosScrollPhysics extends ScrollPhysics {
   /// 回弹
   const SnappingTelosScrollPhysics({
     ScrollPhysics parent,
-    @required this.midScrollOffset,
-  })  : assert(midScrollOffset != null),
-        _maxScrollOffset = midScrollOffset * 2,
-        super(parent: parent);
-
-  /// 中间的偏移量。用于区分
-  final double midScrollOffset;
+    this.maxScrollOffset,
+  }) : super(parent: parent);
 
   /// 最大偏移量
-  final double _maxScrollOffset;
+  final double maxScrollOffset;
+
+  /// 最大偏移量
+  @protected
+  double computeMaxScrollOffset(ScrollMetrics position) => maxScrollOffset;
 
   @override
   SnappingTelosScrollPhysics applyTo(ScrollPhysics ancestor) {
     return SnappingTelosScrollPhysics(
       parent: buildParent(ancestor),
-      midScrollOffset: midScrollOffset,
+      maxScrollOffset: maxScrollOffset,
     );
   }
 
   double _getPage(ScrollMetrics position) {
-    return position.pixels / _maxScrollOffset;
+    final double maxScrollOffset = computeMaxScrollOffset(position);
+    assert(maxScrollOffset != null);
+    return position.pixels / computeMaxScrollOffset(position);
   }
 
   double _getPixels(ScrollMetrics position, double page) {
-    return position.minScrollExtent + _maxScrollOffset * page;
+    final double maxScrollOffset = computeMaxScrollOffset(position);
+    assert(maxScrollOffset != null);
+    return position.minScrollExtent + maxScrollOffset * page;
   }
 
   double _getTargetPixels(ScrollMetrics position, Tolerance tolerance, double velocity) {
@@ -50,18 +54,45 @@ class SnappingTelosScrollPhysics extends ScrollPhysics {
 
   @override
   Simulation createBallisticSimulation(ScrollMetrics position, double velocity) {
-    final double pixels = position.pixels;
-    if ((velocity <= 0.0 && pixels <= position.minScrollExtent) || (velocity >= 0.0 && pixels >= _maxScrollOffset)) {
+    final double maxScrollOffset = computeMaxScrollOffset(position);
+    assert(maxScrollOffset != null);
+    if ((velocity <= 0.0 && position.pixels <= position.minScrollExtent) ||
+        (velocity >= 0.0 && position.pixels >= maxScrollOffset)) {
       return super.createBallisticSimulation(position, velocity);
     }
-    final Tolerance tolerance = this.tolerance;
-    final double target = _getTargetPixels(position, tolerance, velocity);
-    if (target != pixels) {
-      return ScrollSpringSimulation(spring, pixels, target, velocity, tolerance: tolerance);
-    }
-    return null;
-  }
 
-  @override
-  bool get allowImplicitScrolling => false;
+    // Create a test simulation to see where it would have ballistically fallen
+    // naturally without settling onto items.
+    final Simulation testFrictionSimulation = super.createBallisticSimulation(position, velocity);
+
+    // If it was going to end up past the scroll extent, defer back to the
+    // parent physics' ballistics again which should put us on the scrollable's
+    // boundary.
+    if (testFrictionSimulation != null &&
+        (testFrictionSimulation.x(double.infinity) == position.minScrollExtent ||
+            testFrictionSimulation.x(double.infinity) == position.maxScrollExtent)) {
+      return super.createBallisticSimulation(position, velocity);
+    }
+
+    final double target = _getTargetPixels(position, tolerance, velocity);
+
+    // If there's no velocity and we're already at where we intend to land,
+    // do nothing.
+    if (velocity.abs() < tolerance.velocity && (target - position.pixels).abs() < tolerance.distance) {
+      return null;
+    }
+
+    if (target != position.pixels) {
+      return ScrollSpringSimulation(spring, position.pixels, target, velocity, tolerance: tolerance);
+    }
+
+    // Create a new friction simulation except the drag will be tweaked to land
+    // exactly on the item closest to the natural stopping point.
+    return FrictionSimulation.through(
+      position.pixels,
+      target,
+      velocity,
+      tolerance.velocity * velocity.sign,
+    );
+  }
 }
