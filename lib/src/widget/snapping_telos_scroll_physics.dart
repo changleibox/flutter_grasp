@@ -98,4 +98,7 @@ class SnappingTelosScrollPhysics extends ScrollPhysics {
       tolerance.velocity * velocity.sign,
     );
   }
+
+  @override
+  bool get allowImplicitScrolling => false;
 }
