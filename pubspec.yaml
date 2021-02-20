@@ -14,9 +14,9 @@ dependencies:
     sdk: flutter
 
   # 处理图片
-  image: ^2.1.17
-  intl: ^0.17.0-nullsafety.2
-  url_launcher: ^5.7.0
+  image: ^2.1.19
+  intl: ^0.17.0
+  url_launcher: ^5.7.10
 
 dev_dependencies:
   flutter_test:
