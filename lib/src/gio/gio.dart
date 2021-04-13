@@ -2,7 +2,6 @@
  * Copyright © 2019 CHANGLEI. All rights reserved.
  */
 
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -54,14 +53,14 @@ class IResponse {
 
 class GioError extends DioError {
   GioError._({
-    RequestOptions request,
+    RequestOptions requestOptions,
     Response<dynamic> response,
-    DioErrorType type = DioErrorType.DEFAULT,
+    DioErrorType type = DioErrorType.other,
     dynamic error,
     int code,
   })  : _code = code,
         super(
-          request: request,
+          requestOptions: requestOptions,
           response: response,
           type: type,
           error: error,
@@ -95,8 +94,10 @@ class GioError extends DioError {
         Response<dynamic> response;
         if (origin is Response<dynamic>) {
           response = origin;
+          _err.requestOptions = origin.requestOptions;
         } else if (origin is DioError) {
           response = origin.response;
+          _err.requestOptions = origin.requestOptions;
         }
 
         response?.data = err.data;
@@ -105,6 +106,7 @@ class GioError extends DioError {
         _err.error = err.message;
         _err._code = err.code;
         _err.response = response;
+        _err.type = DioErrorType.response;
       } else {
         _err.error = err;
       }
@@ -121,12 +123,12 @@ class GioError extends DioError {
       final Response<dynamic> response = error.response;
       if (response != null) {
         final dynamic data = response.data;
-        final RequestOptions options = response.request;
+        final RequestOptions options = response.requestOptions;
         final DataKeyOptions keyOptions = (options is GioRequestOptions ? options : null)?.dataKeyOptions;
         code = data[keyOptions?.codeKey ?? _kCodeKey] as int;
       }
       return GioError._(
-        request: error.request,
+        requestOptions: error.requestOptions,
         response: response,
         type: error.type,
         error: error.error,
@@ -140,30 +142,26 @@ class GioError extends DioError {
 
 class ConvertInterceptor extends InterceptorsWrapper {
   @override
-  Future<RequestOptions> onRequest(RequestOptions options) async {
-    return options;
-  }
-
-  @override
-  Future<dynamic> onError(DioError err) async {
+  void onError(DioError err, ErrorInterceptorHandler handler) {
     final Response<dynamic> response = err?.response;
-    final RequestOptions requestOptions = response?.request;
+    final RequestOptions requestOptions = response?.requestOptions;
     final IResponse iResponse = _convert(response, requestOptions);
     if (iResponse == null) {
-      throw GioError._convert(err);
+      handler.reject(GioError._convert(err));
     } else {
-      throw GioError._assureDioError(iResponse, err);
+      handler.reject(GioError._assureDioError(iResponse, err));
     }
   }
 
   @override
-  Future<dynamic> onResponse(Response<dynamic> response) async {
-    final RequestOptions requestOptions = response.request;
+  void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
+    final RequestOptions requestOptions = response.requestOptions;
     final IResponse iResponse = _convert(response, requestOptions);
     if (!_validateCode(iResponse, requestOptions)) {
-      throw GioError._assureDioError(iResponse, response);
+      handler.reject(GioError._assureDioError(iResponse, response));
+    } else {
+      handler.resolve(response..data = iResponse == null ? response.data : iResponse.data);
     }
-    return response..data = iResponse == null ? response.data : iResponse.data;
   }
 
   bool _validateCode(IResponse iResponse, RequestOptions options) {
@@ -266,6 +264,8 @@ class GioBaseOptions extends BaseOptions {
     int maxRedirects = 5,
     RequestEncoder requestEncoder,
     ResponseDecoder responseDecoder,
+    ListFormat listFormat,
+    bool setRequestContentTypeWhenNoPayload = false,
     this.validateCode,
     this.dataKeyOptions = const DataKeyOptions(),
   }) : super(
@@ -285,6 +285,8 @@ class GioBaseOptions extends BaseOptions {
           maxRedirects: maxRedirects,
           requestEncoder: requestEncoder,
           responseDecoder: responseDecoder,
+          listFormat: listFormat,
+          setRequestContentTypeWhenNoPayload: setRequestContentTypeWhenNoPayload,
         );
 
   final ValidateCode validateCode;
@@ -292,7 +294,7 @@ class GioBaseOptions extends BaseOptions {
 
   /// Create a Option from current instance with merging attributes.
   @override
-  BaseOptions merge({
+  BaseOptions copyWith({
     String method,
     String baseUrl,
     Map<String, dynamic> queryParameters,
@@ -310,6 +312,8 @@ class GioBaseOptions extends BaseOptions {
     int maxRedirects,
     RequestEncoder requestEncoder,
     ResponseDecoder responseDecoder,
+    ListFormat listFormat,
+    bool setRequestContentTypeWhenNoPayload,
     ValidateCode validateCode,
     DataKeyOptions dataKeyOptions,
   }) {
@@ -330,6 +334,8 @@ class GioBaseOptions extends BaseOptions {
       maxRedirects: maxRedirects ?? this.maxRedirects,
       requestEncoder: requestEncoder,
       responseDecoder: responseDecoder ?? this.responseDecoder,
+      listFormat: listFormat ?? this.listFormat,
+      setRequestContentTypeWhenNoPayload: setRequestContentTypeWhenNoPayload ?? this.setRequestContentTypeWhenNoPayload,
       validateCode: validateCode ?? this.validateCode,
       dataKeyOptions: dataKeyOptions ?? this.dataKeyOptions,
     );
@@ -345,10 +351,10 @@ class GioRequestOptions extends RequestOptions {
     dynamic data,
     String path,
     Map<String, dynamic> queryParameters,
-    String baseUrl,
     ProgressCallback onReceiveProgress,
     ProgressCallback onSendProgress,
     CancelToken cancelToken,
+    String baseUrl,
     Map<String, dynamic> extra,
     Map<String, dynamic> headers,
     ResponseType responseType,
@@ -359,6 +365,8 @@ class GioRequestOptions extends RequestOptions {
     int maxRedirects,
     RequestEncoder requestEncoder,
     ResponseDecoder responseDecoder,
+    ListFormat listFormat,
+    this.setRequestContentTypeWhenNoPayload = false,
     this.validateCode,
     this.dataKeyOptions = const DataKeyOptions(),
   }) : super(
@@ -369,10 +377,10 @@ class GioRequestOptions extends RequestOptions {
           data: data,
           path: path,
           queryParameters: queryParameters,
-          baseUrl: baseUrl,
           onReceiveProgress: onReceiveProgress,
           onSendProgress: onSendProgress,
           cancelToken: cancelToken,
+          baseUrl: baseUrl,
           extra: extra,
           headers: headers,
           responseType: responseType,
@@ -383,14 +391,17 @@ class GioRequestOptions extends RequestOptions {
           maxRedirects: maxRedirects,
           requestEncoder: requestEncoder,
           responseDecoder: responseDecoder,
+          listFormat: listFormat,
+          setRequestContentTypeWhenNoPayload: setRequestContentTypeWhenNoPayload,
         );
 
   final ValidateCode validateCode;
   final DataKeyOptions dataKeyOptions;
+  final bool setRequestContentTypeWhenNoPayload;
 
   /// Create a Option from current instance with merging attributes.
   @override
-  RequestOptions merge({
+  RequestOptions copyWith({
     String method,
     int sendTimeout,
     int receiveTimeout,
@@ -412,6 +423,8 @@ class GioRequestOptions extends RequestOptions {
     int maxRedirects,
     RequestEncoder requestEncoder,
     ResponseDecoder responseDecoder,
+    ListFormat listFormat,
+    bool setRequestContentTypeWhenNoPayload,
     ValidateCode validateCode,
     DataKeyOptions dataKeyOptions,
   }) {
@@ -437,6 +450,8 @@ class GioRequestOptions extends RequestOptions {
       maxRedirects: maxRedirects ?? this.maxRedirects,
       requestEncoder: requestEncoder,
       responseDecoder: responseDecoder ?? this.responseDecoder,
+      listFormat: listFormat ?? this.listFormat,
+      setRequestContentTypeWhenNoPayload: setRequestContentTypeWhenNoPayload ?? this.setRequestContentTypeWhenNoPayload,
       validateCode: validateCode ?? this.validateCode,
       dataKeyOptions: dataKeyOptions ?? this.dataKeyOptions,
     );

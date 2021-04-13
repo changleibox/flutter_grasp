@@ -6,8 +6,19 @@ Gio createGio([GioBaseOptions options]) => throw UnsupportedError('');
 
 mixin DioExtendsMixin on DioMixin {
   @override
-  RequestOptions mergeOptions(Options opt, String url, dynamic data, Map<String, dynamic> queryParameters) {
-    final RequestOptions requestOptions = super.mergeOptions(opt, url, data, queryParameters);
+  Future<Response<T>> fetch<T>(RequestOptions requestOptions) {
+    return super.fetch(_mergeOptions(requestOptions));
+  }
+
+  RequestOptions _mergeOptions(RequestOptions requestOptions) {
+    if (requestOptions is GioRequestOptions) {
+      return requestOptions;
+    }
+    final Map<String, dynamic> headers = <String, dynamic>{...?requestOptions.headers};
+    final String contentType = requestOptions.contentType;
+    if (contentType != null) {
+      headers.remove(Headers.contentTypeHeader);
+    }
     final BaseOptions baseOptions = options;
     return GioRequestOptions(
       method: requestOptions.method,
@@ -22,17 +33,19 @@ mixin DioExtendsMixin on DioMixin {
       onSendProgress: requestOptions.onSendProgress,
       cancelToken: requestOptions.cancelToken,
       extra: requestOptions.extra,
-      headers: requestOptions.headers,
+      headers: headers,
       responseType: requestOptions.responseType,
-      contentType: requestOptions.contentType,
+      contentType: contentType,
       validateStatus: requestOptions.validateStatus,
       receiveDataWhenStatusError: requestOptions.receiveDataWhenStatusError,
       followRedirects: requestOptions.followRedirects,
       maxRedirects: requestOptions.maxRedirects,
       requestEncoder: requestOptions.requestEncoder,
       responseDecoder: requestOptions.responseDecoder,
-      validateCode: baseOptions is GioBaseOptions ? baseOptions.validateCode : null,
-      dataKeyOptions: baseOptions is GioBaseOptions ? baseOptions.dataKeyOptions : null,
+      listFormat: requestOptions.listFormat,
+      setRequestContentTypeWhenNoPayload: baseOptions?.setRequestContentTypeWhenNoPayload,
+      validateCode: baseOptions is GioBaseOptions ? baseOptions?.validateCode : null,
+      dataKeyOptions: baseOptions is GioBaseOptions ? baseOptions?.dataKeyOptions : null,
     );
   }
 }
