@@ -147,9 +147,9 @@ class ConvertInterceptor extends InterceptorsWrapper {
     final RequestOptions requestOptions = response?.requestOptions;
     final IResponse iResponse = _convert(response, requestOptions);
     if (iResponse == null) {
-      handler.reject(GioError._convert(err));
+      handler.next(GioError._convert(err));
     } else {
-      handler.reject(GioError._assureDioError(iResponse, err));
+      handler.next(GioError._assureDioError(iResponse, err));
     }
   }
 
@@ -158,9 +158,9 @@ class ConvertInterceptor extends InterceptorsWrapper {
     final RequestOptions requestOptions = response.requestOptions;
     final IResponse iResponse = _convert(response, requestOptions);
     if (!_validateCode(iResponse, requestOptions)) {
-      handler.reject(GioError._assureDioError(iResponse, response));
+      handler.reject(GioError._assureDioError(iResponse, response), true);
     } else {
-      handler.resolve(response..data = iResponse == null ? response.data : iResponse.data);
+      handler.next(response..data = iResponse == null ? response.data : iResponse.data);
     }
   }
 
