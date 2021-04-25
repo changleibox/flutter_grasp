@@ -11,6 +11,7 @@ import 'package:flutter/rendering.dart';
 ///
 /// 一个用在[CustomScrollView]的list，详情请看[SliverList]
 class SliverListView extends StatelessWidget {
+  /// 构造函数
   SliverListView({
     Key key,
     this.scrollDirection = Axis.vertical,
@@ -28,6 +29,7 @@ class SliverListView extends StatelessWidget {
         ),
         super(key: key);
 
+  /// builder构造器
   SliverListView.builder({
     Key key,
     this.scrollDirection = Axis.vertical,
@@ -48,6 +50,7 @@ class SliverListView extends StatelessWidget {
         ),
         super(key: key);
 
+  /// 可以加个分割器
   SliverListView.separated({
     Key key,
     this.scrollDirection = Axis.vertical,
@@ -89,6 +92,7 @@ class SliverListView extends StatelessWidget {
         ),
         super(key: key);
 
+  /// 自定义
   const SliverListView.custom({
     Key key,
     this.scrollDirection = Axis.vertical,
@@ -98,11 +102,19 @@ class SliverListView extends StatelessWidget {
   })  : assert(childrenDelegate != null),
         super(key: key);
 
+  /// 方向
   final Axis scrollDirection;
+
+  /// 内边距
   final EdgeInsetsGeometry padding;
+
+  /// item规定的高
   final double itemExtent;
+
+  /// [SliverChildDelegate]
   final SliverChildDelegate childrenDelegate;
 
+  /// child数量
   int get estimatedChildCount => childrenDelegate.estimatedChildCount;
 
   @override

@@ -11,6 +11,7 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 ///
 /// 对[SupportCustomScrollView]的简单封装
 class SupportListView extends StatelessWidget {
+  /// 构造函数
   SupportListView({
     Key key,
     this.scrollDirection = Axis.vertical,
@@ -44,6 +45,7 @@ class SupportListView extends StatelessWidget {
         ),
         super(key: key);
 
+  /// builder构造函数
   SupportListView.builder({
     Key key,
     this.scrollDirection = Axis.vertical,
@@ -81,6 +83,7 @@ class SupportListView extends StatelessWidget {
         ),
         super(key: key);
 
+  /// 分割器
   SupportListView.separated({
     Key key,
     this.scrollDirection = Axis.vertical,
@@ -120,6 +123,7 @@ class SupportListView extends StatelessWidget {
         ),
         super(key: key);
 
+  /// 自定义
   SupportListView.custom({
     Key key,
     this.scrollDirection = Axis.vertical,
@@ -148,21 +152,66 @@ class SupportListView extends StatelessWidget {
         ),
         super(key: key);
 
+  /// {@template flutter.widgets.scroll_view.controller}
+  /// An object that can be used to control the position to which this scroll
+  /// view is scrolled.
+  ///
+  /// Must be null if [primary] is true.
+  ///
+  /// A [ScrollController] serves several purposes. It can be used to control
+  /// the initial scroll position (see [ScrollController.initialScrollOffset]).
+  /// It can be used to control whether the scroll view should automatically
+  /// save and restore its scroll position in the [PageStorage] (see
+  /// [ScrollController.keepScrollOffset]). It can be used to read the current
+  /// scroll position (see [ScrollController.offset]), or change it (see
+  /// [ScrollController.animateTo]).
+  /// {@endtemplate}
   final ScrollController controller;
+
+  /// 滚动方向
   final Axis scrollDirection;
+
+  /// 是否翻转
   final bool reverse;
+
+  /// 是否使用[PrimaryScrollController]
   final bool primary;
+
+  /// 插值器，可以自定义滚动效果
   final ScrollPhysics physics;
+
+  /// 是否压缩包裹
   final bool shrinkWrap;
+
+  /// 内边距
   final EdgeInsetsGeometry padding;
+
+  /// item固定高度
   final double itemExtent;
+
+  /// 缓存区域
   final double cacheExtent;
+
+  /// childCount
   final int semanticChildCount;
+
+  /// {@macro flutter.widgets.scrollable.dragStartBehavior}
   final DragStartBehavior dragStartBehavior;
   final SliverListView _sliverListView;
+
+  /// 加载配置
   final LoadOptionsBuilder loadOptionsBuilder;
+
+  /// {@template flutter.widgets.scroll_view.keyboardDismissBehavior}
+  /// [ScrollViewKeyboardDismissBehavior] the defines how this [ScrollView] will
+  /// dismiss the keyboard automatically.
+  /// {@endtemplate}
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
+
+  /// 上拉加载更多配置
   final LoadNextBuilder loadNextBuilder;
+
+  /// 占位图
   final PlaceholderBuilder placeholderBuilder;
 
   bool get _hasElements => _sliverListView.estimatedChildCount > 0;

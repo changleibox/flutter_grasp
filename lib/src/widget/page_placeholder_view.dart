@@ -9,6 +9,7 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 ///
 /// 页面占位符widget
 class DefaultPagePlaceholderView extends StatelessWidget {
+  /// 构造函数
   const DefaultPagePlaceholderView({
     Key key,
     this.message = '暂无数据',
@@ -16,7 +17,10 @@ class DefaultPagePlaceholderView extends StatelessWidget {
   })  : assert(isLoading != null),
         super(key: key);
 
+  /// message
   final String message;
+
+  /// 是否正在加载
   final bool isLoading;
 
   @override
@@ -34,7 +38,9 @@ class DefaultPagePlaceholderView extends StatelessWidget {
   }
 }
 
+/// 页面占位符
 class PagePlaceholderView extends StatefulWidget {
+  /// 构造函数
   const PagePlaceholderView({
     Key key,
     @required this.icon,
@@ -44,8 +50,13 @@ class PagePlaceholderView extends StatefulWidget {
         assert(isLoading != null),
         super(key: key);
 
+  /// icon
   final Widget icon;
+
+  /// message
   final String message;
+
+  /// 是否正在加载
   final bool isLoading;
 
   @override

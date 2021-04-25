@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+/// 创建child
 typedef SemanticIndexCallback = int Function(Widget widget, int localIndex);
 
 int _kDefaultSemanticIndexCallback(Widget _, int localIndex) => localIndex;
@@ -14,10 +15,13 @@ int _kDefaultSemanticIndexCallback(Widget _, int localIndex) => localIndex;
 ///
 /// 用来创建一个widget集合，详情请看[SliverChildDelegate]
 abstract class ChildDelegate {
+  /// 构造函数
   const ChildDelegate();
 
+  /// 构建child
   Widget build(BuildContext context, int index);
 
+  /// child的数量
   int get estimatedChildCount => null;
 
   @override
@@ -50,6 +54,7 @@ class _SaltedValueKey extends ValueKey<Key> {
 
 /// 用来创建一个widget集合，详情请看[SliverChildBuilderDelegate]
 class ChildBuilderDelegate extends ChildDelegate {
+  /// 构造函数
   const ChildBuilderDelegate(
     this.builder, {
     this.childCount,
@@ -64,18 +69,25 @@ class ChildBuilderDelegate extends ChildDelegate {
         assert(addSemanticIndexes != null),
         assert(semanticIndexCallback != null);
 
+  /// 构建item
   final IndexedWidgetBuilder builder;
 
+  /// child数量
   final int childCount;
 
+  /// 是否保持活力
   final bool addAutomaticKeepAlives;
 
+  /// 是否添加一个[RepaintBoundary]
   final bool addRepaintBoundaries;
 
+  /// 是否增加semantic index偏移
   final bool addSemanticIndexes;
 
+  /// semantic index偏移
   final int semanticIndexOffset;
 
+  /// semantic index偏移回调
   final SemanticIndexCallback semanticIndexCallback;
 
   @override
@@ -117,6 +129,7 @@ class ChildBuilderDelegate extends ChildDelegate {
 
 /// 用来创建一个widget集合，详情请看[SliverChildListDelegate]
 class ChildListDelegate extends ChildDelegate {
+  /// 构造函数
   const ChildListDelegate(
     this.children, {
     this.addAutomaticKeepAlives = true,
@@ -130,6 +143,7 @@ class ChildListDelegate extends ChildDelegate {
         assert(addSemanticIndexes != null),
         assert(semanticIndexCallback != null);
 
+  /// fixed
   const ChildListDelegate.fixed(
     this.children, {
     this.addAutomaticKeepAlives = true,
@@ -143,14 +157,19 @@ class ChildListDelegate extends ChildDelegate {
         assert(addSemanticIndexes != null),
         assert(semanticIndexCallback != null);
 
+  /// 是否保持活力
   final bool addAutomaticKeepAlives;
 
+  /// 是否添加一个[RepaintBoundary]
   final bool addRepaintBoundaries;
 
+  /// 是否增加semantic index偏移
   final bool addSemanticIndexes;
 
+  /// semantic index偏移
   final int semanticIndexOffset;
 
+  /// semantic index偏移回调
   final SemanticIndexCallback semanticIndexCallback;
 
   /// The widgets to display.

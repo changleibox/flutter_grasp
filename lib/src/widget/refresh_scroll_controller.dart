@@ -35,16 +35,22 @@ abstract class RefreshScrollController {
   /// 静默样式
   factory RefreshScrollController.manual({RefreshControllerStyle style}) = _ManualRefreshScrollController;
 
+  /// 刷新控件的key
   Key get refreshKey;
 
+  /// 刷新回调
   Future<void> onRefresh();
 
+  /// 加载
   void attach(SupportRefreshCallback onRefresh);
 
+  /// 是否有终端
   bool get hasClients;
 
+  /// 释放
   void dispose();
 
+  /// 样式，[Cupertino]或者[Material]或者自定义
   RefreshControllerStyle get style;
 }
 

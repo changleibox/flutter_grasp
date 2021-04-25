@@ -14,6 +14,7 @@ const double _defaultRefreshIndicatorExtent = 60.0;
 ///
 /// 自定义的下拉刷新
 class SupportSliverRefreshIndicator extends StatelessWidget {
+  /// 构造函数
   const SupportSliverRefreshIndicator({
     Key key,
     this.onRefresh,
@@ -29,8 +30,13 @@ class SupportSliverRefreshIndicator extends StatelessWidget {
             'than the amount initially created by overscrolling.'),
         super(key: key);
 
+  /// 刷新回调
   final RefreshCallback onRefresh;
+
+  /// 刷新距离
   final double refreshTriggerPullDistance;
+
+  /// 刷新区域
   final double refreshIndicatorExtent;
 
   @override

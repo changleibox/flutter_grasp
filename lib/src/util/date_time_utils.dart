@@ -4,13 +4,18 @@ const int _nd = 1000 * 24 * 60 * 60; // 一天的毫秒数
 const int _nh = 1000 * 60 * 60; // 一小时的毫秒数
 const int _nm = 1000 * 60; // 一分钟的毫秒数
 
+/// Created by changlei on 2020/8/26.
+///
+/// 格式化[DateTime]
 class DateTimeUtils {
   DateTimeUtils._();
 
+  /// 对齐
   static DateTime alignment(DateTime dateTime) {
     return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute);
   }
 
+  /// 格式化为'yyyy-MM-dd HH:mm'格式
   static String formatYMDHM(DateTime dateTime) {
     if (dateTime == null) {
       return null;
@@ -18,6 +23,7 @@ class DateTimeUtils {
     return DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
   }
 
+  /// 格式化为'yyyy-MM-dd'格式
   static String formatYMD(DateTime dateTime) {
     if (dateTime == null) {
       return null;
@@ -25,6 +31,7 @@ class DateTimeUtils {
     return DateFormat('yyyy-MM-dd').format(dateTime);
   }
 
+  /// 格式化为'yyyy-MM'格式
   static String formatYM(DateTime dateTime) {
     if (dateTime == null) {
       return null;
@@ -32,6 +39,7 @@ class DateTimeUtils {
     return DateFormat('yyyy-MM').format(dateTime);
   }
 
+  /// 解析为[DateTime]
   static DateTime parse(String dateTime) {
     if (dateTime == null) {
       return null;
@@ -39,6 +47,7 @@ class DateTimeUtils {
     return DateTime.parse(dateTime);
   }
 
+  /// 获取一个月有多少天
   static int getDaysInMonth(DateTime dateTime) {
     if (dateTime == null) {
       return 1;
@@ -46,6 +55,7 @@ class DateTimeUtils {
     return getDaysInMonthByYearMonth(dateTime.year, dateTime.month);
   }
 
+  /// 获取一个月有多少天，通过[y]，[m]
   static int getDaysInMonthByYearMonth(int y, int m) {
     if (m == 1 || m == 3 || m == 5 || m == 7 || m == 8 || m == 10 || m == 12) {
       return 31;
@@ -62,6 +72,7 @@ class DateTimeUtils {
     }
   }
 
+  /// 格式化成中文，比如：12分12秒
   static String formatToCN(int milliseconds) {
     if (milliseconds == null) {
       return '0秒';

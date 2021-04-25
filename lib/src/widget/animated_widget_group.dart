@@ -30,6 +30,9 @@ class _ActiveItem implements Comparable<_ActiveItem> {
   int compareTo(_ActiveItem other) => itemIndex - other.itemIndex;
 }
 
+/// Created by changlei on 2020/8/26.
+///
+/// 在[WidgetGroup]添加和删除item时，加个动画
 class AnimatedWidgetGroup extends StatefulWidget {
   /// Creates a sliver that animates items when they are inserted or removed.
   const AnimatedWidgetGroup({
@@ -89,6 +92,7 @@ class AnimatedWidgetGroup extends StatefulWidget {
   }
 }
 
+/// [AnimatedWidgetGroup]对应的state
 class AnimatedWidgetGroupState extends State<AnimatedWidgetGroup> with TickerProviderStateMixin {
   final List<_ActiveItem> _incomingItems = <_ActiveItem>[];
   final List<_ActiveItem> _outgoingItems = <_ActiveItem>[];

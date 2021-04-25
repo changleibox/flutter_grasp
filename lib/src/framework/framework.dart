@@ -252,10 +252,12 @@ abstract class Presenter<T extends StatefulWidget> implements StateMethods<T> {
   @override
   BuildContext get context => _state?.context;
 
+  /// [RouteSettings]
   @protected
   @mustCallSuper
   RouteSettings get settings => ModalRoute.of(context).settings;
 
+  /// 上级页面传过来的参数，可能为null
   @protected
   @mustCallSuper
   dynamic get arguments => settings.arguments;

@@ -2,9 +2,14 @@
  * Copyright © 2019 CHANGLEI. All rights reserved.
  */
 
+/// Created by changlei on 2020/8/26.
+///
+/// 处理字符串相关
 class TextUtils {
-  TextUtils._();
+  const TextUtils._();
 
+  /// 格式化占位符
+  @Deprecated('请使用`spintf`代替')
   static String format(String format, List<Object> args) {
     if (format == null || args == null || args.isEmpty) {
       return format;
@@ -20,14 +25,17 @@ class TextUtils {
     return tmpFormat;
   }
 
+  /// 判断字符串是否为null或者empty
   static bool isEmpty(String str) {
     return str == null || str.isEmpty;
   }
 
+  /// 判断字符串是否不为空
   static bool isNotEmpty(String str) {
     return str != null && str.isNotEmpty;
   }
 
+  /// 判断两个字符串是否相等
   static bool equals(String a, String b) {
     if (a == b) {
       return true;

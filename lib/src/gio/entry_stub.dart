@@ -2,8 +2,12 @@ import 'package:dio/dio.dart';
 
 import 'gio.dart';
 
+/// 创建[Gio]
 Gio createGio([GioBaseOptions options]) => throw UnsupportedError('');
 
+/// Created by changlei on 2020/8/26.
+///
+/// 创建[Dio]扩展Mixin
 mixin DioExtendsMixin on DioMixin {
   @override
   Future<Response<T>> fetch<T>(RequestOptions requestOptions) {

@@ -2,6 +2,7 @@
  * Copyright © 2019 CHANGLEI. All rights reserved.
  */
 
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -18,6 +19,7 @@ const String _kCodeKey = 'code';
 const String _kMessageKey = 'message';
 const String _kDataKey = 'data';
 
+/// 返回有效的code，比如：200
 typedef ValidateCode = bool Function(int code);
 
 dynamic _parseAndDecode(String response) {
@@ -28,7 +30,8 @@ dynamic _parseJson(String text) {
   return compute<String, dynamic>(_parseAndDecode, text);
 }
 
-class IResponse {
+/// 自定义Response
+class IResponse with MapMixin<String, dynamic> {
   const IResponse._(
     this.code,
     this.message,
@@ -36,8 +39,13 @@ class IResponse {
     this._originalData,
   );
 
+  /// 返回的code
   final int code;
+
+  /// 返回的message
   final String message;
+
+  /// 返回的data
   final dynamic data;
   final Map<String, dynamic> _originalData;
 
@@ -46,11 +54,34 @@ class IResponse {
     return _originalData?.toString() ?? super.toString();
   }
 
-  dynamic operator [](String key) {
-    return _originalData[key];
+  @override
+  dynamic operator [](Object key) {
+    return _originalData == null ? null : _originalData[key];
+  }
+
+  @override
+  void operator []=(String key, dynamic value) {
+    if (_originalData == null) {
+      return;
+    }
+    _originalData[key] = value;
+  }
+
+  @override
+  void clear() {
+    _originalData?.clear();
+  }
+
+  @override
+  Iterable<String> get keys => _originalData?.keys;
+
+  @override
+  void remove(Object key) {
+    _originalData?.remove(key);
   }
 }
 
+/// 自定义Error
 class GioError extends DioError {
   GioError._({
     RequestOptions requestOptions,
@@ -68,6 +99,7 @@ class GioError extends DioError {
 
   int _code;
 
+  /// 错误码
   int get code => _code;
 
   @override
@@ -140,6 +172,7 @@ class GioError extends DioError {
   }
 }
 
+/// 拦截器，解析服务器返回的数据
 class ConvertInterceptor extends InterceptorsWrapper {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
@@ -190,7 +223,11 @@ class ConvertInterceptor extends InterceptorsWrapper {
   }
 }
 
+/// Created by changlei on 2020/8/26.
+///
+/// gio，最终通过它调用
 abstract class Gio with DioMixin implements Dio {
+  /// 默认构造函数
   factory Gio([GioBaseOptions options]) {
     final Gio gio = createGio(options);
     (gio.transformer as DefaultTransformer).jsonDecodeCallback = _parseJson;
@@ -198,6 +235,7 @@ abstract class Gio with DioMixin implements Dio {
     return gio;
   }
 
+  /// 创建一个通用的[Gio]
   factory Gio.normal({
     String baseUrl,
     int connectTimeout = _kTimeout,
@@ -232,7 +270,9 @@ abstract class Gio with DioMixin implements Dio {
   }
 }
 
+/// 配置key
 class DataKeyOptions {
+  /// 构造函数
   const DataKeyOptions({
     this.codeKey = _kCodeKey,
     this.messageKey = _kMessageKey,
@@ -241,12 +281,19 @@ class DataKeyOptions {
         assert(messageKey != null),
         assert(dataKey != null);
 
+  /// code对应的key
   final String codeKey;
+
+  /// message对应的key
   final String messageKey;
+
+  /// data对应的key
   final String dataKey;
 }
 
+/// [Gio]base options
 class GioBaseOptions extends BaseOptions {
+  /// 构造函数
   GioBaseOptions({
     String method,
     int connectTimeout,
@@ -289,7 +336,10 @@ class GioBaseOptions extends BaseOptions {
           setRequestContentTypeWhenNoPayload: setRequestContentTypeWhenNoPayload,
         );
 
+  /// 验证code是否有效
   final ValidateCode validateCode;
+
+  /// key配置
   final DataKeyOptions dataKeyOptions;
 
   /// Create a Option from current instance with merging attributes.
@@ -342,7 +392,9 @@ class GioBaseOptions extends BaseOptions {
   }
 }
 
+/// [Gio]request options
 class GioRequestOptions extends RequestOptions {
+  /// 构造函数
   GioRequestOptions({
     String method,
     int sendTimeout,
@@ -395,8 +447,13 @@ class GioRequestOptions extends RequestOptions {
           setRequestContentTypeWhenNoPayload: setRequestContentTypeWhenNoPayload,
         );
 
+  /// 验证code
   final ValidateCode validateCode;
+
+  /// keys配置
   final DataKeyOptions dataKeyOptions;
+
+  /// if false, content-type in request header will be deleted when method is not on of `_allowPayloadMethods`
   final bool setRequestContentTypeWhenNoPayload;
 
   /// Create a Option from current instance with merging attributes.

@@ -2,6 +2,8 @@
  * Copyright (c) 2020 CHANGLEI. All rights reserved.
  */
 
+import 'dart:collection';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
 import 'package:flutter_grasp/src/framework/future_change_notifier.dart';
@@ -9,7 +11,9 @@ import 'package:flutter_grasp/src/framework/future_change_notifier.dart';
 /// Created by changlei on 2020-02-13.
 ///
 /// [Iterable]类型的的异步请求扩展类
-abstract class IterableChangeNotifier<E> extends FutureChangeNotifier<Iterable<E>> implements LoadOptionsBuilder {
+abstract class IterableChangeNotifier<E> extends FutureChangeNotifier<Iterable<E>>
+    with IterableMixin<E>
+    implements LoadOptionsBuilder {
   final RefreshScrollController _refreshController = RefreshScrollController.manual(
     style: RefreshControllerStyle.material,
   );
@@ -22,21 +26,17 @@ abstract class IterableChangeNotifier<E> extends FutureChangeNotifier<Iterable<E
   bool get showProgress => false;
 
   /// 已加载的数据条数
-  int get itemCount => objects.length;
+  int get itemCount => length;
 
-  @override
-  bool get isEmpty => objects.isEmpty;
-
-  @override
-  bool get isNotEmpty => objects.isNotEmpty;
-
+  /// The object at the given [index] in the list.
+  ///
+  /// The [index] must be a valid index of this list,
+  /// which means that `index` must be non-negative and
+  /// less than [length].
   E operator [](int index) => objects.elementAt(index);
 
-  E get first => objects.first;
-
-  E get last => objects.last;
-
-  E get single => objects.single;
+  @override
+  Iterator<E> get iterator => objects.iterator;
 
   @override
   void dispose() {

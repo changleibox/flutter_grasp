@@ -12,6 +12,7 @@ import 'child_delegate.dart';
 ///
 /// 一组控件，实际上就是对row和column的封装，方便实现统一的边距和分割线
 class WidgetGroup extends StatelessWidget {
+  /// 构造函数
   WidgetGroup({
     Key key,
     this.alignment = MainAxisAlignment.start,
@@ -58,6 +59,7 @@ class WidgetGroup extends StatelessWidget {
               ),
         super(key: key);
 
+  /// 可以加分割距离
   factory WidgetGroup.spacing({
     Key key,
     MainAxisAlignment alignment = MainAxisAlignment.start,
@@ -92,6 +94,7 @@ class WidgetGroup extends StatelessWidget {
     );
   }
 
+  /// 自定义item
   WidgetGroup.builder({
     Key key,
     this.alignment = MainAxisAlignment.start,
@@ -120,6 +123,7 @@ class WidgetGroup extends StatelessWidget {
         ),
         super(key: key);
 
+  /// build item和分割器
   WidgetGroup.separated({
     Key key,
     this.alignment = MainAxisAlignment.start,
@@ -167,6 +171,7 @@ class WidgetGroup extends StatelessWidget {
         ),
         super(key: key);
 
+  /// 自定义
   const WidgetGroup.custom({
     Key key,
     this.alignment = MainAxisAlignment.start,
@@ -182,13 +187,28 @@ class WidgetGroup extends StatelessWidget {
         assert(childrenDelegate != null),
         super(key: key);
 
+  /// 主轴对齐方式
   final MainAxisAlignment alignment;
+
+  /// 主轴大小
   final MainAxisSize mainAxisSize;
+
+  /// 交叉轴对齐方式
   final CrossAxisAlignment crossAxisAlignment;
+
+  /// [textDirection]
   final TextDirection textDirection;
+
+  /// 处置方向的[TextDirection]
   final VerticalDirection verticalDirection;
+
+  /// 设置对准基线
   final TextBaseline textBaseline;
+
+  /// 方向
   final Axis direction;
+
+  /// 构建children
   final ChildDelegate childrenDelegate;
 
   @override

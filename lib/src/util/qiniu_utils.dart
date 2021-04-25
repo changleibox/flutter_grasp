@@ -3,16 +3,21 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
 
-const List<String> FORMATS = <String>['jpg', 'gif', 'png', 'webp'];
-const List<int> COLORS = <int>[2, 4, 8, 16, 32, 64, 128, 256];
+const List<String> _FORMATS = <String>['jpg', 'gif', 'png', 'webp'];
+const List<int> _COLORS = <int>[2, 4, 8, 16, 32, 64, 128, 256];
 
+/// Created by changlei on 2020/8/26.
+///
+/// 处理上传到七牛的文件
 class QiniuUtils {
-  QiniuUtils._();
+  const QiniuUtils._();
 
+  /// 判断一个数字是否有效
   static bool isInvalidValue(double value) {
     return value == null || value.isInfinite || value.isNaN || value <= 0;
   }
 
+  /// 判断一个[size]是否有效
   static bool isInvalidSize(Size size) {
     return size == null || size.isInfinite || size.isEmpty;
   }
@@ -34,8 +39,8 @@ class QiniuUtils {
     }
     assert(mode >= 0 && mode <= 5);
     assert(quality == null || (quality >= 1 && quality <= 100));
-    assert(format == null || FORMATS.contains(format));
-    assert(colors == null || COLORS.contains(colors));
+    assert(format == null || _FORMATS.contains(format));
+    assert(colors == null || _COLORS.contains(colors));
     final List<dynamic> params = <dynamic>[];
     params.addAll(<dynamic>['$url?imageView2', mode]);
     params.addAll(<dynamic>['ignore-error', 1]);

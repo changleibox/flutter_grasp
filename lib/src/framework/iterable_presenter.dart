@@ -2,6 +2,8 @@
  * Copyright (c) 2020 CHANGLEI. All rights reserved.
  */
 
+import 'dart:collection';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
 
@@ -9,6 +11,7 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 ///
 /// [Iterable]类型的的异步请求扩展类
 abstract class IterablePresenter<T extends StatefulWidget, E> extends FuturePresenter<T, Iterable<E>>
+    with IterableMixin<E>
     implements LoadOptionsBuilder {
   final RefreshScrollController _refreshController = RefreshScrollController.manual(
     style: RefreshControllerStyle.material,
@@ -22,21 +25,17 @@ abstract class IterablePresenter<T extends StatefulWidget, E> extends FuturePres
   bool get showProgress => false;
 
   /// 已加载的数据条数
-  int get itemCount => objects.length;
+  int get itemCount => length;
 
-  @override
-  bool get isEmpty => objects.isEmpty;
-
-  @override
-  bool get isNotEmpty => objects.isNotEmpty;
-
+  /// The object at the given [index] in the list.
+  ///
+  /// The [index] must be a valid index of this list,
+  /// which means that `index` must be non-negative and
+  /// less than [length].
   E operator [](int index) => objects.elementAt(index);
 
-  E get first => objects.first;
-
-  E get last => objects.last;
-
-  E get single => objects.single;
+  @override
+  Iterator<E> get iterator => objects.iterator;
 
   @override
   void dispose() {

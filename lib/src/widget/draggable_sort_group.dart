@@ -7,10 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_grasp/src/widget/animated_drag_target.dart';
 import 'package:flutter_grasp/src/widget/draggable_sort.dart';
 
+/// 拖动排序回调
 typedef DraggableSortGroupCallback = void Function(int fromGroupIndex, int toGroupIndex, int fromIndex, int toIndex);
 
+/// 自定拖动排序规则
 typedef DraggableSortGroupHandler = bool Function(int fromGroupIndex, int toGroupIndex, int fromIndex, int toIndex);
 
+/// 构建[feedback]
 typedef DraggableSortGroupFeedbackBuilder = Widget Function(
   BuildContext context,
   int groupIndex,

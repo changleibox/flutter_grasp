@@ -71,9 +71,11 @@ mixin TabPresenterMixin<T extends StatefulWidget> on Presenter<T> {
     return isCurrentTab;
   }
 
+  /// 返回[TabController]是否正在改变
   bool get indexIsChanging {
     return _tabController?.indexIsChanging == true;
   }
 
+  /// [TabController]动画对象
   Animation<double> get animation => _tabController?.animation;
 }

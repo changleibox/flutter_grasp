@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 ///
 /// 输入有效的小数
 class DecimalTextInputFormatter extends FilteringTextInputFormatter {
+  /// 构造函数
   DecimalTextInputFormatter({
     this.decimalDigits = 2,
     this.maxValue,
@@ -61,6 +62,7 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
 
 /// 可以设置最大值和负数，但是没有经过严格测试，请谨慎使用
 class SymbolDecimalTextInputFormatter extends FilteringTextInputFormatter {
+  /// 构造函数
   SymbolDecimalTextInputFormatter({
     this.decimalDigits = 2,
     this.maxValue,

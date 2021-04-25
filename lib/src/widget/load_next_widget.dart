@@ -11,6 +11,7 @@ import 'package:flutter_grasp/src/widget/widget_group.dart';
 /// 加载下一页控件
 /// 加载更多控件，显示在最底部
 class LoadNextWidget extends StatelessWidget {
+  /// 构造函数
   const LoadNextWidget({
     Key key,
     this.scrollDirection = Axis.vertical,
@@ -18,8 +19,13 @@ class LoadNextWidget extends StatelessWidget {
     this.isLoading = false,
   }) : super(key: key);
 
+  /// 滚动方向
   final Axis scrollDirection;
+
+  /// 是否有下一页
   final bool hasNext;
+
+  /// 是否正在加载
   final bool isLoading;
 
   @override

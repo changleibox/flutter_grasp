@@ -18,6 +18,7 @@ const TextStyle _valueStyle = TextStyle(
 ///
 /// 显示一个'key：value'格式，例如：姓名：小明
 class KeyValue extends StatelessWidget {
+  /// 构造函数
   const KeyValue({
     Key key,
     @required this.name,
@@ -28,10 +29,19 @@ class KeyValue extends StatelessWidget {
   })  : assert(name != null),
         super(key: key);
 
+  /// name
   final String name;
+
+  /// value
   final String value;
+
+  /// 默认value，在[value]为null的时候，显示
   final String defaultValue;
+
+  /// style
   final TextStyle style;
+
+  /// valueStyle
   final TextStyle valueStyle;
 
   @override

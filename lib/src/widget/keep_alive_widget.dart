@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 ///
 /// 保持state生命周期，详情请看[AutomaticKeepAliveClientMixin]
 class KeepAliveWidget extends StatefulWidget {
+  /// 构造函数
   const KeepAliveWidget({
     Key key,
     @required this.wantKeepAlive,
@@ -15,7 +16,10 @@ class KeepAliveWidget extends StatefulWidget {
   })  : assert(wantKeepAlive != null),
         super(key: key);
 
+  /// 是否保持活力
   final bool wantKeepAlive;
+
+  /// child
   final Widget child;
 
   @override

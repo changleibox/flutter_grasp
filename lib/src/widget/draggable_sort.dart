@@ -9,10 +9,13 @@ import 'package:flutter_grasp/src/widget/animated_drag_target.dart';
 import 'package:flutter_grasp/src/widget/animated_draggable.dart';
 import 'package:flutter_grasp/src/widget/animated_shifted_box_boundary.dart';
 
+/// 拖动排序回调
 typedef DraggableSortCallback = void Function(int fromIndex, int toIndex);
 
+/// 自定义拖动排序
 typedef DraggableSortHandler = int Function(int fromIndex, int toIndex);
 
+/// 构建拖动时的[feedback]
 typedef DraggableSortFeedbackBuilder = Widget Function(BuildContext context, int index, Widget child);
 
 /// Created by changlei on 2020/8/12.

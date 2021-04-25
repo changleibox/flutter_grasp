@@ -4,9 +4,12 @@
 
 import 'package:flutter/cupertino.dart';
 
+/// Created by changlei on 2020/8/26.
+///
 /// A widget laying out multiple tabs with only one active tab being built
 /// at a time and on stage. Off stage tabs' animations are stopped.
 class TabSwitchingView extends StatefulWidget {
+  /// 构造函数
   const TabSwitchingView({
     @required this.currentTabIndex,
     @required this.tabCount,
@@ -17,9 +20,16 @@ class TabSwitchingView extends StatefulWidget {
         assert(tabBuilder != null),
         assert(autofocus != null);
 
+  /// 当前tab的index
   final int currentTabIndex;
+
+  /// tab数量
   final int tabCount;
+
+  /// 构建tab
   final IndexedWidgetBuilder tabBuilder;
+
+  /// 是否自动获取焦点
   final bool autofocus;
 
   @override
