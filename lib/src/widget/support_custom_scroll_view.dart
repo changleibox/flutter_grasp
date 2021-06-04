@@ -47,7 +47,6 @@ class LoadOptions {
     SupportRefreshCallback onRefresh,
     SupportRefreshCallback onLoadNext,
     bool hasNext,
-    bool hasElements,
   }) {
     return LoadOptions(
       controller: controller,
@@ -294,7 +293,7 @@ class SupportCustomScrollView extends StatefulWidget {
 }
 
 class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
-  bool _isLoading = false;
+  final ValueNotifier<bool> _isLoadingNotifier = ValueNotifier<bool>(false);
 
   SupportRefreshCallback get _refresh => widget.loadOptions.onRefresh;
 
@@ -309,6 +308,8 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
   bool get _showLoadNext => _loadNext != null && _showSlivers;
 
   bool get _hasNext => widget.loadOptions.hasNext;
+
+  bool get _isLoading => _isLoadingNotifier.value;
 
   Future<void> _onRefresh() async {
     if (!_isLoading && _showRefresh) {
@@ -325,20 +326,12 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
   }
 
   void _loadStart() {
-    _isLoading = true;
-    if (!mounted) {
-      return;
-    }
-    setState(() {});
+    _isLoadingNotifier.value = true;
   }
 
   void _loadComplete() {
     SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
-      _isLoading = false;
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
+      _isLoadingNotifier.value = false;
     });
   }
 
@@ -437,9 +430,10 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
     }
     if (!_showSlivers) {
       final Widget sliver = SliverToBoxAdapter(
-        child: Builder(
-          builder: (BuildContext context) {
-            return widget.placeholderBuilder(context, _isLoading, widget.scrollDirection);
+        child: ValueListenableBuilder<bool>(
+          valueListenable: _isLoadingNotifier,
+          builder: (BuildContext context, bool value, Widget child) {
+            return widget.placeholderBuilder(context, value, widget.scrollDirection);
           },
         ),
       );
@@ -447,9 +441,10 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
     }
     if (_showLoadNext) {
       final Widget sliver = SliverToBoxAdapter(
-        child: Builder(
-          builder: (BuildContext context) {
-            return widget.loadNextBuilder(context, _hasNext, _isLoading, widget.scrollDirection);
+        child: ValueListenableBuilder<bool>(
+          valueListenable: _isLoadingNotifier,
+          builder: (BuildContext context, bool value, Widget child) {
+            return widget.loadNextBuilder(context, _hasNext, value, widget.scrollDirection);
           },
         ),
       );
