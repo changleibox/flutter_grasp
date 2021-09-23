@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/cupertino.dart';
@@ -11,14 +11,11 @@ import 'package:flutter/cupertino.dart';
 class TabSwitchingView extends StatefulWidget {
   /// 构造函数
   const TabSwitchingView({
-    @required this.currentTabIndex,
-    @required this.tabCount,
-    @required this.tabBuilder,
+    required this.currentTabIndex,
+    required this.tabCount,
+    required this.tabBuilder,
     this.autofocus = true,
-  })  : assert(currentTabIndex != null),
-        assert(tabCount != null && tabCount > 0),
-        assert(tabBuilder != null),
-        assert(autofocus != null);
+  }) : assert(tabCount > 0);
 
   /// 当前tab的index
   final int currentTabIndex;
@@ -69,7 +66,7 @@ class _TabSwitchingViewState extends State<TabSwitchingView> {
     // - new tabs are appended to the tab list, or
     // - some trailing tabs are removed.
     // If the above assumption is not true, some tabs may lose their state.
-    final int lengthDiff = widget.tabCount - shouldBuildTab.length;
+    final lengthDiff = widget.tabCount - shouldBuildTab.length;
     if (lengthDiff > 0) {
       shouldBuildTab.addAll(List<bool>.filled(lengthDiff, false));
     } else if (lengthDiff < 0) {
@@ -101,10 +98,10 @@ class _TabSwitchingViewState extends State<TabSwitchingView> {
 
   @override
   void dispose() {
-    for (final FocusScopeNode focusScopeNode in tabFocusNodes) {
+    for (final focusScopeNode in tabFocusNodes) {
       focusScopeNode.dispose();
     }
-    for (final FocusScopeNode focusScopeNode in discardedNodes) {
+    for (final focusScopeNode in discardedNodes) {
       focusScopeNode.dispose();
     }
     super.dispose();
@@ -115,10 +112,10 @@ class _TabSwitchingViewState extends State<TabSwitchingView> {
     return Stack(
       fit: StackFit.expand,
       children: List<Widget>.generate(widget.tabCount, (int index) {
-        final bool active = index == widget.currentTabIndex;
+        final active = index == widget.currentTabIndex;
         shouldBuildTab[index] = active || shouldBuildTab[index];
 
-        final Builder builder = Builder(builder: (BuildContext context) {
+        final builder = Builder(builder: (BuildContext context) {
           return shouldBuildTab[index] ? widget.tabBuilder(context, index) : Container();
         });
 

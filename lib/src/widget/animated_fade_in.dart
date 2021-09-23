@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/cupertino.dart';
@@ -12,18 +12,13 @@ import 'package:flutter/material.dart';
 class AnimatedFadeIn extends ImplicitlyAnimatedWidget {
   /// 透明度渐变动画
   const AnimatedFadeIn({
-    Key key,
-    @required this.target,
-    @required this.placeholder,
-    @required this.isTargetLoaded,
-    @required this.fadeInDuration,
-    @required this.fadeInCurve,
-  })  : assert(target != null),
-        assert(placeholder != null),
-        assert(isTargetLoaded != null),
-        assert(fadeInDuration != null),
-        assert(fadeInCurve != null),
-        super(key: key, duration: fadeInDuration);
+    Key? key,
+    required this.target,
+    required this.placeholder,
+    required this.isTargetLoaded,
+    required this.fadeInDuration,
+    required this.fadeInCurve,
+  }) : super(key: key, duration: fadeInDuration);
 
   /// 目标
   final Widget target;
@@ -45,9 +40,9 @@ class AnimatedFadeIn extends ImplicitlyAnimatedWidget {
 }
 
 class _AnimatedFadeOutFadeInState extends ImplicitlyAnimatedWidgetState<AnimatedFadeIn> {
-  Tween<double> _targetOpacity;
-  Animation<double> _targetOpacityAnimation;
-  Widget _placeHolder;
+  late Tween<double> _targetOpacity;
+  late Animation<double> _targetOpacityAnimation;
+  late Widget _placeHolder;
 
   @override
   void initState() {

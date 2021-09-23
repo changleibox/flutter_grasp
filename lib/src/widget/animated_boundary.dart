@@ -1,8 +1,6 @@
-// Copyright 2014 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// @dart = 2.8
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -18,13 +16,13 @@ class AnimatedBoundary extends SingleChildRenderObjectWidget {
   ///
   /// The [curve] and [duration] arguments must not be null.
   const AnimatedBoundary({
-    Key key,
-    Widget child,
+    Key? key,
+    Widget? child,
     this.alignment = Alignment.center,
     this.curve = Curves.linear,
-    @required this.duration,
+    required this.duration,
     this.reverseDuration,
-    @required this.vsync,
+    required this.vsync,
   }) : super(key: key, child: child);
 
   /// The alignment of the child within the parent when the parent is not yet
@@ -60,14 +58,13 @@ class AnimatedBoundary extends SingleChildRenderObjectWidget {
   /// size when going in reverse.
   ///
   /// If not specified, defaults to [duration].
-  final Duration reverseDuration;
+  final Duration? reverseDuration;
 
   /// The [TickerProvider] for this widget.
   final TickerProvider vsync;
 
   void _debugParent(BuildContext context) {
-    final RenderAnimatedShiftedBoxBoundary animatedPositionParent =
-        context.findAncestorRenderObjectOfType<RenderAnimatedShiftedBoxBoundary>();
+    final animatedPositionParent = context.findAncestorRenderObjectOfType<RenderAnimatedShiftedBoxBoundary>();
     assert(animatedPositionParent != null, '请使用$RenderAnimatedShiftedBoxBoundary包裹根控件');
   }
 

@@ -1,7 +1,8 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_grasp/src/widget/animated_offset.dart';
@@ -10,35 +11,35 @@ import 'package:flutter_grasp/src/widget/geometry.dart';
 /// Created by changlei on 2020/8/26.
 ///
 /// 系统[Draggable]加动画
-class AnimatedDraggable<T> extends StatefulWidget {
+class AnimatedDraggable<T extends Object> extends StatefulWidget {
   /// 加了动画的[Draggable]
   const AnimatedDraggable({
-    Key key,
-    @required this.child,
+    Key? key,
+    required this.child,
     this.feedback,
     this.data,
     this.axis,
     this.childWhenDragging,
     this.feedbackOffset = Offset.zero,
-    this.dragAnchor = DragAnchor.child,
+    this.dragAnchorStrategy = childDragAnchorStrategy,
     this.affinity,
     this.maxSimultaneousDrags,
     this.onDragStarted,
+    this.onDragUpdate,
     this.onDraggableCanceled,
     this.onDragEnd,
     this.onDragCompleted,
     this.ignoringFeedbackSemantics = true,
-    @required this.duration,
+    required this.duration,
     this.curve = Curves.linear,
     this.alignment = Alignment.center,
-  })  : assert(child != null),
-        assert(ignoringFeedbackSemantics != null),
-        assert(maxSimultaneousDrags == null || maxSimultaneousDrags >= 0),
-        assert(curve != null),
+    this.rootOverlay = false,
+    this.hitTestBehavior = HitTestBehavior.deferToChild,
+  })  : assert(maxSimultaneousDrags == null || maxSimultaneousDrags >= 0),
         super(key: key);
 
   /// The data that will be dropped by this draggable.
-  final T data;
+  final T? data;
 
   /// The [Axis] to restrict this draggable's movement, if specified.
   ///
@@ -51,7 +52,7 @@ class AnimatedDraggable<T> extends StatefulWidget {
   ///
   /// For the direction of gestures this widget competes with to start a drag
   /// event, see [Draggable.affinity].
-  final Axis axis;
+  final Axis? axis;
 
   /// The widget below this widget in the tree.
   ///
@@ -78,21 +79,34 @@ class AnimatedDraggable<T> extends StatefulWidget {
   ///
   /// To limit the number of simultaneous drags on multitouch devices, see
   /// [maxSimultaneousDrags].
-  final Widget childWhenDragging;
+  final Widget? childWhenDragging;
 
   /// The widget to show under the pointer when a drag is under way.
   ///
   /// See [child] and [childWhenDragging] for information about what is shown
   /// at the location of the [Draggable] itself when a drag is under way.
-  final Widget feedback;
+  final Widget? feedback;
 
   /// The feedbackOffset can be used to set the hit test target point for the
   /// purposes of finding a drag target. It is especially useful if the feedback
   /// is transformed compared to the child.
   final Offset feedbackOffset;
 
-  /// Where this widget should be anchored during a drag.
-  final DragAnchor dragAnchor;
+  /// A strategy that is used by this draggable to get the anchor offset when it
+  /// is dragged.
+  ///
+  /// The anchor offset refers to the distance between the users' fingers and
+  /// the [feedback] widget when this draggable is dragged.
+  ///
+  /// This property's value is a function that implements [DragAnchorStrategy].
+  /// There are two built-in functions that can be used:
+  ///
+  ///  * [childDragAnchorStrategy], which displays the feedback anchored at the
+  ///    position of the original child.
+  ///
+  ///  * [pointerDragAnchorStrategy], which displays the feedback anchored at the
+  ///    position of the touch that started the drag.
+  final DragAnchorStrategy? dragAnchorStrategy;
 
   /// Whether the semantics of the [feedback] widget is ignored when building
   /// the semantics tree.
@@ -122,7 +136,7 @@ class AnimatedDraggable<T> extends StatefulWidget {
   ///
   /// For the directions this widget can be dragged in after the drag event
   /// starts, see [Draggable.axis].
-  final Axis affinity;
+  final Axis? affinity;
 
   /// How many simultaneous drags to support.
   ///
@@ -132,10 +146,16 @@ class AnimatedDraggable<T> extends StatefulWidget {
   ///
   /// If you set this property to 1, consider supplying an "empty" widget for
   /// [childWhenDragging] to create the illusion of actually moving [child].
-  final int maxSimultaneousDrags;
+  final int? maxSimultaneousDrags;
 
   /// Called when the draggable starts being dragged.
-  final VoidCallback onDragStarted;
+  final VoidCallback? onDragStarted;
+
+  /// Called when the draggable is dragged.
+  ///
+  /// This function will only be called while this widget is still mounted to
+  /// the tree (i.e. [State.mounted] is true), and if this widget has actually moved.
+  final DragUpdateCallback? onDragUpdate;
 
   /// Called when the draggable is dropped without being accepted by a [DragTarget].
   ///
@@ -145,7 +165,7 @@ class AnimatedDraggable<T> extends StatefulWidget {
   /// still be called. For this reason, implementations of this callback might
   /// need to check [State.mounted] to check whether the state receiving the
   /// callback is still in the tree.
-  final DraggableCanceledCallback onDraggableCanceled;
+  final DraggableCanceledCallback? onDraggableCanceled;
 
   /// Called when the draggable is dropped and accepted by a [DragTarget].
   ///
@@ -155,7 +175,7 @@ class AnimatedDraggable<T> extends StatefulWidget {
   /// still be called. For this reason, implementations of this callback might
   /// need to check [State.mounted] to check whether the state receiving the
   /// callback is still in the tree.
-  final VoidCallback onDragCompleted;
+  final VoidCallback? onDragCompleted;
 
   /// Called when the draggable is dropped.
   ///
@@ -165,7 +185,7 @@ class AnimatedDraggable<T> extends StatefulWidget {
   ///
   /// This function will only be called while this widget is still mounted to
   /// the tree (i.e. [State.mounted] is true).
-  final DragEndCallback onDragEnd;
+  final DragEndCallback? onDragEnd;
 
   /// The length of time this animation should last.
   final Duration duration;
@@ -177,24 +197,43 @@ class AnimatedDraggable<T> extends StatefulWidget {
   /// the same size as the child.
   final AlignmentGeometry alignment;
 
+  /// Whether the feedback widget will be put on the root [Overlay].
+  ///
+  /// When false, the feedback widget will be put on the closest [Overlay]. When
+  /// true, the [feedback] widget will be put on the farthest (aka root)
+  /// [Overlay].
+  ///
+  /// Defaults to false.
+  final bool rootOverlay;
+
+  /// How to behave during hit test.
+  ///
+  /// Defaults to [HitTestBehavior.deferToChild].
+  final HitTestBehavior hitTestBehavior;
+
   /// Whether haptic feedback should be triggered on drag start.
   bool get _hapticFeedbackOnStart => true;
 
   bool get _isLongPressDrag => false;
 
+  /// The duration that a user has to press down before a long press is registered.
+  ///
+  /// Defaults to [kLongPressTimeout].
+  Duration get _delay => Duration.zero;
+
   @override
   _AnimatedDraggableState<T> createState() => _AnimatedDraggableState<T>();
 }
 
-class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with TickerProviderStateMixin {
-  AnimationController _controller;
-  CurvedAnimation _curvedAnimation;
-  _DragAvatar _dragAvatar;
-  SizeTween _feedbackTween;
-  Size _originSize;
-  Size _lastSize;
-  Offset _dragStartPoint;
-  Alignment _dragStartAlignment;
+class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<T>> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late CurvedAnimation _curvedAnimation;
+  _DragAvatar? _dragAvatar;
+  SizeTween? _feedbackTween;
+  Size? _originSize;
+  Size? _lastSize;
+  Offset? _dragStartPoint;
+  Alignment? _dragStartAlignment;
 
   @override
   void initState() {
@@ -212,8 +251,8 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
   @override
   void didUpdateWidget(AnimatedDraggable<T> oldWidget) {
     if (widget.data != oldWidget.data) {
-      SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
-        final Size currentSize = localToGlobal(context).size;
+      SchedulerBinding.instance!.addPostFrameCallback((Duration timeStamp) {
+        final currentSize = localToGlobal(context).size;
         if (_lastSize == null || currentSize == _lastSize) {
           return;
         }
@@ -230,21 +269,21 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   Rect _globalToLocalRect() {
-    final Rect position = globalToLocal(context);
+    final position = globalToLocal(context);
     return -position.topLeft & position.size;
   }
 
   void _onDragStarted() {
-    _originSize = _lastSize = localToGlobal(context)?.size;
+    _originSize = _lastSize = localToGlobal(context).size;
     if (_dragStartPoint != null && _originSize != null) {
-      final Alignment originAlignment = Alignment(
-        _dragStartPoint.dx / _originSize.width,
-        _dragStartPoint.dy / _originSize.height,
+      final originAlignment = Alignment(
+        _dragStartPoint!.dx / _originSize!.width,
+        _dragStartPoint!.dy / _originSize!.height,
       );
       _dragStartAlignment = originAlignment * 2 - Alignment.bottomRight;
     }
@@ -252,10 +291,14 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
     widget.onDragStarted?.call();
   }
 
+  void _onDragUpdate(DragUpdateDetails details) {
+    widget.onDragUpdate?.call(details);
+  }
+
   void _onDragEnd(DraggableDetails details) {
-    final Size originSize = _originSize ?? Size.zero;
-    final Size lastSize = _lastSize ?? Size.zero;
-    final TickerFuture tickerFuture = _controller.forward(
+    final originSize = _originSize ?? Size.zero;
+    final lastSize = _lastSize ?? Size.zero;
+    final tickerFuture = _controller.forward(
       from: _controller.lowerBound,
     );
     tickerFuture.whenCompleteOrCancel(() {
@@ -269,13 +312,13 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
         _originSize = _lastSize = null;
       });
     });
-    final Offset offset = _resolveSizeChangedOffset(originSize, lastSize);
-    final Rect beginRect = (details.offset + offset) & lastSize;
-    final Rect endRect = _globalToLocalRect();
-    final Animation<Rect> animation = _curvedAnimation.drive(RectTween(
+    final offset = _resolveSizeChangedOffset(originSize, lastSize);
+    final beginRect = (details.offset + offset) & lastSize;
+    final endRect = _globalToLocalRect();
+    final animation = _curvedAnimation.drive(RectTween(
       begin: beginRect,
       end: endRect,
-    ));
+    ) as Animatable<Rect>);
     _dragAvatar = _DragAvatar(
       context: context,
       animation: animation,
@@ -294,7 +337,7 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
   }
 
   Offset _resolveSizeChangedOffset(Size originSize, Size currentSize) {
-    final Offset sizeOffset = originSize - currentSize as Offset;
+    final sizeOffset = originSize - currentSize as Offset;
     return _dragStartAlignment?.alongOffset(sizeOffset) ?? Offset.zero;
   }
 
@@ -308,12 +351,11 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
   }
 
   Widget _buildFeedback(BuildContext context) {
-    final Size originSize = _originSize ?? Size.zero;
+    final originSize = _originSize ?? Size.zero;
     return AnimatedBuilder(
       animation: _controller,
-      child: widget.feedback ?? widget.child,
-      builder: (BuildContext context, Widget child) {
-        final Size currentSize = _feedbackTween?.evaluate(_curvedAnimation) ?? originSize;
+      builder: (BuildContext context, Widget? child) {
+        final currentSize = _feedbackTween?.evaluate(_curvedAnimation) ?? originSize;
         return Transform.translate(
           offset: _resolveSizeChangedOffset(originSize, currentSize),
           child: SizedBox.fromSize(
@@ -322,6 +364,7 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
           ),
         );
       },
+      child: widget.feedback ?? widget.child,
     );
   }
 
@@ -336,9 +379,6 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
 
   Widget _buildDraggable() {
     return Draggable<T>(
-      child: Builder(
-        builder: _buildChild,
-      ),
       feedback: Builder(
         builder: _buildFeedback,
       ),
@@ -348,21 +388,25 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
       data: widget.data,
       maxSimultaneousDrags: widget.maxSimultaneousDrags,
       onDragStarted: _onDragStarted,
+      onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onDraggableCanceled: _onDraggableCanceled,
       onDragCompleted: _onDragCompleted,
-      dragAnchor: widget.dragAnchor,
+      dragAnchorStrategy: widget.dragAnchorStrategy,
       feedbackOffset: widget.feedbackOffset,
       axis: widget.axis,
       ignoringFeedbackSemantics: widget.ignoringFeedbackSemantics,
+      affinity: widget.affinity,
+      hitTestBehavior: widget.hitTestBehavior,
+      rootOverlay: widget.rootOverlay,
+      child: Builder(
+        builder: _buildChild,
+      ),
     );
   }
 
   Widget _buildLongPressDraggable() {
     return LongPressDraggable<T>(
-      child: Builder(
-        builder: _buildChild,
-      ),
       feedback: Builder(
         builder: _buildFeedback,
       ),
@@ -373,13 +417,18 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
       maxSimultaneousDrags: widget.maxSimultaneousDrags,
       hapticFeedbackOnStart: widget._hapticFeedbackOnStart,
       onDragStarted: _onDragStarted,
+      onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onDraggableCanceled: _onDraggableCanceled,
       onDragCompleted: _onDragCompleted,
-      dragAnchor: widget.dragAnchor,
+      dragAnchorStrategy: widget.dragAnchorStrategy,
       feedbackOffset: widget.feedbackOffset,
       axis: widget.axis,
       ignoringFeedbackSemantics: widget.ignoringFeedbackSemantics,
+      delay: widget._delay,
+      child: Builder(
+        builder: _buildChild,
+      ),
     );
   }
 
@@ -387,12 +436,12 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (TapDownDetails details) {
-        _dragStartPoint = globalToLocal(context, point: details.globalPosition)?.topLeft;
+        _dragStartPoint = globalToLocal(context, point: details.globalPosition).topLeft;
       },
       child: AnimatedOffset(
         vsync: this,
         alignment: widget.alignment,
-        duration: _controller.duration,
+        duration: _controller.duration!,
         curve: _curvedAnimation.curve,
         child: widget._isLongPressDrag ? _buildLongPressDraggable() : _buildDraggable(),
       ),
@@ -401,28 +450,30 @@ class _AnimatedDraggableState<T> extends State<AnimatedDraggable<T>> with Ticker
 }
 
 /// Makes its child draggable starting from long press.
-class AnimatedLongPressDraggable<T> extends AnimatedDraggable<T> {
+class AnimatedLongPressDraggable<T extends Object> extends AnimatedDraggable<T> {
   /// Creates a widget that can be dragged starting from long press.
   ///
   /// The [child] and [feedback] arguments must not be null. If
   /// [maxSimultaneousDrags] is non-null, it must be non-negative.
   const AnimatedLongPressDraggable({
-    Key key,
-    @required Widget child,
-    Widget feedback,
-    T data,
-    Axis axis,
-    Widget childWhenDragging,
+    Key? key,
+    required Widget child,
+    Widget? feedback,
+    T? data,
+    Axis? axis,
+    Widget? childWhenDragging,
     Offset feedbackOffset = Offset.zero,
-    DragAnchor dragAnchor = DragAnchor.child,
-    int maxSimultaneousDrags,
-    VoidCallback onDragStarted,
-    DraggableCanceledCallback onDraggableCanceled,
-    DragEndCallback onDragEnd,
-    VoidCallback onDragCompleted,
+    DragAnchorStrategy? dragAnchorStrategy,
+    int? maxSimultaneousDrags,
+    VoidCallback? onDragStarted,
+    DragUpdateCallback? onDragUpdate,
+    DraggableCanceledCallback? onDraggableCanceled,
+    DragEndCallback? onDragEnd,
+    VoidCallback? onDragCompleted,
     this.hapticFeedbackOnStart = true,
     bool ignoringFeedbackSemantics = true,
-    @required Duration duration,
+    this.delay = kLongPressTimeout,
+    required Duration duration,
     Curve curve = Curves.linear,
     AlignmentGeometry alignment = Alignment.center,
   }) : super(
@@ -433,9 +484,10 @@ class AnimatedLongPressDraggable<T> extends AnimatedDraggable<T> {
           axis: axis,
           childWhenDragging: childWhenDragging,
           feedbackOffset: feedbackOffset,
-          dragAnchor: dragAnchor,
+          dragAnchorStrategy: dragAnchorStrategy,
           maxSimultaneousDrags: maxSimultaneousDrags,
           onDragStarted: onDragStarted,
+          onDragUpdate: onDragUpdate,
           onDraggableCanceled: onDraggableCanceled,
           onDragEnd: onDragEnd,
           onDragCompleted: onDragCompleted,
@@ -448,41 +500,47 @@ class AnimatedLongPressDraggable<T> extends AnimatedDraggable<T> {
   /// Whether haptic feedback should be triggered on drag start.
   final bool hapticFeedbackOnStart;
 
+  /// The duration that a user has to press down before a long press is registered.
+  ///
+  /// Defaults to [kLongPressTimeout].
+  final Duration delay;
+
   @override
   bool get _hapticFeedbackOnStart => hapticFeedbackOnStart;
 
   @override
   bool get _isLongPressDrag => true;
+
+  @override
+  Duration get _delay => delay;
 }
 
 class _DragAvatar {
   _DragAvatar({
-    @required BuildContext context,
-    @required this.animation,
-    @required this.child,
-  })  : assert(context != null),
-        assert(animation != null),
-        assert(child != null) {
+    required BuildContext context,
+    required this.animation,
+    required this.child,
+  }) {
     _entry = OverlayEntry(builder: _build);
-    Overlay.of(context, rootOverlay: true).insert(_entry);
+    Overlay.of(context, rootOverlay: true)!.insert(_entry!);
     animation.addStatusListener(_onAnimationStatusChanged);
   }
 
-  final Animation<Rect> animation;
-  final Widget child;
+  late final Animation<Rect> animation;
+  late final Widget child;
 
-  OverlayEntry _entry;
+  OverlayEntry? _entry;
 
   Widget _build(BuildContext context) {
     return AnimatedBuilder(
       animation: animation,
-      child: child,
-      builder: (BuildContext context, Widget child) {
+      builder: (BuildContext context, Widget? child) {
         return Positioned.fromRect(
           rect: animation.value,
-          child: child,
+          child: child!,
         );
       },
+      child: child,
     );
   }
 

@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
+
 import 'package:dio/dio.dart';
 
 import 'gio.dart';
 
 /// 创建[Gio]
-Gio createGio([GioBaseOptions options]) => throw UnsupportedError('');
+Gio createGio([GioBaseOptions? options]) => throw UnsupportedError('');
 
 /// Created by changlei on 2020/8/26.
 ///
@@ -18,12 +22,12 @@ mixin DioExtendsMixin on DioMixin {
     if (requestOptions is GioRequestOptions) {
       return requestOptions;
     }
-    final Map<String, dynamic> headers = <String, dynamic>{...?requestOptions.headers};
-    final String contentType = requestOptions.contentType;
+    final headers = <String, dynamic>{...requestOptions.headers};
+    final contentType = requestOptions.contentType;
     if (contentType != null) {
       headers.remove(Headers.contentTypeHeader);
     }
-    final BaseOptions baseOptions = options;
+    final baseOptions = options;
     return GioRequestOptions(
       method: requestOptions.method,
       sendTimeout: requestOptions.sendTimeout,
@@ -47,9 +51,9 @@ mixin DioExtendsMixin on DioMixin {
       requestEncoder: requestOptions.requestEncoder,
       responseDecoder: requestOptions.responseDecoder,
       listFormat: requestOptions.listFormat,
-      setRequestContentTypeWhenNoPayload: baseOptions?.setRequestContentTypeWhenNoPayload,
-      validateCode: baseOptions is GioBaseOptions ? baseOptions?.validateCode : null,
-      dataKeyOptions: baseOptions is GioBaseOptions ? baseOptions?.dataKeyOptions : null,
+      setRequestContentTypeWhenNoPayload: baseOptions.setRequestContentTypeWhenNoPayload,
+      validateCode: baseOptions is GioBaseOptions ? baseOptions.validateCode : null,
+      dataKeyOptions: baseOptions is GioBaseOptions ? baseOptions.dataKeyOptions : null,
     );
   }
 }

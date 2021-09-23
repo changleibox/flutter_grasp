@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/cupertino.dart';
@@ -13,7 +13,7 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 class SupportListView extends StatelessWidget {
   /// 构造函数
   SupportListView({
-    Key key,
+    Key? key,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.controller,
@@ -33,21 +33,22 @@ class SupportListView extends StatelessWidget {
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.loadNextBuilder = SupportCustomScrollView.buildLoadNext,
     this.placeholderBuilder = SupportCustomScrollView.buildPlaceholder,
-  })  : assert(loadOptionsBuilder != null),
-        _sliverListView = SliverListView(
-          children: children,
+    this.restorationId,
+    this.clipBehavior = Clip.hardEdge,
+  })  : _sliverListView = SliverListView(
           padding: EdgeInsets.zero,
           itemExtent: itemExtent,
           addAutomaticKeepAlives: addAutomaticKeepAlives,
           addRepaintBoundaries: addRepaintBoundaries,
           addSemanticIndexes: addSemanticIndexes,
           scrollDirection: scrollDirection,
+          children: children,
         ),
         super(key: key);
 
   /// builder构造函数
   SupportListView.builder({
-    Key key,
+    Key? key,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.controller,
@@ -56,8 +57,8 @@ class SupportListView extends StatelessWidget {
     this.shrinkWrap = false,
     this.padding,
     this.itemExtent,
-    @required IndexedWidgetBuilder itemBuilder,
-    int itemCount,
+    required IndexedWidgetBuilder itemBuilder,
+    int? itemCount,
     bool addAutomaticKeepAlives = true,
     bool addRepaintBoundaries = true,
     bool addSemanticIndexes = true,
@@ -68,9 +69,10 @@ class SupportListView extends StatelessWidget {
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.loadNextBuilder = SupportCustomScrollView.buildLoadNext,
     this.placeholderBuilder = SupportCustomScrollView.buildPlaceholder,
-  })  : assert(loadOptionsBuilder != null),
-        assert(itemCount == null || itemCount >= 0),
-        assert(semanticChildCount == null || semanticChildCount <= itemCount),
+    this.restorationId,
+    this.clipBehavior = Clip.hardEdge,
+  })  : assert(itemCount == null || itemCount >= 0),
+        assert(semanticChildCount == null || semanticChildCount <= itemCount!),
         _sliverListView = SliverListView.builder(
           itemBuilder: itemBuilder,
           itemCount: itemCount,
@@ -85,7 +87,7 @@ class SupportListView extends StatelessWidget {
 
   /// 分割器
   SupportListView.separated({
-    Key key,
+    Key? key,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.controller,
@@ -93,9 +95,9 @@ class SupportListView extends StatelessWidget {
     this.physics,
     this.shrinkWrap = false,
     this.padding,
-    @required IndexedWidgetBuilder itemBuilder,
-    @required IndexedWidgetBuilder separatorBuilder,
-    @required int itemCount,
+    required IndexedWidgetBuilder itemBuilder,
+    required IndexedWidgetBuilder separatorBuilder,
+    required int itemCount,
     bool addAutomaticKeepAlives = true,
     bool addRepaintBoundaries = true,
     bool addSemanticIndexes = true,
@@ -104,10 +106,9 @@ class SupportListView extends StatelessWidget {
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.loadNextBuilder = SupportCustomScrollView.buildLoadNext,
     this.placeholderBuilder = SupportCustomScrollView.buildPlaceholder,
-  })  : assert(loadOptionsBuilder != null),
-        assert(itemBuilder != null),
-        assert(separatorBuilder != null),
-        assert(itemCount != null && itemCount >= 0),
+    this.restorationId,
+    this.clipBehavior = Clip.hardEdge,
+  })  : assert(itemCount >= 0),
         itemExtent = null,
         semanticChildCount = null,
         dragStartBehavior = DragStartBehavior.start,
@@ -125,7 +126,7 @@ class SupportListView extends StatelessWidget {
 
   /// 自定义
   SupportListView.custom({
-    Key key,
+    Key? key,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.controller,
@@ -134,17 +135,17 @@ class SupportListView extends StatelessWidget {
     this.shrinkWrap = false,
     this.padding,
     this.itemExtent,
-    @required SliverChildDelegate childrenDelegate,
+    required SliverChildDelegate childrenDelegate,
     this.cacheExtent,
     this.semanticChildCount,
-    this.dragStartBehavior,
+    this.dragStartBehavior = DragStartBehavior.start,
     this.loadOptionsBuilder = const DefaultLoadOptionsBuilder(),
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.loadNextBuilder = SupportCustomScrollView.buildLoadNext,
     this.placeholderBuilder = SupportCustomScrollView.buildPlaceholder,
-  })  : assert(loadOptionsBuilder != null),
-        assert(childrenDelegate != null),
-        _sliverListView = SliverListView.custom(
+    this.restorationId,
+    this.clipBehavior = Clip.hardEdge,
+  })  : _sliverListView = SliverListView.custom(
           padding: EdgeInsets.zero,
           itemExtent: itemExtent,
           childrenDelegate: childrenDelegate,
@@ -166,7 +167,7 @@ class SupportListView extends StatelessWidget {
   /// scroll position (see [ScrollController.offset]), or change it (see
   /// [ScrollController.animateTo]).
   /// {@endtemplate}
-  final ScrollController controller;
+  final ScrollController? controller;
 
   /// 滚动方向
   final Axis scrollDirection;
@@ -175,25 +176,25 @@ class SupportListView extends StatelessWidget {
   final bool reverse;
 
   /// 是否使用[PrimaryScrollController]
-  final bool primary;
+  final bool? primary;
 
   /// 插值器，可以自定义滚动效果
-  final ScrollPhysics physics;
+  final ScrollPhysics? physics;
 
   /// 是否压缩包裹
   final bool shrinkWrap;
 
   /// 内边距
-  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? padding;
 
   /// item固定高度
-  final double itemExtent;
+  final double? itemExtent;
 
   /// 缓存区域
-  final double cacheExtent;
+  final double? cacheExtent;
 
   /// childCount
-  final int semanticChildCount;
+  final int? semanticChildCount;
 
   /// {@macro flutter.widgets.scrollable.dragStartBehavior}
   final DragStartBehavior dragStartBehavior;
@@ -214,7 +215,15 @@ class SupportListView extends StatelessWidget {
   /// 占位图
   final PlaceholderBuilder placeholderBuilder;
 
-  bool get _hasElements => _sliverListView.estimatedChildCount > 0;
+  /// {@macro flutter.widgets.scrollable.restorationId}
+  final String? restorationId;
+
+  /// {@macro flutter.material.Material.clipBehavior}
+  ///
+  /// Defaults to [Clip.hardEdge].
+  final Clip clipBehavior;
+
+  bool get _hasElements => (_sliverListView.estimatedChildCount ?? 0) > 0;
 
   @override
   Widget build(BuildContext context) {
@@ -234,6 +243,8 @@ class SupportListView extends StatelessWidget {
       keyboardDismissBehavior: keyboardDismissBehavior,
       loadNextBuilder: loadNextBuilder,
       placeholderBuilder: placeholderBuilder,
+      restorationId: restorationId,
+      clipBehavior: clipBehavior,
       slivers: <Widget>[
         _sliverListView,
       ],

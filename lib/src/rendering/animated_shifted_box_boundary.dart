@@ -1,6 +1,6 @@
-// Copyright 2014 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
 
 import 'package:flutter/rendering.dart';
 
@@ -10,5 +10,5 @@ import 'package:flutter/rendering.dart';
 /// 不加这个控件的话，在滚动布局上，在滚动的适合，会有闪屏，出现这个问题的原因是他们在屏幕中的位置一直在变化
 class RenderAnimatedShiftedBoxBoundary extends RenderRepaintBoundary {
   /// 初始化
-  RenderAnimatedShiftedBoxBoundary({RenderBox child}) : super(child: child);
+  RenderAnimatedShiftedBoxBoundary({RenderBox? child}) : super(child: child);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/widgets.dart';
@@ -7,18 +7,19 @@ import 'package:flutter/widgets.dart';
 /// Created by changlei on 2020/8/26.
 ///
 /// 系统[DragTarget]加动画
-class AnimatedDragTarget<T> extends StatelessWidget {
+class AnimatedDragTarget<T extends Object> extends StatelessWidget {
   /// 系统[DragTarget]加动画
   const AnimatedDragTarget({
-    Key key,
-    @required this.builder,
+    Key? key,
+    required this.builder,
     this.onWillAccept,
     this.onAccept,
     this.onAcceptWithDetails,
     this.onLeave,
     this.onMove,
-    @required this.duration,
+    required this.duration,
     this.curve = Curves.linear,
+    this.hitTestBehavior = HitTestBehavior.translucent,
   }) : super(key: key);
 
   /// Called to build the contents of this widget.
@@ -33,27 +34,27 @@ class AnimatedDragTarget<T> extends StatelessWidget {
   /// Called when a piece of data enters the target. This will be followed by
   /// either [onAccept] and [onAcceptWithDetails], if the data is dropped, or
   /// [onLeave], if the drag leaves the target.
-  final DragTargetWillAccept<T> onWillAccept;
+  final DragTargetWillAccept<T>? onWillAccept;
 
   /// Called when an acceptable piece of data was dropped over this drag target.
   ///
   /// Equivalent to [onAcceptWithDetails], but only includes the data.
-  final DragTargetAccept<T> onAccept;
+  final DragTargetAccept<T>? onAccept;
 
   /// Called when an acceptable piece of data was dropped over this drag target.
   ///
   /// Equivalent to [onAccept], but with information, including the data, in a
   /// [DragTargetDetails].
-  final DragTargetAcceptWithDetails<T> onAcceptWithDetails;
+  final DragTargetAcceptWithDetails<T>? onAcceptWithDetails;
 
   /// Called when a given piece of data being dragged over this target leaves
   /// the target.
-  final DragTargetLeave onLeave;
+  final DragTargetLeave? onLeave;
 
   /// Called when a [Draggable] moves within this [DragTarget].
   ///
   /// Note that this includes entering and leaving the target.
-  final DragTargetMove onMove;
+  final DragTargetMove? onMove;
 
   /// The length of time this animation should last.
   final Duration duration;
@@ -61,7 +62,12 @@ class AnimatedDragTarget<T> extends StatelessWidget {
   /// The curve to use in the forward direction.
   final Curve curve;
 
-  Widget _buildTargetChild(BuildContext context, List<T> candidateData, List<dynamic> rejectedData) {
+  /// How to behave during hit testing.
+  ///
+  /// Defaults to [HitTestBehavior.translucent].
+  final HitTestBehavior hitTestBehavior;
+
+  Widget _buildTargetChild(BuildContext context, List<T?> candidateData, List<dynamic> rejectedData) {
     return AnimatedContainer(
       duration: duration,
       curve: curve,
@@ -70,7 +76,7 @@ class AnimatedDragTarget<T> extends StatelessWidget {
         opacity: candidateData.isEmpty ? 1.0 : 0.4,
         duration: duration,
         curve: curve,
-        child: builder?.call(context, candidateData, rejectedData),
+        child: builder.call(context, candidateData, rejectedData),
       ),
     );
   }
@@ -83,6 +89,7 @@ class AnimatedDragTarget<T> extends StatelessWidget {
       onWillAccept: onWillAccept,
       onLeave: onLeave,
       onMove: onMove,
+      hitTestBehavior: hitTestBehavior,
       builder: _buildTargetChild,
     );
   }

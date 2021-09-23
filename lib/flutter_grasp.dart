@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
+
 library flutter_grasp;
 
 // dio的包
@@ -28,7 +32,7 @@ export 'src/service/reg_exps.dart';
 export 'src/service/text_input.dart';
 export 'src/service/text_input_formatter.dart';
 export 'src/util/base64_utils.dart';
-export 'src/util/date_time_utils.dart';
+export 'src/util/date_formats.dart';
 export 'src/util/qiniu_utils.dart';
 export 'src/util/text_utils.dart';
 export 'src/util/utils.dart';
@@ -42,6 +46,7 @@ export 'src/widget/animated_offset.dart';
 export 'src/widget/animated_overlay.dart';
 export 'src/widget/animated_shifted_box_boundary.dart';
 export 'src/widget/animated_widget_group.dart';
+export 'src/widget/binding.dart' show runGraspApp;
 export 'src/widget/child_delegate.dart';
 export 'src/widget/draggable_sort.dart';
 export 'src/widget/draggable_sort_group.dart';

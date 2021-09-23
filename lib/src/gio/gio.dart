@@ -1,5 +1,5 @@
 /*
- * Copyright © 2019 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:collection';
@@ -43,52 +43,49 @@ class IResponse with MapMixin<String, dynamic> {
   final int code;
 
   /// 返回的message
-  final String message;
+  final String? message;
 
   /// 返回的data
-  final dynamic data;
+  final Object? data;
   final Map<String, dynamic> _originalData;
 
   @override
   String toString() {
-    return _originalData?.toString() ?? super.toString();
+    return _originalData.toString();
   }
 
   @override
-  dynamic operator [](Object key) {
-    return _originalData == null ? null : _originalData[key];
+  Object? operator [](Object? key) {
+    return _originalData[key];
   }
 
   @override
   void operator []=(String key, dynamic value) {
-    if (_originalData == null) {
-      return;
-    }
     _originalData[key] = value;
   }
 
   @override
   void clear() {
-    _originalData?.clear();
+    _originalData.clear();
   }
 
   @override
-  Iterable<String> get keys => _originalData?.keys;
+  Iterable<String> get keys => _originalData.keys;
 
   @override
-  void remove(Object key) {
-    _originalData?.remove(key);
+  Object? remove(Object? key) {
+    _originalData.remove(key);
   }
 }
 
 /// 自定义Error
 class GioError extends DioError {
   GioError._({
-    RequestOptions requestOptions,
-    Response<dynamic> response,
+    required RequestOptions requestOptions,
+    Response<dynamic>? response,
     DioErrorType type = DioErrorType.other,
     dynamic error,
-    int code,
+    int? code,
   })  : _code = code,
         super(
           requestOptions: requestOptions,
@@ -97,39 +94,36 @@ class GioError extends DioError {
           error: error,
         );
 
-  int _code;
+  int? _code;
 
   /// 错误码
-  int get code => _code;
+  int? get code => _code;
 
   @override
-  // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
     return identical(this, other) || other is GioError && other._code == _code;
   }
 
   @override
-  // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => _code;
+  int get hashCode => _code.hashCode;
 
-  static DioError _assureDioError(dynamic err, [dynamic origin]) {
+  static DioError _assureDioError(RequestOptions requestOptions, dynamic err, [dynamic origin]) {
     if (err is GioError) {
       return err;
     } else if (err is DioError) {
       return GioError._convert(err);
     } else {
-      final GioError _err = GioError._();
+      final _err = GioError._(
+        requestOptions: requestOptions,
+      );
       if (err is Error) {
         _err.error = err;
-      }
-      if (err is IResponse) {
-        Response<dynamic> response;
+      } else if (err is IResponse) {
+        Response<dynamic>? response;
         if (origin is Response<dynamic>) {
           response = origin;
-          _err.requestOptions = origin.requestOptions;
         } else if (origin is DioError) {
           response = origin.response;
-          _err.requestOptions = origin.requestOptions;
         }
 
         response?.data = err.data;
@@ -151,12 +145,12 @@ class GioError extends DioError {
       return error;
     }
     try {
-      int code = -1;
-      final Response<dynamic> response = error.response;
+      var code = -1;
+      final response = error.response;
       if (response != null) {
         final dynamic data = response.data;
-        final RequestOptions options = response.requestOptions;
-        final DataKeyOptions keyOptions = (options is GioRequestOptions ? options : null)?.dataKeyOptions;
+        final options = response.requestOptions;
+        final keyOptions = (options is GioRequestOptions ? options : null)?.dataKeyOptions;
         code = data[keyOptions?.codeKey ?? _kCodeKey] as int;
       }
       return GioError._(
@@ -176,47 +170,47 @@ class GioError extends DioError {
 class ConvertInterceptor extends InterceptorsWrapper {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
-    final Response<dynamic> response = err?.response;
-    final RequestOptions requestOptions = response?.requestOptions;
-    final IResponse iResponse = _convert(response, requestOptions);
+    final response = err.response;
+    final requestOptions = err.requestOptions;
+    final iResponse = _convert(response, requestOptions);
     if (iResponse == null) {
       handler.next(GioError._convert(err));
     } else {
-      handler.next(GioError._assureDioError(iResponse, err));
+      handler.next(GioError._assureDioError(requestOptions, iResponse, err));
     }
   }
 
   @override
   void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
-    final RequestOptions requestOptions = response.requestOptions;
-    final IResponse iResponse = _convert(response, requestOptions);
+    final requestOptions = response.requestOptions;
+    final iResponse = _convert(response, requestOptions);
     if (!_validateCode(iResponse, requestOptions)) {
-      handler.reject(GioError._assureDioError(iResponse, response), true);
+      handler.reject(GioError._assureDioError(requestOptions, iResponse, response), true);
     } else {
       handler.next(response..data = iResponse == null ? response.data : iResponse.data);
     }
   }
 
-  bool _validateCode(IResponse iResponse, RequestOptions options) {
+  bool _validateCode(IResponse? iResponse, RequestOptions options) {
     if (iResponse == null || options is! GioRequestOptions) {
       return true;
     }
-    return (options as GioRequestOptions).validateCode(iResponse.code);
+    return options.validateCode?.call(iResponse.code) != false;
   }
 
-  IResponse _convert(Response<dynamic> response, RequestOptions options) {
+  IResponse? _convert(Response<dynamic>? response, RequestOptions options) {
     if (response == null || response.data is! Map<String, dynamic>) {
       return null;
     }
-    final Map<String, dynamic> dataMap = response?.data as Map<String, dynamic>;
+    final Map<String, dynamic>? dataMap = response.data as Map<String, dynamic>;
     if (dataMap == null) {
       return null;
     }
-    final DataKeyOptions keyOptions = (options is GioRequestOptions ? options : null)?.dataKeyOptions;
-    final int code = dataMap[keyOptions?.codeKey ?? _kCodeKey] as int;
-    final String message = dataMap[keyOptions?.messageKey ?? _kMessageKey] as String;
+    final keyOptions = (options is GioRequestOptions ? options : null)?.dataKeyOptions;
+    final int? code = dataMap[keyOptions?.codeKey ?? _kCodeKey] as int;
+    final String? message = dataMap[keyOptions?.messageKey ?? _kMessageKey] as String;
     final dynamic data = dataMap[keyOptions?.dataKey ?? _kDataKey];
-    if (code != null || message != null || data != null) {
+    if (code != null && (message != null || data != null)) {
       return IResponse._(code, message, data, dataMap);
     }
     return null;
@@ -228,8 +222,8 @@ class ConvertInterceptor extends InterceptorsWrapper {
 /// gio，最终通过它调用
 abstract class Gio with DioMixin implements Dio {
   /// 默认构造函数
-  factory Gio([GioBaseOptions options]) {
-    final Gio gio = createGio(options);
+  factory Gio([GioBaseOptions? options]) {
+    final gio = createGio(options);
     (gio.transformer as DefaultTransformer).jsonDecodeCallback = _parseJson;
     gio.interceptors.add(ConvertInterceptor());
     return gio;
@@ -237,29 +231,24 @@ abstract class Gio with DioMixin implements Dio {
 
   /// 创建一个通用的[Gio]
   factory Gio.normal({
-    String baseUrl,
+    String baseUrl = '',
     int connectTimeout = _kTimeout,
     int receiveTimeout = _kTimeout,
+    int sendTimeout = _kTimeout,
     int validStatus = _kValidStatus,
     int validCode = _kValidCode,
     String codeKey = _kCodeKey,
     String messageKey = _kMessageKey,
     String dataKey = _kDataKey,
   }) {
-    assert(connectTimeout != null);
-    assert(receiveTimeout != null);
-    assert(validStatus != null);
-    assert(validCode != null);
-    assert(codeKey != null);
-    assert(messageKey != null);
-    assert(dataKey != null);
     return Gio(GioBaseOptions(
       baseUrl: baseUrl,
       connectTimeout: connectTimeout,
       receiveTimeout: receiveTimeout,
+      sendTimeout: sendTimeout,
       contentType: Headers.jsonContentType,
       responseType: ResponseType.json,
-      validateStatus: (int status) => status == validStatus,
+      validateStatus: (int? status) => status == validStatus,
       validateCode: (int code) => code == validCode,
       dataKeyOptions: DataKeyOptions(
         codeKey: codeKey,
@@ -277,9 +266,7 @@ class DataKeyOptions {
     this.codeKey = _kCodeKey,
     this.messageKey = _kMessageKey,
     this.dataKey = _kDataKey,
-  })  : assert(codeKey != null),
-        assert(messageKey != null),
-        assert(dataKey != null);
+  });
 
   /// code对应的key
   final String codeKey;
@@ -295,23 +282,23 @@ class DataKeyOptions {
 class GioBaseOptions extends BaseOptions {
   /// 构造函数
   GioBaseOptions({
-    String method,
-    int connectTimeout,
-    int receiveTimeout,
-    int sendTimeout,
-    String baseUrl,
-    Map<String, dynamic> queryParameters,
-    Map<String, dynamic> extra,
-    Map<String, dynamic> headers,
+    String? method,
+    int? connectTimeout,
+    int? receiveTimeout,
+    int? sendTimeout,
+    String baseUrl = '',
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? extra,
+    Map<String, dynamic>? headers,
     ResponseType responseType = ResponseType.json,
-    String contentType,
-    ValidateStatus validateStatus,
+    String? contentType,
+    ValidateStatus? validateStatus,
     bool receiveDataWhenStatusError = true,
     bool followRedirects = true,
     int maxRedirects = 5,
-    RequestEncoder requestEncoder,
-    ResponseDecoder responseDecoder,
-    ListFormat listFormat,
+    RequestEncoder? requestEncoder,
+    ResponseDecoder? responseDecoder,
+    ListFormat? listFormat,
     bool setRequestContentTypeWhenNoPayload = false,
     this.validateCode,
     this.dataKeyOptions = const DataKeyOptions(),
@@ -337,7 +324,7 @@ class GioBaseOptions extends BaseOptions {
         );
 
   /// 验证code是否有效
-  final ValidateCode validateCode;
+  final ValidateCode? validateCode;
 
   /// key配置
   final DataKeyOptions dataKeyOptions;
@@ -345,27 +332,27 @@ class GioBaseOptions extends BaseOptions {
   /// Create a Option from current instance with merging attributes.
   @override
   BaseOptions copyWith({
-    String method,
-    String baseUrl,
-    Map<String, dynamic> queryParameters,
-    String path,
-    int connectTimeout,
-    int receiveTimeout,
-    int sendTimeout,
-    Map<String, dynamic> extra,
-    Map<String, dynamic> headers,
-    ResponseType responseType,
-    String contentType,
-    ValidateStatus validateStatus,
-    bool receiveDataWhenStatusError,
-    bool followRedirects,
-    int maxRedirects,
-    RequestEncoder requestEncoder,
-    ResponseDecoder responseDecoder,
-    ListFormat listFormat,
-    bool setRequestContentTypeWhenNoPayload,
-    ValidateCode validateCode,
-    DataKeyOptions dataKeyOptions,
+    String? method,
+    String? baseUrl,
+    Map<String, dynamic>? queryParameters,
+    String? path,
+    int? connectTimeout,
+    int? receiveTimeout,
+    int? sendTimeout,
+    Map<String, dynamic>? extra,
+    Map<String, dynamic>? headers,
+    ResponseType? responseType,
+    String? contentType,
+    ValidateStatus? validateStatus,
+    bool? receiveDataWhenStatusError,
+    bool? followRedirects,
+    int? maxRedirects,
+    RequestEncoder? requestEncoder,
+    ResponseDecoder? responseDecoder,
+    ListFormat? listFormat,
+    bool? setRequestContentTypeWhenNoPayload,
+    ValidateCode? validateCode,
+    DataKeyOptions? dataKeyOptions,
   }) {
     return GioBaseOptions(
       method: method ?? this.method,
@@ -374,8 +361,8 @@ class GioBaseOptions extends BaseOptions {
       connectTimeout: connectTimeout ?? this.connectTimeout,
       receiveTimeout: receiveTimeout ?? this.receiveTimeout,
       sendTimeout: sendTimeout ?? this.sendTimeout,
-      extra: extra ?? Map<String, dynamic>.from(this.extra ?? <String, dynamic>{}),
-      headers: headers ?? Map<String, dynamic>.from(this.headers ?? <String, dynamic>{}),
+      extra: extra ?? Map<String, dynamic>.from(this.extra),
+      headers: headers ?? Map<String, dynamic>.from(this.headers),
       responseType: responseType ?? this.responseType,
       contentType: contentType ?? this.contentType,
       validateStatus: validateStatus ?? this.validateStatus,
@@ -396,28 +383,28 @@ class GioBaseOptions extends BaseOptions {
 class GioRequestOptions extends RequestOptions {
   /// 构造函数
   GioRequestOptions({
-    String method,
-    int sendTimeout,
-    int receiveTimeout,
-    int connectTimeout,
-    dynamic data,
-    String path,
-    Map<String, dynamic> queryParameters,
-    ProgressCallback onReceiveProgress,
-    ProgressCallback onSendProgress,
-    CancelToken cancelToken,
-    String baseUrl,
-    Map<String, dynamic> extra,
-    Map<String, dynamic> headers,
-    ResponseType responseType,
-    String contentType,
-    ValidateStatus validateStatus,
+    String? method,
+    int? sendTimeout,
+    int? receiveTimeout,
+    int? connectTimeout,
+    Object? data,
+    required String path,
+    Map<String, dynamic>? queryParameters,
+    ProgressCallback? onReceiveProgress,
+    ProgressCallback? onSendProgress,
+    CancelToken? cancelToken,
+    String? baseUrl,
+    Map<String, dynamic>? extra,
+    Map<String, dynamic>? headers,
+    ResponseType? responseType,
+    String? contentType,
+    ValidateStatus? validateStatus,
     bool receiveDataWhenStatusError = true,
     bool followRedirects = true,
-    int maxRedirects,
-    RequestEncoder requestEncoder,
-    ResponseDecoder responseDecoder,
-    ListFormat listFormat,
+    int? maxRedirects,
+    RequestEncoder? requestEncoder,
+    ResponseDecoder? responseDecoder,
+    ListFormat? listFormat,
     this.setRequestContentTypeWhenNoPayload = false,
     this.validateCode,
     this.dataKeyOptions = const DataKeyOptions(),
@@ -448,10 +435,10 @@ class GioRequestOptions extends RequestOptions {
         );
 
   /// 验证code
-  final ValidateCode validateCode;
+  final ValidateCode? validateCode;
 
   /// keys配置
-  final DataKeyOptions dataKeyOptions;
+  final DataKeyOptions? dataKeyOptions;
 
   /// if false, content-type in request header will be deleted when method is not on of `_allowPayloadMethods`
   final bool setRequestContentTypeWhenNoPayload;
@@ -459,31 +446,31 @@ class GioRequestOptions extends RequestOptions {
   /// Create a Option from current instance with merging attributes.
   @override
   RequestOptions copyWith({
-    String method,
-    int sendTimeout,
-    int receiveTimeout,
-    int connectTimeout,
-    dynamic data,
-    String path,
-    Map<String, dynamic> queryParameters,
-    String baseUrl,
-    ProgressCallback onReceiveProgress,
-    ProgressCallback onSendProgress,
-    CancelToken cancelToken,
-    Map<String, dynamic> extra,
-    Map<String, dynamic> headers,
-    ResponseType responseType,
-    String contentType,
-    ValidateStatus validateStatus,
-    bool receiveDataWhenStatusError = true,
-    bool followRedirects = true,
-    int maxRedirects,
-    RequestEncoder requestEncoder,
-    ResponseDecoder responseDecoder,
-    ListFormat listFormat,
-    bool setRequestContentTypeWhenNoPayload,
-    ValidateCode validateCode,
-    DataKeyOptions dataKeyOptions,
+    String? method,
+    int? sendTimeout,
+    int? receiveTimeout,
+    int? connectTimeout,
+    Object? data,
+    String? path,
+    Map<String, dynamic>? queryParameters,
+    String? baseUrl,
+    ProgressCallback? onReceiveProgress,
+    ProgressCallback? onSendProgress,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? extra,
+    Map<String, dynamic>? headers,
+    ResponseType? responseType,
+    String? contentType,
+    ValidateStatus? validateStatus,
+    bool? receiveDataWhenStatusError,
+    bool? followRedirects,
+    int? maxRedirects,
+    RequestEncoder? requestEncoder,
+    ResponseDecoder? responseDecoder,
+    ListFormat? listFormat,
+    bool? setRequestContentTypeWhenNoPayload,
+    ValidateCode? validateCode,
+    DataKeyOptions? dataKeyOptions,
   }) {
     return GioRequestOptions(
       method: method ?? this.method,
@@ -497,8 +484,8 @@ class GioRequestOptions extends RequestOptions {
       onReceiveProgress: onReceiveProgress ?? this.onReceiveProgress,
       onSendProgress: onSendProgress ?? this.onSendProgress,
       cancelToken: cancelToken ?? this.cancelToken,
-      extra: extra ?? Map<String, dynamic>.from(this.extra ?? <String, dynamic>{}),
-      headers: headers ?? Map<String, dynamic>.from(this.headers ?? <String, dynamic>{}),
+      extra: extra ?? Map<String, dynamic>.from(this.extra),
+      headers: headers ?? Map<String, dynamic>.from(this.headers),
       responseType: responseType ?? this.responseType,
       contentType: contentType ?? this.contentType,
       validateStatus: validateStatus ?? this.validateStatus,

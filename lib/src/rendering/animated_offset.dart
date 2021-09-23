@@ -1,12 +1,9 @@
-// Copyright 2014 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// @dart = 2.8
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
 
 import 'package:flutter/animation.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -36,13 +33,13 @@ class RenderAnimatedOffset extends RenderAnimatedShiftedBox {
   /// The arguments [duration], [curve], [alignment], and [vsync] must
   /// not be null.
   RenderAnimatedOffset({
-    @required TickerProvider vsync,
-    @required Duration duration,
-    Duration reverseDuration,
+    required TickerProvider vsync,
+    required Duration duration,
+    Duration? reverseDuration,
     Curve curve = Curves.linear,
     AlignmentGeometry alignment = Alignment.center,
-    TextDirection textDirection,
-    RenderBox child,
+    TextDirection? textDirection,
+    RenderBox? child,
   }) : super(
           child: child,
           alignment: alignment,
@@ -54,13 +51,13 @@ class RenderAnimatedOffset extends RenderAnimatedShiftedBox {
         );
 
   final Tween<Offset> _offsetTween = Tween<Offset>();
-  Offset _originOffset;
+  Offset? _originOffset;
 
-  Offset get _animatedOffset {
+  Offset? get _animatedOffset {
     return _offsetTween.evaluate(animation);
   }
 
-  Offset _getOffset(RenderBox box) {
+  Offset? _getOffset(RenderBox? box) {
     if (box == null || !hasSize || !attached || !box.hasSize || !box.attached) {
       return null;
     }
@@ -68,17 +65,17 @@ class RenderAnimatedOffset extends RenderAnimatedShiftedBox {
   }
 
   void _layoutAndResize() {
-    final Offset currentOffset = _getOffset(child);
+    final currentOffset = _getOffset(child);
     if (nearEqualForOffset(_originOffset, currentOffset, Tolerance.defaultTolerance.distance)) {
       return;
     }
-    final Offset animatedOffset = _animatedOffset;
+    final animatedOffset = _animatedOffset;
     stop();
     if (currentOffset == null || _originOffset == null) {
       _originOffset = currentOffset;
       return;
     }
-    Offset newOriginOffset = _originOffset;
+    var newOriginOffset = _originOffset!;
     if (animatedOffset != null) {
       newOriginOffset -= animatedOffset;
     }
@@ -92,7 +89,7 @@ class RenderAnimatedOffset extends RenderAnimatedShiftedBox {
   void paint(PaintingContext context, Offset offset) {
     _layoutAndResize();
     if (_animatedOffset != null) {
-      offset -= _animatedOffset;
+      offset -= _animatedOffset!;
     }
     super.paint(context, offset);
   }

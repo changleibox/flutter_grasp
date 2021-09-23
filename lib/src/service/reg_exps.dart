@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
+
 /// Created by changlei on 2020/8/3.
 ///
 /// 常用正则表达式

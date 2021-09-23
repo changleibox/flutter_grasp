@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
+
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
@@ -13,12 +17,12 @@ class QiniuUtils {
   const QiniuUtils._();
 
   /// 判断一个数字是否有效
-  static bool isInvalidValue(double value) {
+  static bool isInvalidValue(double? value) {
     return value == null || value.isInfinite || value.isNaN || value <= 0;
   }
 
   /// 判断一个[size]是否有效
-  static bool isInvalidSize(Size size) {
+  static bool isInvalidSize(Size? size) {
     return size == null || size.isInfinite || size.isEmpty;
   }
 
@@ -26,13 +30,13 @@ class QiniuUtils {
   static String formatQiniuUrl(
     BuildContext context,
     String url, {
-    double width,
-    double height,
+    double? width,
+    double? height,
     int mode = 0,
-    int quality,
-    String format,
-    bool interlace,
-    int colors,
+    int? quality,
+    String? format,
+    bool? interlace,
+    int? colors,
   }) {
     if (TextUtils.isEmpty(url) || Uri.parse(url).host.contains('qiniu')) {
       return url;
@@ -41,7 +45,7 @@ class QiniuUtils {
     assert(quality == null || (quality >= 1 && quality <= 100));
     assert(format == null || _FORMATS.contains(format));
     assert(colors == null || _COLORS.contains(colors));
-    final List<dynamic> params = <dynamic>[];
+    final params = <dynamic>[];
     params.addAll(<dynamic>['$url?imageView2', mode]);
     params.addAll(<dynamic>['ignore-error', 1]);
     if (quality != null) {
@@ -56,7 +60,7 @@ class QiniuUtils {
     if (TextUtils.isNotEmpty(format)) {
       params.addAll(<dynamic>['format', format]);
     }
-    final Size size = MediaQuery.of(context).size;
+    final size = MediaQuery.of(context).size;
     if (isInvalidValue(width)) {
       width = size.width;
     }
@@ -64,10 +68,10 @@ class QiniuUtils {
       height = size.height;
     }
     if (mode == 1 || mode == 2 || mode == 3) {
-      params.addAll(<dynamic>['w', width.ceil()]);
-      params.addAll(<dynamic>['h', height.ceil()]);
+      params.addAll(<dynamic>['w', width!.ceil()]);
+      params.addAll(<dynamic>['h', height!.ceil()]);
     } else {
-      params.addAll(<dynamic>['w', max(width, height).ceil()]);
+      params.addAll(<dynamic>['w', max(width!, height!).ceil()]);
       params.addAll(<dynamic>['h', min(width, height).ceil()]);
     }
     return params.join('/');

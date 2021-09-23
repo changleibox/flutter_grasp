@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/cupertino.dart';
@@ -13,7 +13,7 @@ import 'package:flutter_grasp/src/widget/widget_group.dart';
 class LoadNextWidget extends StatelessWidget {
   /// 构造函数
   const LoadNextWidget({
-    Key key,
+    Key? key,
     this.scrollDirection = Axis.vertical,
     this.hasNext = false,
     this.isLoading = false,
@@ -30,8 +30,8 @@ class LoadNextWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isVertical = scrollDirection == Axis.vertical;
-    String text = isLoading && hasNext
+    final isVertical = scrollDirection == Axis.vertical;
+    var text = isLoading && hasNext
         ? '正在加载更多'
         : hasNext
             ? '上拉加载更多'

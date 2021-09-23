@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:dio/dio.dart';
@@ -9,17 +9,17 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 
 /// Created by changlei on 2020-02-13.
 ///
-/// presenter的异步请求扩展类
+/// [ChangeNotifier]的异步请求扩展类
 mixin FutureChangeNotifierMixin<E> on ChangeNotifier {
-  CancelToken _cancelToken;
+  CancelToken? _cancelToken;
   bool _isLoading = false;
-  String _queryText;
+  String? _queryText;
 
   /// 是否正在加载
   bool get isLoading => _isLoading;
 
   /// 搜索的文本
-  String get queryText => _queryText;
+  String? get queryText => _queryText;
 
   /// 是否需要显示加载进度条
   @protected
@@ -32,7 +32,7 @@ mixin FutureChangeNotifierMixin<E> on ChangeNotifier {
   bool get isNotEmpty;
 
   /// 搜索的文本是否改变
-  bool isQueryChanged(String queryText) {
+  bool isQueryChanged(String? queryText) {
     queryText = TextUtils.isEmpty(queryText) ? null : queryText;
     return queryText != this.queryText;
   }
@@ -45,7 +45,7 @@ mixin FutureChangeNotifierMixin<E> on ChangeNotifier {
 
   /// 搜索，一般在[TextField]文本改变的时候，调用这个方法
   @mustCallSuper
-  Future<void> onQuery(String queryText) async {
+  Future<void> onQuery(String? queryText) async {
     if (!isQueryChanged(queryText)) {
       return;
     }
@@ -74,17 +74,17 @@ mixin FutureChangeNotifierMixin<E> on ChangeNotifier {
 
   /// 异步加载实现方法
   @protected
-  Future<E> request(bool showProgress, CancelToken cancelToken) async {
-    return await onLoad(showProgress, cancelToken) as E;
+  Future<E?> request(bool showProgress, CancelToken? cancelToken) async {
+    return await onLoad(showProgress, cancelToken) as E?;
   }
 
   /// 异步加载实现方法
   @protected
-  Future<dynamic> onLoad(bool showProgress, CancelToken cancelToken);
+  Future<Object?> onLoad(bool showProgress, CancelToken? cancelToken);
 
   /// 对加载完的数据进行解析
   @protected
-  E resolve(E object);
+  E? resolve(E? object);
 
   /// 开始加载
   @protected
@@ -94,7 +94,7 @@ mixin FutureChangeNotifierMixin<E> on ChangeNotifier {
 
   /// 已加载完成
   @protected
-  void onLoaded(E object) {}
+  void onLoaded(E? object) {}
 
   /// 加载错误的时候
   @protected
@@ -115,7 +115,7 @@ mixin FutureChangeNotifierMixin<E> on ChangeNotifier {
     _cancelToken = CancelToken();
     _isLoading = true;
     onStart();
-    await request(showProgress, _cancelToken).then((E object) {
+    await request(showProgress, _cancelToken).then((object) {
       _callback(object);
     }).catchError((Object error, StackTrace stackTrace) {
       onError(error, stackTrace);
@@ -125,7 +125,7 @@ mixin FutureChangeNotifierMixin<E> on ChangeNotifier {
     });
   }
 
-  void _callback(E object) {
+  void _callback(E? object) {
     onLoaded(resolve(object));
   }
 }

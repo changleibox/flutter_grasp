@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/cupertino.dart';
@@ -11,26 +11,26 @@ import 'package:flutter/physics.dart';
 class SnappingTelosScrollPhysics extends ScrollPhysics {
   /// 回弹
   const SnappingTelosScrollPhysics({
-    ScrollPhysics parent,
+    ScrollPhysics? parent,
     this.maxScrollOffset,
   }) : super(parent: parent);
 
   /// 最大偏移量
-  final double maxScrollOffset;
+  final double? maxScrollOffset;
 
   /// 最大偏移量
   @protected
-  double computeMaxScrollExtent(ScrollMetrics position) => maxScrollOffset;
+  double? computeMaxScrollExtent(ScrollMetrics position) => maxScrollOffset;
 
   double _maxScrollExtent(ScrollMetrics position) {
-    final double minScrollExtent = position.minScrollExtent;
-    final double maxScrollExtent = computeMaxScrollExtent(position);
+    final minScrollExtent = position.minScrollExtent;
+    final maxScrollExtent = computeMaxScrollExtent(position);
     assert(maxScrollExtent != null && maxScrollExtent >= minScrollExtent);
-    return maxScrollExtent;
+    return maxScrollExtent ?? 1;
   }
 
   @override
-  SnappingTelosScrollPhysics applyTo(ScrollPhysics ancestor) {
+  SnappingTelosScrollPhysics applyTo(ScrollPhysics? ancestor) {
     return SnappingTelosScrollPhysics(
       parent: buildParent(ancestor),
       maxScrollOffset: maxScrollOffset,
@@ -46,7 +46,7 @@ class SnappingTelosScrollPhysics extends ScrollPhysics {
   }
 
   double _getTargetPixels(ScrollMetrics position, Tolerance tolerance, double velocity) {
-    double page = _getPage(position);
+    var page = _getPage(position);
     if (velocity < -tolerance.velocity) {
       page -= 0.5;
     } else if (velocity > tolerance.velocity) {
@@ -56,9 +56,9 @@ class SnappingTelosScrollPhysics extends ScrollPhysics {
   }
 
   @override
-  Simulation createBallisticSimulation(ScrollMetrics position, double velocity) {
-    final double minScrollExtent = position.minScrollExtent;
-    final double maxScrollExtent = _maxScrollExtent(position);
+  Simulation? createBallisticSimulation(ScrollMetrics position, double velocity) {
+    final minScrollExtent = position.minScrollExtent;
+    final maxScrollExtent = _maxScrollExtent(position);
     if ((velocity <= 0.0 && position.pixels <= minScrollExtent) ||
         (velocity >= 0.0 && position.pixels >= maxScrollExtent)) {
       return super.createBallisticSimulation(position, velocity);
@@ -66,7 +66,7 @@ class SnappingTelosScrollPhysics extends ScrollPhysics {
 
     // Create a test simulation to see where it would have ballistically fallen
     // naturally without settling onto items.
-    final Simulation testFrictionSimulation = super.createBallisticSimulation(position, velocity);
+    final testFrictionSimulation = super.createBallisticSimulation(position, velocity);
 
     // If it was going to end up past the scroll extent, defer back to the
     // parent physics' ballistics again which should put us on the scrollable's
@@ -77,7 +77,7 @@ class SnappingTelosScrollPhysics extends ScrollPhysics {
       return super.createBallisticSimulation(position, velocity);
     }
 
-    final double targetPixels = _getTargetPixels(position, tolerance, velocity);
+    final targetPixels = _getTargetPixels(position, tolerance, velocity);
 
     // If there's no velocity and we're already at where we intend to land,
     // do nothing.

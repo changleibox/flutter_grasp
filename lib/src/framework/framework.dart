@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/cupertino.dart';
@@ -37,7 +37,7 @@ abstract class StateMethods<T extends StatefulWidget> {
   void didChangeDependencies();
 
   /// 同state.setState
-  void markNeedsBuild([VoidCallback fn]);
+  void markNeedsBuild([VoidCallback? fn]);
 
   /// 页面在第一次绘制完成时回调
   void onPostFrame(Duration timeStamp);
@@ -53,7 +53,7 @@ abstract class CompatibleState<T extends StatefulWidget> extends State<T> implem
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(onPostFrame);
+    WidgetsBinding.instance!.addPostFrameCallback(onPostFrame);
   }
 
   @protected
@@ -64,7 +64,7 @@ abstract class CompatibleState<T extends StatefulWidget> extends State<T> implem
   @protected
   @mustCallSuper
   @override
-  void markNeedsBuild([VoidCallback fn]) {
+  void markNeedsBuild([VoidCallback? fn]) {
     if (!mounted) {
       return;
     }
@@ -96,7 +96,7 @@ mixin HostProvider on StatefulWidget {
 /// 用来绑定[Presenter]和[State]
 abstract class HostStatefulWidget extends StatefulWidget with HostProvider {
   /// Initializes [key] for subclasses.
-  const HostStatefulWidget({Key key}) : super(key: key);
+  const HostStatefulWidget({Key? key}) : super(key: key);
 }
 
 /// An [Element] that uses a [HostStatefulWidget] as its configuration.
@@ -116,8 +116,7 @@ class HostStatefulElement extends StatefulElement {
       }
       return true;
     }());
-    final HostState<StatefulWidget, Presenter<StatefulWidget>> presenterState =
-        state as HostState<StatefulWidget, Presenter<StatefulWidget>>;
+    final presenterState = state as HostState<StatefulWidget, Presenter<StatefulWidget>>;
     assert(
       presenter._state == null,
       'The createPresenter function for $widget returned an old or invalid presenter '
@@ -150,7 +149,7 @@ class HostStatefulElement extends StatefulElement {
 
 /// 用来绑定state和presenter
 abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> extends CompatibleState<T> {
-  P _presenter;
+  P? _presenter;
 
   /// presenter
   P get presenter {
@@ -166,7 +165,7 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
       }
       return true;
     }());
-    return _presenter;
+    return _presenter!;
   }
 
   @mustCallSuper
@@ -174,7 +173,7 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
   @override
   void initState() {
     super.initState();
-    presenter?.initState();
+    presenter.initState();
   }
 
   @mustCallSuper
@@ -182,7 +181,7 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
   @override
   void onPostFrame(Duration timeStamp) {
     super.onPostFrame(timeStamp);
-    presenter?.onPostFrame(timeStamp);
+    presenter.onPostFrame(timeStamp);
   }
 
   @mustCallSuper
@@ -190,7 +189,7 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
   @override
   void didUpdateWidget(covariant T oldWidget) {
     super.didUpdateWidget(oldWidget);
-    presenter?.didUpdateWidget(oldWidget);
+    presenter.didUpdateWidget(oldWidget);
   }
 
   @mustCallSuper
@@ -198,7 +197,7 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
   @override
   void reassemble() {
     super.reassemble();
-    presenter?.reassemble();
+    presenter.reassemble();
   }
 
   @mustCallSuper
@@ -206,7 +205,7 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
   @override
   void deactivate() {
     super.deactivate();
-    presenter?.deactivate();
+    presenter.deactivate();
   }
 
   @mustCallSuper
@@ -214,7 +213,7 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
   @override
   void dispose() {
     super.dispose();
-    presenter?.dispose();
+    presenter.dispose();
   }
 
   @mustCallSuper
@@ -222,7 +221,7 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    presenter?.didChangeDependencies();
+    presenter.didChangeDependencies();
   }
 
   @override
@@ -235,32 +234,32 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
 /// 绑定在[State]上处理逻辑
 abstract class Presenter<T extends StatefulWidget> implements StateMethods<T> {
   /// 绑定的state
-  StateMethods<T> _state;
+  StateMethods<T>? _state;
 
   @protected
   @mustCallSuper
   @override
-  bool get mounted => _state?.mounted;
+  bool get mounted => _state!.mounted;
 
   @protected
   @mustCallSuper
   @override
-  T get widget => _state?.widget;
+  T get widget => _state!.widget;
 
   @protected
   @mustCallSuper
   @override
-  BuildContext get context => _state?.context;
+  BuildContext get context => _state!.context;
 
   /// [RouteSettings]
   @protected
   @mustCallSuper
-  RouteSettings get settings => ModalRoute.of(context).settings;
+  RouteSettings? get settings => ModalRoute.of(context)?.settings;
 
   /// 上级页面传过来的参数，可能为null
   @protected
   @mustCallSuper
-  dynamic get arguments => settings.arguments;
+  dynamic get arguments => settings?.arguments;
 
   @mustCallSuper
   @override
@@ -289,7 +288,7 @@ abstract class Presenter<T extends StatefulWidget> implements StateMethods<T> {
   @protected
   @mustCallSuper
   @override
-  void markNeedsBuild([VoidCallback fn]) => _state?.markNeedsBuild(fn);
+  void markNeedsBuild([VoidCallback? fn]) => _state?.markNeedsBuild(fn);
 
   @mustCallSuper
   @override

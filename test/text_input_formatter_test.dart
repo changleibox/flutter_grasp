@@ -11,9 +11,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// 自定义TextInputFormatter测试
 void main() {
   test('DecimalTextInputFormatter测试', () {
-    final DecimalTextInputFormatter formatter = DecimalTextInputFormatter(decimalDigits: 2);
-    TextEditingValue oldValue = TextEditingValue.empty;
-    TextEditingValue newValue = TextEditingValue.empty;
+    final formatter = DecimalTextInputFormatter(decimalDigits: 2);
+    var oldValue = TextEditingValue.empty;
+    var newValue = TextEditingValue.empty;
 
     // 测试在不输入的情况下，或者清空的情况下，返回空
     oldValue = newValue;
@@ -153,9 +153,9 @@ void main() {
   });
 
   test('SymbolDecimalTextInputFormatter测试', () {
-    final SymbolDecimalTextInputFormatter formatter = SymbolDecimalTextInputFormatter(decimalDigits: 2);
-    TextEditingValue oldValue = TextEditingValue.empty;
-    TextEditingValue newValue = TextEditingValue.empty;
+    final formatter = SymbolDecimalTextInputFormatter(decimalDigits: 2);
+    var oldValue = TextEditingValue.empty;
+    var newValue = TextEditingValue.empty;
 
     // 测试在不输入的情况下，或者清空的情况下，返回空
     oldValue = newValue;

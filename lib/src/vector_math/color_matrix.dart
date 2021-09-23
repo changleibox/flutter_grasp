@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -270,7 +270,7 @@ class ColorMatrix {
 
   /// [Matrix4]
   void setFrom(ColorMatrix arg) {
-    final Float64List argStorage = arg._m5storage;
+    final argStorage = arg._m5storage;
     _m5storage[19] = argStorage[19];
     _m5storage[18] = argStorage[18];
     _m5storage[17] = argStorage[17];
@@ -315,7 +315,7 @@ class ColorMatrix {
 
   /// [Matrix4]
   void setScale(double rScale, double gScale, double bScale, double aScale) {
-    for (int i = 19; i > 0; --i) {
+    for (var i = 19; i > 0; --i) {
       _m5storage[i] = 0;
     }
     _m5storage[0] = rScale;
@@ -327,9 +327,9 @@ class ColorMatrix {
   /// [Matrix4]
   void setRotate(int axis, double degrees) {
     setIdentity();
-    final double radians = degrees * math.pi / 180.0;
-    final double cosine = math.cos(radians);
-    final double sine = math.sin(radians);
+    final radians = degrees * math.pi / 180.0;
+    final cosine = math.cos(radians);
+    final sine = math.sin(radians);
     switch (axis) {
       // Rotation around the red color
       case 0:
@@ -363,11 +363,11 @@ class ColorMatrix {
       tmp = _m5storage;
     }
 
-    final Float64List a = matA._m5storage;
-    final Float64List b = matB._m5storage;
-    int index = 0;
-    for (int j = 0; j < 20; j += 5) {
-      for (int i = 0; i < 4; i++) {
+    final a = matA._m5storage;
+    final b = matB._m5storage;
+    var index = 0;
+    for (var j = 0; j < 20; j += 5) {
+      for (var i = 0; i < 4; i++) {
         tmp[index++] = a[j + 0] * b[i + 0] + a[j + 1] * b[i + 5] + a[j + 2] * b[i + 10] + a[j + 3] * b[i + 15];
       }
       tmp[index++] = a[j + 0] * b[4] + a[j + 1] * b[9] + a[j + 2] * b[14] + a[j + 3] * b[19] + a[j + 4];
@@ -391,7 +391,7 @@ class ColorMatrix {
   /// [Matrix4]
   void setRGB2YUV() {
     setIdentity();
-    final Float64List m = _m5storage;
+    final m = _m5storage;
     // these coefficients match those in libjpeg
     m[0] = 0.299;
     m[1] = 0.587;
@@ -407,7 +407,7 @@ class ColorMatrix {
   /// [Matrix4]
   void setYUV2RGB() {
     setIdentity();
-    final Float64List m = _m5storage;
+    final m = _m5storage;
     // these coefficients match those in libjpeg
     m[2] = 1.402;
     m[5] = 1;
@@ -516,7 +516,7 @@ class ColorMatrix {
 
   /// [Matrix4]
   void setLuminosity(double luminosity) {
-    assert(luminosity != null && luminosity.abs() <= 255);
+    assert(luminosity.abs() <= 255);
     _m5storage[0] = 1.0;
     _m5storage[1] = 0.0;
     _m5storage[2] = 0.0;
@@ -541,7 +541,7 @@ class ColorMatrix {
 
   /// [Matrix4]
   void setSaturation(double saturation) {
-    assert(saturation != null && saturation >= 0);
+    assert(saturation >= 0);
     _m5storage[0] = 0.2126 * (1 - saturation) + saturation;
     _m5storage[1] = 0.7152 * (1 - saturation);
     _m5storage[2] = 0.0722 * (1 - saturation);
@@ -566,7 +566,7 @@ class ColorMatrix {
 
   /// [Matrix4]
   void setContrast(double contrast) {
-    assert(contrast != null && contrast >= 0 && contrast <= 10);
+    assert(contrast >= 0 && contrast <= 10);
     _m5storage[0] = contrast;
     _m5storage[1] = 0.0;
     _m5storage[2] = 0.0;
@@ -591,7 +591,7 @@ class ColorMatrix {
 
   /// [Matrix4]
   void setThreshold(double threshold) {
-    assert(threshold != null && threshold >= 0 && threshold <= 255);
+    assert(threshold >= 0 && threshold <= 255);
     _m5storage[0] = 0.2126 * 256;
     _m5storage[1] = 0.7152 * 256;
     _m5storage[2] = 0.0722 * 256;
@@ -670,7 +670,7 @@ class Vector5 {
 
   /// Generate random vector in the range (0, 0, 0, 0) to (1, 1, 1, 1). You can
   /// optionally pass your own random number generator.
-  factory Vector5.random([math.Random rng]) {
+  factory Vector5.random([math.Random? rng]) {
     rng ??= math.Random();
     return Vector5(rng.nextDouble(), rng.nextDouble(), rng.nextDouble(), rng.nextDouble(), rng.nextDouble());
   }
@@ -712,7 +712,7 @@ class Vector5 {
 
   /// Copy [this]
   Vector5 copyInto(Vector5 arg) {
-    final Float64List argStorage = arg._v5storage;
+    final argStorage = arg._v5storage;
     argStorage[0] = _v5storage[0];
     argStorage[1] = _v5storage[1];
     argStorage[2] = _v5storage[2];
@@ -741,7 +741,7 @@ class Vector5 {
 
   /// Set the values by copying them from [other].
   void setFrom(Vector5 other) {
-    final Float64List otherStorage = other._v5storage;
+    final otherStorage = other._v5storage;
     _v5storage[4] = otherStorage[4];
     _v5storage[3] = otherStorage[3];
     _v5storage[2] = otherStorage[2];
@@ -819,7 +819,7 @@ class Vector5 {
 
   /// [Matrix4]
   void add(Vector5 arg) {
-    final Float64List argStorage = arg._v5storage;
+    final argStorage = arg._v5storage;
     _v5storage[0] = _v5storage[0] + argStorage[0];
     _v5storage[1] = _v5storage[1] + argStorage[1];
     _v5storage[2] = _v5storage[2] + argStorage[2];
@@ -829,7 +829,7 @@ class Vector5 {
 
   /// Subtract [arg] from [this].
   void sub(Vector5 arg) {
-    final Float64List argStorage = arg._v5storage;
+    final argStorage = arg._v5storage;
     _v5storage[0] = _v5storage[0] - argStorage[0];
     _v5storage[1] = _v5storage[1] - argStorage[1];
     _v5storage[2] = _v5storage[2] - argStorage[2];

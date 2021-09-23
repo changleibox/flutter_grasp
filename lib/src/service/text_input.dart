@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:async';
@@ -8,6 +8,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_grasp/src/widget/binding.dart';
 
 /// Created by changlei on 2020/7/30.
 ///
@@ -16,10 +17,10 @@ class CustomTextInput implements CustomTextInputClient {
   /// 处理自定义键盘输入
   CustomTextInput({this.connection});
 
-  static const MethodChannel _textInput = SystemChannels.textInput;
+  static const _textInput = SystemChannels.textInput;
 
   /// 接收textField连接键盘的时候
-  final CustomTextInputConnection connection;
+  final CustomTextInputConnection? connection;
 
   int _client = 0;
   bool _isVisible = false;
@@ -80,6 +81,14 @@ class CustomTextInput implements CustomTextInputClient {
   }
 
   @override
+  Future<void> performPrivateCommand(String action, Map<String, dynamic> data) {
+    return _handlePlatformMessage('TextInputClient.performPrivateCommand', <String, dynamic>{
+      'action': action,
+      'data': data,
+    });
+  }
+
+  @override
   Future<void> updateFloatingCursor(RawFloatingCursorPoint point) {
     return _handlePlatformMessage('TextInputClient.updateFloatingCursor', <dynamic>[
       point.state.toString(),
@@ -113,15 +122,15 @@ class CustomTextInput implements CustomTextInputClient {
   /// ui.window because the Window may be dependency injected elsewhere with
   /// a different instance. However, static access at this location seems to be
   /// the least bad option.
-  Future<ByteData> sendPlatformMessage(MethodCall methodCall) {
-    final Completer<ByteData> completer = Completer<ByteData>();
+  static Future<ByteData> sendPlatformMessage(MethodCall methodCall) {
+    final completer = Completer<ByteData>();
     // ui.window is accessed directly instead of using ServicesBinding.instance.window
     // because this method might be invoked before any binding is initialized.
     // This issue was reported in #27541. It is not ideal to statically access
     // ui.window because the Window may be dependency injected elsewhere with
     // a different instance. However, static access at this location seems to be
     // the least bad option.
-    ui.window.sendPlatformMessage(_textInput.name, _textInput.codec.encodeMethodCall(methodCall), (ByteData reply) {
+    ui.window.sendPlatformMessage(_textInput.name, _textInput.codec.encodeMethodCall(methodCall), (ByteData? reply) {
       try {
         completer.complete(reply);
       } catch (exception, stack) {
@@ -137,7 +146,7 @@ class CustomTextInput implements CustomTextInputClient {
   }
 
   MethodCall _methodCall(String name, dynamic arguments) {
-    final List<dynamic> newArguments = <dynamic>[_client];
+    final newArguments = <dynamic>[_client];
     if (arguments is List) {
       newArguments.addAll(arguments);
     } else {
@@ -147,6 +156,7 @@ class CustomTextInput implements CustomTextInputClient {
   }
 
   Future<dynamic> _handleTextInputCall(MethodCall call) async {
+    _onReceiveUserMessage(call);
     switch (call.method) {
       case 'TextInput.setClient':
         _setClient(call.arguments as List<dynamic>);
@@ -156,6 +166,9 @@ class CustomTextInput implements CustomTextInputClient {
         break;
       case 'TextInput.clearClient':
         _clearClient();
+        break;
+      case 'TextInput.updateConfig':
+        _updateConfig(call.arguments as Map<String, dynamic>);
         break;
       case 'TextInput.setEditingState':
         _setEditingState(call.arguments as Map<String, dynamic>);
@@ -169,6 +182,12 @@ class CustomTextInput implements CustomTextInputClient {
       case 'TextInput.setEditableSizeAndTransform':
         _setEditableSizeAndTransform(call.arguments as Map<String, dynamic>);
         break;
+      case 'TextInput.setMarkedTextRect':
+        _setMarkedTextRect(call.arguments as Map<String, dynamic>);
+        break;
+      case 'TextInput.setCaretRect':
+        _setCaretRect(call.arguments as Map<String, dynamic>);
+        break;
       case 'TextInput.setStyle':
         _setStyle(call.arguments as Map<String, dynamic>);
         break;
@@ -177,7 +196,7 @@ class CustomTextInput implements CustomTextInputClient {
 
   void _setClient(List<dynamic> args) {
     _client = args.first as int;
-    final Map<String, dynamic> clientArgs = args[1] as Map<String, dynamic>;
+    final clientArgs = args[1] as Map<String, dynamic>;
     connection?.setClient(_client, _toTextInputConfiguration(clientArgs));
   }
 
@@ -197,6 +216,10 @@ class CustomTextInput implements CustomTextInputClient {
     connection?.clearClient();
   }
 
+  void _updateConfig(Map<String, dynamic> args) {
+    connection?.updateConfig(_toTextInputConfiguration(args));
+  }
+
   void _setEditingState(Map<String, dynamic> args) {
     connection?.setEditingState(TextEditingValue.fromJSON(args));
   }
@@ -206,10 +229,21 @@ class CustomTextInput implements CustomTextInputClient {
   }
 
   void _setEditableSizeAndTransform(Map<String, dynamic> args) {
-    final Size editableBoxSize = Size(args['width'] as double, args['height'] as double);
-    final Matrix4 transform =
-        Matrix4.fromList((args['transform'] as List<dynamic>).map((dynamic e) => e as double).toList());
+    final editableBoxSize = Size(args['width'] as double, args['height'] as double);
+    final transform = Matrix4.fromList((args['transform'] as List<dynamic>).map((dynamic e) => e as double).toList());
     connection?.setEditableSizeAndTransform(editableBoxSize, transform);
+  }
+
+  void _setMarkedTextRect(Map<String, dynamic> args) {
+    final size = Size(args['width'] as double, args['height'] as double);
+    final offset = Offset(args['x'] as double, args['y'] as double);
+    connection?.setComposingRect(offset & size);
+  }
+
+  void _setCaretRect(Map<String, dynamic> args) {
+    final size = Size(args['width'] as double, args['height'] as double);
+    final offset = Offset(args['x'] as double, args['y'] as double);
+    connection?.setCaretRect(offset & size);
   }
 
   void _setStyle(Map<String, dynamic> args) {
@@ -223,6 +257,10 @@ class CustomTextInput implements CustomTextInputClient {
       textDirectionIndex == null ? null : TextDirection.values[textDirectionIndex as int],
       textAlignIndex == null ? null : TextAlign.values[textAlignIndex as int],
     );
+  }
+
+  void _onReceiveUserMessage(MethodCall call) {
+    connection?.onReceiveUserMessage(call);
   }
 }
 
@@ -248,6 +286,21 @@ abstract class CustomTextInputClient {
 
   /// Requests that this client perform the given action.
   Future<void> performAction(TextInputAction action);
+
+  /// Request from the input method that this client perform the given private
+  /// command.
+  ///
+  /// This can be used to provide domain-specific features that are only known
+  /// between certain input methods and their clients.
+  ///
+  /// See also:
+  ///   * [https://developer.android.com/reference/android/view/inputmethod/InputConnection#performPrivateCommand(java.lang.String,%20android.os.Bundle)],
+  ///     which is the Android documentation for performPrivateCommand, used to
+  ///     send a command from the input method.
+  ///   * [https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#sendAppPrivateCommand],
+  ///     which is the Android documentation for sendAppPrivateCommand, used to
+  ///     send a command to the input method.
+  Future<void> performPrivateCommand(String action, Map<String, dynamic> data);
 
   /// Updates the floating cursor position and state.
   Future<void> updateFloatingCursor(RawFloatingCursorPoint point);
@@ -286,6 +339,10 @@ abstract class CustomTextInputConnection {
   /// other client attaches to it within this animation frame.
   void clearClient();
 
+  /// Requests that the text input control update itself according to the new
+  /// [TextInputConfiguration].
+  void updateConfig(TextInputConfiguration configuration);
+
   /// 详情请阅读[TextInput]源码
   void setEditingState(TextEditingValue value);
 
@@ -308,18 +365,35 @@ abstract class CustomTextInputConnection {
   ///                 to the [PipelineOwner.rootNode].
   void setEditableSizeAndTransform(Size editableBoxSize, Matrix4 transform);
 
+  /// Send the smallest rect that covers the text in the client that's currently
+  /// being composed.
+  ///
+  /// The given `rect` can not be null. If any of the 4 coordinates of the given
+  /// [Rect] is not finite, a [Rect] of size (-1, -1) will be sent instead.
+  ///
+  /// This information is used for positioning the IME candidates menu on each
+  /// platform.
+  void setComposingRect(Rect rect);
+
+  /// Sends the coordinates of caret rect. This is used on macOS for positioning
+  /// the accent selection menu.
+  void setCaretRect(Rect rect);
+
   /// Send text styling information.
   ///
   /// This information is used by the Flutter Web Engine to change the style
   /// of the hidden native input's content. Hence, the content size will match
   /// to the size of the editable widget's content.
   void setStyle(
-    String fontFamily,
-    double fontSize,
-    FontWeight fontWeight,
-    TextDirection textDirection,
-    TextAlign textAlign,
+    String? fontFamily,
+    double? fontSize,
+    FontWeight? fontWeight,
+    TextDirection? textDirection,
+    TextAlign? textAlign,
   );
+
+  /// 接收到终端信息，顾名思义就是从TextField发来的消息
+  void onReceiveUserMessage(MethodCall call);
 }
 
 TextInputConfiguration _toTextInputConfiguration(Map<String, dynamic> clientArgs) {
@@ -327,8 +401,8 @@ TextInputConfiguration _toTextInputConfiguration(Map<String, dynamic> clientArgs
     inputType: _toTextInputType(clientArgs['inputType'] as Map<String, dynamic>),
     obscureText: clientArgs['obscureText'] as bool,
     autocorrect: clientArgs['autocorrect'] as bool,
-    smartDashesType: SmartDashesType.values[int.tryParse(clientArgs['smartDashesType'] as String)],
-    smartQuotesType: SmartQuotesType.values[int.tryParse(clientArgs['smartQuotesType'] as String)],
+    smartDashesType: SmartDashesType.values[int.tryParse(clientArgs['smartDashesType'] as String)!],
+    smartQuotesType: SmartQuotesType.values[int.tryParse(clientArgs['smartQuotesType'] as String)!],
     enableSuggestions: clientArgs['enableSuggestions'] as bool,
     actionLabel: clientArgs['actionLabel'] as String,
     inputAction: _toTextInputAction(clientArgs['inputAction'] as String),
@@ -339,54 +413,44 @@ TextInputConfiguration _toTextInputConfiguration(Map<String, dynamic> clientArgs
 }
 
 TextInputType _toTextInputType(Map<String, dynamic> args) {
-  final String name = args['name'] as String;
+  final name = args['name'] as String;
   switch (name) {
     case 'TextInputType.text':
       return TextInputType.text;
-      break;
     case 'TextInputType.multiline':
       return TextInputType.multiline;
-      break;
     case 'TextInputType.number':
       return TextInputType.numberWithOptions(
         signed: args['signed'] as bool,
         decimal: args['decimal'] as bool,
       );
-      break;
     case 'TextInputType.phone':
       return TextInputType.phone;
-      break;
     case 'TextInputType.datetime':
       return TextInputType.datetime;
-      break;
     case 'TextInputType.emailAddress':
       return TextInputType.emailAddress;
-      break;
     case 'TextInputType.url':
       return TextInputType.url;
-      break;
     case 'TextInputType.visiblePassword':
       return TextInputType.visiblePassword;
-      break;
     case 'TextInputType.name':
       return TextInputType.name;
-      break;
     case 'TextInputType.address':
       return TextInputType.streetAddress;
-      break;
   }
   throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text input type: $args')]);
 }
 
-AutofillConfiguration _toAutofillConfiguration(Map<String, dynamic> args) {
+AutofillConfiguration? _toAutofillConfiguration(Map<String, dynamic>? args) {
   if (args == null) {
     return null;
   }
-  final Map<String, dynamic> editingValueJson = args['editingValue'] as Map<String, dynamic>;
+  final editingValueJson = args['editingValue'] as Map<String, dynamic>;
   return AutofillConfiguration(
     uniqueIdentifier: args['uniqueIdentifier'] as String,
     autofillHints: args['hints'] as List<String>,
-    currentEditingValue: editingValueJson == null ? null : TextEditingValue.fromJSON(editingValueJson),
+    currentEditingValue: TextEditingValue.fromJSON(editingValueJson),
   );
 }
 
@@ -394,10 +458,8 @@ Brightness _toBrightness(String name) {
   switch (name) {
     case 'Brightness.dark':
       return Brightness.dark;
-      break;
     case 'Brightness.light':
       return Brightness.light;
-      break;
   }
   throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown brightness: $name')]);
 }
@@ -406,16 +468,12 @@ TextCapitalization _toTextCapitalization(String name) {
   switch (name) {
     case 'TextCapitalization.none':
       return TextCapitalization.none;
-      break;
     case 'TextCapitalization.characters':
       return TextCapitalization.characters;
-      break;
     case 'TextCapitalization.sentences':
       return TextCapitalization.sentences;
-      break;
     case 'TextCapitalization.words':
       return TextCapitalization.words;
-      break;
   }
   throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text capitalization: $name')]);
 }
@@ -452,11 +510,8 @@ TextInputAction _toTextInputAction(String action) {
   throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text input action: $action')]);
 }
 
-Map<String, dynamic> _toTextPointJson(FloatingCursorDragState state, Offset encoded) {
-  assert(state != null, 'You must provide a state to set a new editing point.');
-  assert(encoded.dx != null, 'You must provide a value for the horizontal location of the floating cursor.');
-  assert(encoded.dy != null, 'You must provide a value for the vertical location of the floating cursor.');
+Map<String, dynamic> _toTextPointJson(FloatingCursorDragState? state, Offset? encoded) {
   return state == FloatingCursorDragState.Update
-      ? <String, dynamic>{'X': encoded.dx, 'Y': encoded.dy}
+      ? <String, dynamic>{'X': encoded?.dx, 'Y': encoded?.dy}
       : <String, dynamic>{'X': 0, 'Y': 0};
 }

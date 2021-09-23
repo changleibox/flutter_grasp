@@ -1,11 +1,8 @@
-// Copyright 2014 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// @dart = 2.8
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
 
 import 'package:flutter/animation.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -37,13 +34,13 @@ class RenderAnimatedBoundary extends RenderAnimatedShiftedBox {
   /// The arguments [duration], [curve], [alignment], and [vsync] must
   /// not be null.
   RenderAnimatedBoundary({
-    @required TickerProvider vsync,
-    @required Duration duration,
-    Duration reverseDuration,
+    required TickerProvider vsync,
+    required Duration duration,
+    Duration? reverseDuration,
     Curve curve = Curves.linear,
     AlignmentGeometry alignment = Alignment.center,
-    TextDirection textDirection,
-    RenderBox child,
+    TextDirection? textDirection,
+    RenderBox? child,
   }) : super(
           child: child,
           alignment: alignment,
@@ -55,16 +52,16 @@ class RenderAnimatedBoundary extends RenderAnimatedShiftedBox {
         );
 
   final RectTween _rectTween = RectTween();
-  Rect _originRect;
+  Rect? _originRect;
 
-  Rect get _animatedRect {
+  Rect? get _animatedRect {
     return _rectTween.evaluate(animation);
   }
 
   @override
   void resolvePerformLayout() {
-    final Rect animatedRect = _animatedRect;
-    Size newSize = child.size;
+    final animatedRect = _animatedRect;
+    var newSize = child?.size ?? Size.zero;
     if (animatedRect != null) {
       newSize = Size(
         newSize.width - animatedRect.width,
@@ -79,10 +76,10 @@ class RenderAnimatedBoundary extends RenderAnimatedShiftedBox {
     if (child == null || constraints.isTight) {
       return constraints.smallest;
     }
-    return constraints.constrain(_animatedRect?.size ?? child.getDryLayout(constraints));
+    return constraints.constrain(_animatedRect?.size ?? child!.getDryLayout(constraints));
   }
 
-  Rect _getBounding(RenderBox box) {
+  Rect? _getBounding(RenderBox? box) {
     if (box == null || !hasSize || !attached || !box.hasSize || !box.attached) {
       return null;
     }
@@ -90,17 +87,17 @@ class RenderAnimatedBoundary extends RenderAnimatedShiftedBox {
   }
 
   void _layoutAndResize() {
-    final Rect currentRect = _getBounding(child);
+    final currentRect = _getBounding(child);
     if (nearEqualForRect(_originRect, currentRect, Tolerance.defaultTolerance.distance)) {
       return;
     }
-    final Rect animatedRect = _animatedRect;
+    final animatedRect = _animatedRect;
     stop();
     if (currentRect == null || _originRect == null) {
       _originRect = currentRect;
       return;
     }
-    Rect newOriginRect = _originRect;
+    var newOriginRect = _originRect!;
     if (animatedRect != null) {
       newOriginRect = Rect.fromPoints(
         newOriginRect.topLeft - animatedRect.topLeft,
@@ -119,7 +116,7 @@ class RenderAnimatedBoundary extends RenderAnimatedShiftedBox {
   @override
   void paint(PaintingContext context, Offset offset) {
     _layoutAndResize();
-    final Rect animatedRect = _animatedRect;
+    final animatedRect = _animatedRect;
     if (animatedRect != null) {
       offset -= animatedRect.topLeft + alongOffsetOfSize(animatedRect.size);
     }
