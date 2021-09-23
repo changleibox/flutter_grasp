@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/material.dart';
@@ -20,23 +20,22 @@ const TextStyle _valueStyle = TextStyle(
 class KeyValue extends StatelessWidget {
   /// 构造函数
   const KeyValue({
-    Key key,
-    @required this.name,
-    @required this.value,
+    Key? key,
+    required this.name,
+    required this.value,
     this.defaultValue,
     this.style = _style,
     this.valueStyle = _valueStyle,
-  })  : assert(name != null),
-        super(key: key);
+  })  : super(key: key);
 
   /// name
   final String name;
 
   /// value
-  final String value;
+  final String? value;
 
   /// 默认value，在[value]为null的时候，显示
-  final String defaultValue;
+  final String? defaultValue;
 
   /// style
   final TextStyle style;

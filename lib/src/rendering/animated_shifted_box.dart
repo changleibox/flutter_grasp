@@ -1,6 +1,6 @@
-// Copyright 2014 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
 
 import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
@@ -34,17 +34,14 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   /// The arguments [duration], [curve], [alignment], and [vsync] must
   /// not be null.
   RenderAnimatedShiftedBox({
-    @required TickerProvider vsync,
-    @required Duration duration,
-    Duration reverseDuration,
+    required TickerProvider vsync,
+    required Duration duration,
+    Duration? reverseDuration,
     Curve curve = Curves.linear,
     AlignmentGeometry alignment = Alignment.center,
-    TextDirection textDirection,
-    RenderBox child,
-  })  : assert(vsync != null),
-        assert(duration != null),
-        assert(curve != null),
-        _vsync = vsync,
+    TextDirection? textDirection,
+    RenderBox? child,
+  })  : _vsync = vsync,
         super(child: child, alignment: alignment, textDirection: textDirection) {
     _controller = AnimationController(
       vsync: vsync,
@@ -64,14 +61,14 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   @override
   bool get alwaysNeedsCompositing => child != null && isAnimating;
 
-  AnimationController _controller;
-  CurvedAnimation _animation;
-  double _lastValue;
+  late AnimationController _controller;
+  late CurvedAnimation _animation;
+  double? _lastValue;
 
   /// The duration of the animation.
-  Duration get duration => _controller.duration;
+  Duration? get duration => _controller.duration;
 
-  set duration(Duration value) {
+  set duration(Duration? value) {
     assert(value != null);
     if (value == _controller.duration) {
       return;
@@ -80,9 +77,9 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   }
 
   /// The duration of the animation when running in reverse.
-  Duration get reverseDuration => _controller.reverseDuration;
+  Duration? get reverseDuration => _controller.reverseDuration;
 
-  set reverseDuration(Duration value) {
+  set reverseDuration(Duration? value) {
     if (value == _controller.reverseDuration) {
       return;
     }
@@ -93,7 +90,6 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   Curve get curve => _animation.curve;
 
   set curve(Curve value) {
-    assert(value != null);
     if (value == _animation.curve) {
       return;
     }
@@ -115,7 +111,6 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   TickerProvider _vsync;
 
   set vsync(TickerProvider value) {
-    assert(value != null);
     if (value == _vsync) {
       return;
     }
@@ -123,7 +118,7 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
     _controller.resync(vsync);
   }
 
-  Alignment _resolvedAlignment;
+  Alignment? _resolvedAlignment;
 
   void _resolve() {
     if (_resolvedAlignment != null) {
@@ -144,7 +139,7 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   }
 
   @override
-  set textDirection(TextDirection value) {
+  set textDirection(TextDirection? value) {
     super.textDirection = value;
     _markNeedResolution();
   }
@@ -158,7 +153,7 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   @override
   void performLayout() {
     _lastValue = _controller.value;
-    final BoxConstraints constraints = this.constraints;
+    final constraints = this.constraints;
     if (child == null) {
       _controller.stop();
       size = constraints.smallest;
@@ -166,7 +161,7 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
       return;
     }
 
-    child.layout(constraints, parentUsesSize: true);
+    child?.layout(constraints, parentUsesSize: true);
     resolvePerformLayout();
     alignChild();
   }
@@ -174,7 +169,7 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   /// 类似于[performLayout]
   @protected
   void resolvePerformLayout() {
-    size = constraints.constrain(child.size);
+    size = constraints.constrain(child?.size ?? Size.zero);
   }
 
   @override
@@ -182,7 +177,7 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
     if (child == null || constraints.isTight) {
       return constraints.smallest;
     }
-    return constraints.constrain(child.getDryLayout(constraints));
+    return constraints.constrain(child!.getDryLayout(constraints));
   }
 
   /// 重启动画
@@ -192,7 +187,7 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   }
 
   /// 开始
-  void forward({double from}) {
+  void forward({double? from}) {
     _controller.forward(from: from);
   }
 
@@ -202,12 +197,12 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   }
 
   /// 判断是否在[epsilon]附近
-  bool nearEqualForOffset(Offset a, Offset b, double epsilon) {
+  bool nearEqualForOffset(Offset? a, Offset? b, double epsilon) {
     return nearEqual(a?.dx, b?.dx, epsilon) && nearEqual(a?.dy, b?.dy, epsilon);
   }
 
   /// 判断是否在[epsilon]附近
-  bool nearEqualForRect(Rect a, Rect b, double epsilon) {
+  bool nearEqualForRect(Rect? a, Rect? b, double epsilon) {
     return nearEqualForOffset(a?.topLeft, b?.topLeft, epsilon) &&
         nearEqualForOffset(a?.bottomRight, b?.bottomRight, epsilon);
   }
@@ -216,7 +211,7 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
   Offset alongOffset(Offset offset) {
     _resolve();
     if (_resolvedAlignment != null) {
-      return _resolvedAlignment.alongOffset(offset);
+      return _resolvedAlignment!.alongOffset(offset);
     }
     return Offset.zero;
   }
@@ -228,20 +223,20 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
 
   /// 获取box的边界
   @protected
-  Rect boundingBoxOfAncestorType<T>(RenderBox box) {
+  Rect boundingBoxOfAncestorType<T>(RenderBox? box) {
     assert(box != null && box.hasSize);
     return MatrixUtils.transformRect(
-      _getTransformToOfAncestorType<T>(box),
+      _getTransformToOfAncestorType<T>(box!),
       Offset.zero & box.size,
     );
   }
 
   /// 获取box的位置
   @protected
-  Offset localToGlobalOfAncestorType<T>(RenderBox box) {
+  Offset localToGlobalOfAncestorType<T>(RenderBox? box) {
     assert(box != null && box.hasSize);
     return MatrixUtils.transformPoint(
-      _getTransformToOfAncestorType<T>(box),
+      _getTransformToOfAncestorType<T>(box!),
       Offset.zero,
     );
   }
@@ -261,12 +256,12 @@ abstract class RenderAnimatedShiftedBox extends RenderAligningShiftedBox {
     if (T == dynamic) {
       return box.getTransformTo(null);
     }
-    final List<RenderObject> renderers = <RenderObject>[];
-    for (RenderObject renderer = this; renderer != null && renderer is! T; renderer = renderer.parent as RenderObject) {
+    final renderers = <RenderObject>[];
+    for (RenderObject renderer = this; renderer is! T; renderer = renderer.parent as RenderObject) {
       renderers.add(renderer);
     }
-    final Matrix4 transform = Matrix4.identity();
-    for (int index = renderers.length - 1; index > 0; index -= 1) {
+    final transform = Matrix4.identity();
+    for (var index = renderers.length - 1; index > 0; index -= 1) {
       renderers[index].applyPaintTransform(renderers[index - 1], transform);
     }
     return transform;

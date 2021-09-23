@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:io';
@@ -36,7 +36,7 @@ abstract class RefreshScrollController {
   factory RefreshScrollController.manual({RefreshControllerStyle style}) = _ManualRefreshScrollController;
 
   /// 刷新控件的key
-  Key get refreshKey;
+  Key? get refreshKey;
 
   /// 刷新回调
   Future<void> onRefresh();
@@ -61,7 +61,7 @@ class _MaterialRefreshScrollController implements RefreshScrollController {
 
   @override
   Future<void> onRefresh() {
-    final RefreshIndicatorState currentState = refreshKey.currentState;
+    final currentState = refreshKey.currentState;
     if (currentState == null) {
       return Future<void>.value();
     }
@@ -95,13 +95,11 @@ class _CupertinoRefreshScrollController implements RefreshScrollController {
     return moveTo(0);
   }
 
-  Future<void> moveTo(double to, {bool clamp = true}) {
-    assert(to != null);
-    assert(clamp != null);
+  Future<void> moveTo(double to, {bool clamp = true}) async {
     if (!hasClients) {
       return Future<void>.value();
     }
-    return position.moveTo(
+    return position?.moveTo(
       to,
       duration: _defaultDuration,
       curve: Curves.linearToEaseOut,
@@ -115,8 +113,8 @@ class _CupertinoRefreshScrollController implements RefreshScrollController {
   @override
   bool get hasClients => position != null;
 
-  ScrollPosition get position {
-    final BuildContext currentContext = refreshKey.currentContext;
+  ScrollPosition? get position {
+    final currentContext = refreshKey.currentContext;
     if (currentContext == null) {
       return null;
     }
@@ -132,20 +130,20 @@ class _CupertinoRefreshScrollController implements RefreshScrollController {
 
 /// 另一种方式的手动刷新控制器，效果为在没有数据和正在加载时，显示'正在加载……'
 class _ManualRefreshScrollController implements RefreshScrollController {
-  _ManualRefreshScrollController({RefreshControllerStyle style}) : style = style ?? _defaultStyle;
+  _ManualRefreshScrollController({RefreshControllerStyle? style}) : style = style ?? _defaultStyle;
 
   /// 刷新器的样式
   @override
   final RefreshControllerStyle style;
 
-  AsyncCallback _onManualRefresh;
+  AsyncCallback? _onManualRefresh;
 
   @override
   Future<void> onRefresh() {
     if (_onManualRefresh == null) {
       return Future<void>.value();
     }
-    return _onManualRefresh();
+    return _onManualRefresh!();
   }
 
   @override
@@ -160,7 +158,7 @@ class _ManualRefreshScrollController implements RefreshScrollController {
   void dispose() {}
 
   @override
-  Key get refreshKey => null;
+  Key? get refreshKey => null;
 
   static RefreshControllerStyle get _defaultStyle {
     if (Platform.isIOS || Platform.isMacOS || Platform.isLinux) {

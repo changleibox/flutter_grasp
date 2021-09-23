@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:math' as math;
@@ -13,7 +13,7 @@ import 'package:flutter/rendering.dart';
 class SliverListView extends StatelessWidget {
   /// 构造函数
   SliverListView({
-    Key key,
+    Key? key,
     this.scrollDirection = Axis.vertical,
     this.padding,
     this.itemExtent,
@@ -31,12 +31,12 @@ class SliverListView extends StatelessWidget {
 
   /// builder构造器
   SliverListView.builder({
-    Key key,
+    Key? key,
     this.scrollDirection = Axis.vertical,
     this.padding,
     this.itemExtent,
-    @required IndexedWidgetBuilder itemBuilder,
-    int itemCount,
+    required IndexedWidgetBuilder itemBuilder,
+    int? itemCount,
     bool addAutomaticKeepAlives = true,
     bool addRepaintBoundaries = true,
     bool addSemanticIndexes = true,
@@ -52,33 +52,25 @@ class SliverListView extends StatelessWidget {
 
   /// 可以加个分割器
   SliverListView.separated({
-    Key key,
+    Key? key,
     this.scrollDirection = Axis.vertical,
     this.padding,
-    @required IndexedWidgetBuilder itemBuilder,
-    @required IndexedWidgetBuilder separatorBuilder,
-    @required int itemCount,
+    required IndexedWidgetBuilder itemBuilder,
+    required IndexedWidgetBuilder separatorBuilder,
+    required int itemCount,
     bool addAutomaticKeepAlives = true,
     bool addRepaintBoundaries = true,
     bool addSemanticIndexes = true,
-  })  : assert(itemBuilder != null),
-        assert(separatorBuilder != null),
-        assert(itemCount != null && itemCount >= 0),
+  })  : assert(itemCount >= 0),
         itemExtent = null,
         childrenDelegate = SliverChildBuilderDelegate(
           (BuildContext context, int index) {
-            final int itemIndex = index ~/ 2;
+            final itemIndex = index ~/ 2;
             Widget widget;
             if (index.isEven) {
               widget = itemBuilder(context, itemIndex);
             } else {
               widget = separatorBuilder(context, itemIndex);
-              assert(() {
-                if (widget == null) {
-                  throw FlutterError('separatorBuilder cannot return null.');
-                }
-                return true;
-              }());
             }
             return widget;
           },
@@ -94,28 +86,27 @@ class SliverListView extends StatelessWidget {
 
   /// 自定义
   const SliverListView.custom({
-    Key key,
+    Key? key,
     this.scrollDirection = Axis.vertical,
     this.padding,
     this.itemExtent,
-    @required this.childrenDelegate,
-  })  : assert(childrenDelegate != null),
-        super(key: key);
+    required this.childrenDelegate,
+  }) : super(key: key);
 
   /// 方向
-  final Axis scrollDirection;
+  final Axis? scrollDirection;
 
   /// 内边距
-  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? padding;
 
   /// item规定的高
-  final double itemExtent;
+  final double? itemExtent;
 
   /// [SliverChildDelegate]
   final SliverChildDelegate childrenDelegate;
 
   /// child数量
-  int get estimatedChildCount => childrenDelegate.estimatedChildCount;
+  int? get estimatedChildCount => childrenDelegate.estimatedChildCount;
 
   @override
   Widget build(BuildContext context) {
@@ -124,20 +115,20 @@ class SliverListView extends StatelessWidget {
     );
     if (itemExtent != null) {
       sliver = SliverFixedExtentList(
-        itemExtent: itemExtent,
+        itemExtent: itemExtent!,
         delegate: childrenDelegate,
       );
     }
     if (estimatedChildCount == 0) {
       return sliver;
     }
-    EdgeInsetsGeometry effectivePadding = padding;
+    var effectivePadding = padding;
     if (padding == null) {
-      final MediaQueryData mediaQuery = MediaQuery.of(context);
+      final MediaQueryData? mediaQuery = MediaQuery.of(context);
       if (mediaQuery != null) {
         // Automatically pad sliver with padding from MediaQuery.
-        final EdgeInsets mediaQueryHorizontalPadding = mediaQuery.padding.copyWith(top: 0.0, bottom: 0.0);
-        final EdgeInsets mediaQueryVerticalPadding = mediaQuery.padding.copyWith(left: 0.0, right: 0.0);
+        final mediaQueryHorizontalPadding = mediaQuery.padding.copyWith(top: 0.0, bottom: 0.0);
+        final mediaQueryVerticalPadding = mediaQuery.padding.copyWith(left: 0.0, right: 0.0);
         // Consume the main axis padding with SliverPadding.
         effectivePadding = scrollDirection == Axis.vertical ? mediaQueryVerticalPadding : mediaQueryHorizontalPadding;
         // Leave behind the cross axis padding.

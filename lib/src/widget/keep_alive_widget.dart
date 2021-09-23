@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/material.dart';
@@ -10,11 +10,10 @@ import 'package:flutter/material.dart';
 class KeepAliveWidget extends StatefulWidget {
   /// 构造函数
   const KeepAliveWidget({
-    Key key,
-    @required this.wantKeepAlive,
-    @required this.child,
-  })  : assert(wantKeepAlive != null),
-        super(key: key);
+    Key? key,
+    required this.wantKeepAlive,
+    required this.child,
+  })  : super(key: key);
 
   /// 是否保持活力
   final bool wantKeepAlive;

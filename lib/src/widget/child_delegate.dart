@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/foundation.dart';
@@ -7,7 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 /// 创建child
-typedef SemanticIndexCallback = int Function(Widget widget, int localIndex);
+typedef SemanticIndexCallback = int? Function(Widget widget, int localIndex);
 
 int _kDefaultSemanticIndexCallback(Widget _, int localIndex) => localIndex;
 
@@ -19,14 +19,14 @@ abstract class ChildDelegate {
   const ChildDelegate();
 
   /// 构建child
-  Widget build(BuildContext context, int index);
+  Widget? build(BuildContext context, int index);
 
   /// child的数量
-  int get estimatedChildCount => null;
+  int? get estimatedChildCount => null;
 
   @override
   String toString() {
-    final List<String> description = <String>[];
+    final description = <String>[];
     debugFillDescription(description);
     return '${describeIdentity(this)}(${description.join(", ")})';
   }
@@ -36,7 +36,7 @@ abstract class ChildDelegate {
   @mustCallSuper
   void debugFillDescription(List<String> description) {
     try {
-      final int children = estimatedChildCount;
+      final children = estimatedChildCount;
       if (children != null) {
         description.add('estimated child count: $children');
       }
@@ -47,9 +47,7 @@ abstract class ChildDelegate {
 }
 
 class _SaltedValueKey extends ValueKey<Key> {
-  const _SaltedValueKey(Key key)
-      : assert(key != null),
-        super(key);
+  const _SaltedValueKey(Key key) : super(key);
 }
 
 /// 用来创建一个widget集合，详情请看[SliverChildBuilderDelegate]
@@ -63,17 +61,13 @@ class ChildBuilderDelegate extends ChildDelegate {
     this.addSemanticIndexes = true,
     this.semanticIndexCallback = _kDefaultSemanticIndexCallback,
     this.semanticIndexOffset = 0,
-  })  : assert(builder != null),
-        assert(addAutomaticKeepAlives != null),
-        assert(addRepaintBoundaries != null),
-        assert(addSemanticIndexes != null),
-        assert(semanticIndexCallback != null);
+  });
 
   /// 构建item
   final IndexedWidgetBuilder builder;
 
   /// child数量
-  final int childCount;
+  final int? childCount;
 
   /// 是否保持活力
   final bool addAutomaticKeepAlives;
@@ -91,9 +85,8 @@ class ChildBuilderDelegate extends ChildDelegate {
   final SemanticIndexCallback semanticIndexCallback;
 
   @override
-  Widget build(BuildContext context, int index) {
-    assert(builder != null);
-    if (index < 0 || (childCount != null && index >= childCount)) {
+  Widget? build(BuildContext context, int index) {
+    if (index < 0 || (childCount != null && index >= childCount!)) {
       return null;
     }
     Widget child;
@@ -102,15 +95,12 @@ class ChildBuilderDelegate extends ChildDelegate {
     } catch (exception, stackTrace) {
       child = _createErrorWidget(exception, stackTrace);
     }
-    if (child == null) {
-      return null;
-    }
-    final Key key = child.key != null ? _SaltedValueKey(child.key) : null;
+    final Key? key = child.key != null ? _SaltedValueKey(child.key!) : null;
     if (addRepaintBoundaries) {
       child = RepaintBoundary(child: child);
     }
     if (addSemanticIndexes) {
-      final int semanticIndex = semanticIndexCallback(child, index);
+      final semanticIndex = semanticIndexCallback(child, index);
       if (semanticIndex != null) {
         child = IndexedSemantics(index: semanticIndex + semanticIndexOffset, child: child);
       }
@@ -119,12 +109,12 @@ class ChildBuilderDelegate extends ChildDelegate {
       child = AutomaticKeepAlive(child: child);
     }
     return addRepaintBoundaries || addSemanticIndexes || addAutomaticKeepAlives
-        ? KeyedSubtree(child: child, key: key)
+        ? KeyedSubtree(key: key, child: child)
         : child;
   }
 
   @override
-  int get estimatedChildCount => childCount;
+  int? get estimatedChildCount => childCount;
 }
 
 /// 用来创建一个widget集合，详情请看[SliverChildListDelegate]
@@ -137,11 +127,7 @@ class ChildListDelegate extends ChildDelegate {
     this.addSemanticIndexes = true,
     this.semanticIndexCallback = _kDefaultSemanticIndexCallback,
     this.semanticIndexOffset = 0,
-  })  : assert(children != null),
-        assert(addAutomaticKeepAlives != null),
-        assert(addRepaintBoundaries != null),
-        assert(addSemanticIndexes != null),
-        assert(semanticIndexCallback != null);
+  });
 
   /// fixed
   const ChildListDelegate.fixed(
@@ -151,11 +137,7 @@ class ChildListDelegate extends ChildDelegate {
     this.addSemanticIndexes = true,
     this.semanticIndexCallback = _kDefaultSemanticIndexCallback,
     this.semanticIndexOffset = 0,
-  })  : assert(children != null),
-        assert(addAutomaticKeepAlives != null),
-        assert(addRepaintBoundaries != null),
-        assert(addSemanticIndexes != null),
-        assert(semanticIndexCallback != null);
+  });
 
   /// 是否保持活力
   final bool addAutomaticKeepAlives;
@@ -176,20 +158,17 @@ class ChildListDelegate extends ChildDelegate {
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context, int index) {
-    assert(children != null);
+  Widget? build(BuildContext context, int index) {
     if (index < 0 || index >= children.length) {
       return null;
     }
-    Widget child = children[index];
-    final Key key = child.key != null ? _SaltedValueKey(child.key) : null;
-    assert(child != null,
-        "The sliver's children must not contain null values, but a null value was found at index $index");
+    Widget? child = children[index];
+    final Key? key = child.key != null ? _SaltedValueKey(child.key!) : null;
     if (addRepaintBoundaries) {
       child = RepaintBoundary(child: child);
     }
     if (addSemanticIndexes) {
-      final int semanticIndex = semanticIndexCallback(child, index);
+      final semanticIndex = semanticIndexCallback(child, index);
       if (semanticIndex != null) {
         child = IndexedSemantics(index: semanticIndex + semanticIndexOffset, child: child);
       }
@@ -198,7 +177,7 @@ class ChildListDelegate extends ChildDelegate {
       child = AutomaticKeepAlive(child: child);
     }
     return addRepaintBoundaries || addSemanticIndexes || addAutomaticKeepAlives
-        ? KeyedSubtree(child: child, key: key)
+        ? KeyedSubtree(key: key, child: child)
         : child;
   }
 
@@ -207,8 +186,8 @@ class ChildListDelegate extends ChildDelegate {
 }
 
 // Return a Widget for the given Exception
-Widget _createErrorWidget(dynamic exception, StackTrace stackTrace) {
-  final FlutterErrorDetails details = FlutterErrorDetails(
+Widget _createErrorWidget(Object exception, StackTrace stackTrace) {
+  final details = FlutterErrorDetails(
     exception: exception,
     stack: stackTrace,
     library: 'widgets library',

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:dio/dio.dart';
@@ -9,16 +9,16 @@ import 'package:flutter_grasp/src/framework/future_change_notifier.dart';
 
 /// Created by changlei on 2020-02-13.
 ///
-/// [Object]类型的的异步请求扩展类
+/// [Object]类型的[ChangeNotifier]的异步请求扩展类
 abstract class ObjectChangeNotifier<E> extends FutureChangeNotifier<E> implements LoadOptionsBuilder {
   final RefreshScrollController _refreshController = RefreshScrollController.manual(
     style: RefreshControllerStyle.material,
   );
 
-  E _object;
+  E? _object;
 
   /// 异步加载返回的数据
-  E get object => _object;
+  E? get object => _object;
 
   @override
   bool get showProgress => false;
@@ -61,11 +61,11 @@ abstract class ObjectChangeNotifier<E> extends FutureChangeNotifier<E> implement
 
   @protected
   @override
-  Future<E> onLoad(bool showProgress, CancelToken cancelToken);
+  Future<E?> onLoad(bool showProgress, CancelToken? cancelToken);
 
   @protected
   @override
-  E resolve(E object) {
+  E? resolve(E? object) {
     return _object = object;
   }
 

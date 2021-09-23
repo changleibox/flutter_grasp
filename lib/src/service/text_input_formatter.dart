@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:math';
@@ -14,7 +14,7 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
   DecimalTextInputFormatter({
     this.decimalDigits = 2,
     this.maxValue,
-  })  : assert(decimalDigits != null && decimalDigits >= 0 || decimalDigits == -1),
+  })  : assert(decimalDigits >= 0 || decimalDigits == -1),
         _decimalDigitsRegExp = decimalDigits < 0 ? null : RegExp('\\d+\\.?\\d{0,$decimalDigits}'),
         super.allow(RegExp(decimalDigits == 0 ? r'\d+' : r'\d+\.?\d*'));
 
@@ -22,33 +22,33 @@ class DecimalTextInputFormatter extends FilteringTextInputFormatter {
   final int decimalDigits;
 
   /// 最大值，不设置的时候相当于不限制最大值
-  final double maxValue;
-  final RegExp _decimalDigitsRegExp;
+  final double? maxValue;
+  final RegExp? _decimalDigitsRegExp;
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final TextEditingValue editingValue = super.formatEditUpdate(oldValue, newValue);
-    String newValueText = editingValue.text;
+    final editingValue = super.formatEditUpdate(oldValue, newValue);
+    var newValueText = editingValue.text;
     if (newValueText.isEmpty) {
       return editingValue;
     }
-    final int pointerIndex = newValueText.indexOf('.');
-    final int length = newValueText.length;
-    final String beforePointer = newValueText.substring(0, pointerIndex == -1 ? length : pointerIndex);
-    String parsed = beforePointer.replaceFirst(RegExp(r'^0+'), '');
+    final pointerIndex = newValueText.indexOf('.');
+    final length = newValueText.length;
+    final beforePointer = newValueText.substring(0, pointerIndex == -1 ? length : pointerIndex);
+    var parsed = beforePointer.replaceFirst(RegExp(r'^0+'), '');
     if (parsed.isEmpty && beforePointer.isNotEmpty) {
       parsed = '0';
     }
     if (_decimalDigitsRegExp != null) {
-      newValueText = _decimalDigitsRegExp.stringMatch(newValueText);
+      newValueText = _decimalDigitsRegExp!.stringMatch(newValueText) ?? '';
     }
     newValueText = newValueText.replaceFirst(beforePointer, parsed);
-    int offset = editingValue.selection.baseOffset;
+    var offset = editingValue.selection.baseOffset;
     if (parsed != beforePointer) {
       offset -= beforePointer.length - parsed.length;
     }
-    final double tryParse = double.tryParse(newValueText);
-    if (maxValue != null && tryParse != null && tryParse > maxValue) {
+    final tryParse = double.tryParse(newValueText);
+    if (maxValue != null && tryParse != null && tryParse > maxValue!) {
       return oldValue;
     }
     return editingValue.copyWith(
@@ -66,7 +66,7 @@ class SymbolDecimalTextInputFormatter extends FilteringTextInputFormatter {
   SymbolDecimalTextInputFormatter({
     this.decimalDigits = 2,
     this.maxValue,
-  })  : assert(decimalDigits != null && decimalDigits >= 0 || decimalDigits == -1),
+  })  : assert(decimalDigits >= 0 || decimalDigits == -1),
         _decimalDigitsRegExp = decimalDigits < 0 ? null : RegExp('-?\\d*\\.?\\d{0,$decimalDigits}'),
         super.allow(RegExp(decimalDigits == 0 ? r'-?\d*' : r'-?(\d+\.)?\d*'));
 
@@ -74,20 +74,20 @@ class SymbolDecimalTextInputFormatter extends FilteringTextInputFormatter {
   final int decimalDigits;
 
   /// 最大值，不设置的时候相当于不限制最大值
-  final double maxValue;
-  final RegExp _decimalDigitsRegExp;
+  final double? maxValue;
+  final RegExp? _decimalDigitsRegExp;
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final TextEditingValue editingValue = super.formatEditUpdate(oldValue, newValue);
-    String newValueText = editingValue.text;
+    final editingValue = super.formatEditUpdate(oldValue, newValue);
+    var newValueText = editingValue.text;
     if (newValueText.isEmpty) {
       return editingValue;
     }
-    final int pointerIndex = newValueText.indexOf('.');
-    final int length = newValueText.length;
-    final String beforePointer = newValueText.substring(0, pointerIndex == -1 ? length : pointerIndex);
-    String parsed = beforePointer.replaceFirst(RegExp(r'^-?0+'), '');
+    final pointerIndex = newValueText.indexOf('.');
+    final length = newValueText.length;
+    final beforePointer = newValueText.substring(0, pointerIndex == -1 ? length : pointerIndex);
+    var parsed = beforePointer.replaceFirst(RegExp(r'^-?0+'), '');
     if (parsed.isEmpty && beforePointer.isNotEmpty) {
       parsed = '0';
     }
@@ -95,15 +95,15 @@ class SymbolDecimalTextInputFormatter extends FilteringTextInputFormatter {
       parsed = '-' + parsed;
     }
     if (_decimalDigitsRegExp != null) {
-      newValueText = _decimalDigitsRegExp.stringMatch(newValueText);
+      newValueText = _decimalDigitsRegExp!.stringMatch(newValueText) ?? '';
     }
     newValueText = newValueText.replaceFirst(beforePointer, parsed);
-    int offset = editingValue.selection.baseOffset;
+    var offset = editingValue.selection.baseOffset;
     if (parsed != beforePointer) {
       offset -= beforePointer.length - parsed.length;
     }
-    final double tryParse = double.tryParse(newValueText);
-    if (maxValue != null && tryParse != null && tryParse > maxValue) {
+    final tryParse = double.tryParse(newValueText);
+    if (maxValue != null && tryParse != null && tryParse > maxValue!) {
       return oldValue;
     }
     return editingValue.copyWith(

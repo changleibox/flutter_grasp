@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/foundation.dart';
@@ -27,31 +27,29 @@ typedef DraggableSortGroupFeedbackBuilder = Widget Function(
 class DraggableSortGroup extends StatefulWidget {
   /// 一组拖动排序
   const DraggableSortGroup({
-    Key key,
-    @required this.builder,
-    @required this.itemCounts,
+    Key? key,
+    required this.builder,
+    required this.itemCounts,
     this.onDragSort,
     this.onSortHandler,
     this.feedbackBuilder,
     this.axis,
-  })  : assert(builder != null),
-        assert(itemCounts != null),
-        super(key: key);
+  })  : super(key: key);
 
   /// child
   final WidgetBuilder builder;
 
   /// 触发排序
-  final DraggableSortGroupCallback onDragSort;
+  final DraggableSortGroupCallback? onDragSort;
 
   /// 自定义排序
-  final DraggableSortGroupHandler onSortHandler;
+  final DraggableSortGroupHandler? onSortHandler;
 
   /// 每个item对应的数量
   final List<int> itemCounts;
 
   /// 构建拖动的feedback
-  final DraggableSortGroupFeedbackBuilder feedbackBuilder;
+  final DraggableSortGroupFeedbackBuilder? feedbackBuilder;
 
   /// The [Axis] to restrict this draggable's movement, if specified.
   ///
@@ -64,7 +62,7 @@ class DraggableSortGroup extends StatefulWidget {
   ///
   /// For the direction of gestures this widget competes with to start a drag
   /// event, see [Draggable.affinity].
-  final Axis axis;
+  final Axis? axis;
 
   @override
   DraggableSortGroupState createState() => DraggableSortGroupState();
@@ -75,7 +73,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
   final GlobalKey<DraggableSortState> _sortKey = GlobalKey<DraggableSortState>();
 
   int _itemCount = 0;
-  DragSortData _lastDragSortData;
+  DragSortData? _lastDragSortData;
 
   @override
   void initState() {
@@ -93,20 +91,20 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
     super.didUpdateWidget(oldWidget);
   }
 
-  bool _onWillAccept(DragSortData dragSortData, int toGroupIndex) {
+  bool _onWillAccept(DragSortData? dragSortData, int toGroupIndex) {
     _lastDragSortData ??= dragSortData;
-    final _GroupIndexes indexes = _collapseIndex(_lastDragSortData.index);
-    final int fromGroupIndex = indexes.groupIndex;
+    final indexes = _collapseIndex(_lastDragSortData!.index);
+    final fromGroupIndex = indexes.groupIndex;
     if (widget.itemCounts[toGroupIndex] > 0 || fromGroupIndex == toGroupIndex) {
       return false;
     }
-    int toIndex = 0;
+    var toIndex = 0;
     if (fromGroupIndex > toGroupIndex) {
       toIndex = widget.itemCounts[toGroupIndex] - 1;
     } else if (fromGroupIndex < toGroupIndex) {
       toIndex = 0;
     }
-    final bool isIntercept = widget.onSortHandler?.call(
+    final isIntercept = widget.onSortHandler?.call(
       fromGroupIndex,
       toGroupIndex,
       indexes.index,
@@ -115,8 +113,8 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
     if (isIntercept == true) {
       return false;
     }
-    _sortKey.currentState.sort(
-      _lastDragSortData.index,
+    _sortKey.currentState?.sort(
+      _lastDragSortData!.index,
       _expandIndex(toGroupIndex, toIndex),
     );
     return true;
@@ -126,16 +124,16 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
   Widget createGroupItem(int groupIndex, Widget child) {
     return AnimatedDragTarget<DragSortData>(
       duration: const Duration(milliseconds: 300),
-      onWillAccept: (DragSortData data) => _onWillAccept(data, groupIndex),
-      builder: (BuildContext context, List<DragSortData> candidateData, List<dynamic> rejectedData) {
+      onWillAccept: (DragSortData? data) => _onWillAccept(data, groupIndex),
+      builder: (BuildContext context, List<DragSortData?> candidateData, List<dynamic> rejectedData) {
         return child;
       },
     );
   }
 
   /// 创建排序item
-  Widget createItem(int groupIndex, int index, Widget child) {
-    return _sortKey.currentState.createItem(_expandIndex(groupIndex, index), child);
+  Widget? createItem(int groupIndex, int index, Widget child) {
+    return _sortKey.currentState?.createItem(_expandIndex(groupIndex, index), child);
   }
 
   int _expandIndex(int groupIndex, int index) {
@@ -147,17 +145,17 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
   }
 
   _GroupIndexes _collapseIndex(int index) {
-    int groupIndex = 0;
-    int indexSum = 0;
+    var groupIndex = 0;
+    var indexSum = 0;
     if (index < 0) {
       return _GroupIndexes(groupIndex, 0);
     }
     if (index >= _itemCount) {
       return _GroupIndexes(widget.itemCounts.length - 1, index - _itemCount);
     }
-    final List<int> itemCounts = widget.itemCounts;
-    for (int i = 0; i < itemCounts.length; i++) {
-      final int itemCount = itemCounts[i];
+    final itemCounts = widget.itemCounts;
+    for (var i = 0; i < itemCounts.length; i++) {
+      final itemCount = itemCounts[i];
       if (index >= indexSum - 1 && index < indexSum + itemCount) {
         groupIndex = i;
         break;
@@ -168,10 +166,10 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
   }
 
   void _onDragSort(int fromIndex, int toIndex) {
-    final _GroupIndexes fromIndexes = _collapseIndex(fromIndex);
-    final _GroupIndexes toIndexes = _collapseIndex(toIndex);
+    final fromIndexes = _collapseIndex(fromIndex);
+    final toIndexes = _collapseIndex(toIndex);
     _lastDragSortData = DragSortData(
-      _sortKey.currentState,
+      _sortKey.currentState!,
       toIndex,
     );
     widget.onDragSort?.call(
@@ -188,11 +186,11 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
   }
 
   int _onSortHandler(int fromIndex, int toIndex) {
-    final _GroupIndexes fromIndexes = _collapseIndex(fromIndex);
-    final _GroupIndexes toIndexes = _collapseIndex(toIndex);
-    final int fromGroupIndex = fromIndexes.groupIndex;
-    final int toGroupIndex = toIndexes.groupIndex;
-    final bool isIntercept = widget.onSortHandler?.call(
+    final fromIndexes = _collapseIndex(fromIndex);
+    final toIndexes = _collapseIndex(toIndex);
+    final fromGroupIndex = fromIndexes.groupIndex;
+    final toGroupIndex = toIndexes.groupIndex;
+    final isIntercept = widget.onSortHandler?.call(
       fromGroupIndex,
       toGroupIndex,
       fromIndexes.index,
@@ -209,11 +207,11 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
 
   @override
   Widget build(BuildContext context) {
-    DraggableSortFeedbackBuilder feedbackBuilder;
+    DraggableSortFeedbackBuilder? feedbackBuilder;
     if (widget.feedbackBuilder != null) {
       feedbackBuilder = (BuildContext context, int index, Widget child) {
-        final _GroupIndexes indexes = _collapseIndex(index);
-        return widget.feedbackBuilder(context, indexes.groupIndex, indexes.index, child);
+        final indexes = _collapseIndex(index);
+        return widget.feedbackBuilder!(context, indexes.groupIndex, indexes.index, child);
       };
     }
     return DraggableSort(

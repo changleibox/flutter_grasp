@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:math' as math;
@@ -24,9 +24,9 @@ typedef DraggableSortFeedbackBuilder = Widget Function(BuildContext context, int
 class DraggableSort extends StatefulWidget {
   /// 拖动排序
   const DraggableSort({
-    Key key,
-    @required this.builder,
-    @required this.itemCount,
+    Key? key,
+    required this.builder,
+    required this.itemCount,
     this.onSortHandler,
     this.onDragSort,
     this.onDragStarted,
@@ -35,24 +35,23 @@ class DraggableSort extends StatefulWidget {
     this.onDragEnd,
     this.feedbackBuilder,
     this.axis,
-  })  : assert(builder != null),
-        assert(itemCount != null && itemCount >= 0),
+  })  : assert(itemCount >= 0),
         super(key: key);
 
   /// child
   final WidgetBuilder builder;
 
   /// 自定义排序逻辑
-  final DraggableSortHandler onSortHandler;
+  final DraggableSortHandler? onSortHandler;
 
   /// 触发排序
-  final DraggableSortCallback onDragSort;
+  final DraggableSortCallback? onDragSort;
 
   /// item的数量
   final int itemCount;
 
   /// Called when the draggable starts being dragged.
-  final ValueChanged<DragSortData> onDragStarted;
+  final ValueChanged<DragSortData>? onDragStarted;
 
   /// Called when the draggable is dropped without being accepted by a [DragTarget].
   ///
@@ -62,7 +61,7 @@ class DraggableSort extends StatefulWidget {
   /// still be called. For this reason, implementations of this callback might
   /// need to check [State.mounted] to check whether the state receiving the
   /// callback is still in the tree.
-  final ValueChanged<DragSortData> onDraggableCanceled;
+  final ValueChanged<DragSortData>? onDraggableCanceled;
 
   /// Called when the draggable is dropped and accepted by a [DragTarget].
   ///
@@ -72,7 +71,7 @@ class DraggableSort extends StatefulWidget {
   /// still be called. For this reason, implementations of this callback might
   /// need to check [State.mounted] to check whether the state receiving the
   /// callback is still in the tree.
-  final ValueChanged<DragSortData> onDragCompleted;
+  final ValueChanged<DragSortData>? onDragCompleted;
 
   /// Called when the draggable is dropped.
   ///
@@ -82,10 +81,10 @@ class DraggableSort extends StatefulWidget {
   ///
   /// This function will only be called while this widget is still mounted to
   /// the tree (i.e. [State.mounted] is true).
-  final ValueChanged<DragSortData> onDragEnd;
+  final ValueChanged<DragSortData>? onDragEnd;
 
   /// 构建拖动的feedback
-  final DraggableSortFeedbackBuilder feedbackBuilder;
+  final DraggableSortFeedbackBuilder? feedbackBuilder;
 
   /// The [Axis] to restrict this draggable's movement, if specified.
   ///
@@ -98,7 +97,7 @@ class DraggableSort extends StatefulWidget {
   ///
   /// For the direction of gestures this widget competes with to start a drag
   /// event, see [Draggable.affinity].
-  final Axis axis;
+  final Axis? axis;
 
   @override
   DraggableSortState createState() => DraggableSortState();
@@ -108,7 +107,7 @@ class DraggableSort extends StatefulWidget {
 class DraggableSortState extends State<DraggableSort> {
   final List<GlobalKey<State<StatefulWidget>>> _itemKeys = <GlobalKey>[];
 
-  int _willAcceptIndex;
+  int? _willAcceptIndex;
 
   @override
   void initState() {
@@ -119,7 +118,7 @@ class DraggableSortState extends State<DraggableSort> {
   @override
   void didUpdateWidget(DraggableSort oldWidget) {
     if (widget.itemCount > oldWidget.itemCount) {
-      final int delta = widget.itemCount - oldWidget.itemCount;
+      final delta = widget.itemCount - oldWidget.itemCount;
       _itemKeys.addAll(List<GlobalKey>.generate(delta, (int n) => _createKey(n)));
     } else if (widget.itemCount < oldWidget.itemCount) {
       _itemKeys.removeRange(widget.itemCount, math.min(oldWidget.itemCount, _itemKeys.length));
@@ -130,7 +129,7 @@ class DraggableSortState extends State<DraggableSort> {
   GlobalKey _createKey(int index) => GlobalKey(debugLabel: index.toString());
 
   /// 添加一个item
-  void add({int index}) {
+  void add({int? index}) {
     assert(index == null || (index >= 0 && index <= _itemKeys.length));
     if (index == null) {
       _itemKeys.add(_createKey(_itemKeys.length));
@@ -140,7 +139,7 @@ class DraggableSortState extends State<DraggableSort> {
   }
 
   /// 删除一个item
-  void remove({int index}) {
+  void remove({int? index}) {
     assert(index == null || (index >= 0 && index < _itemKeys.length));
     if (index == null) {
       _itemKeys.removeLast();
@@ -156,31 +155,31 @@ class DraggableSortState extends State<DraggableSort> {
     }
     _willAcceptIndex = _onSort(fromIndex, toIndex);
     widget.onDragSort?.call(fromIndex, toIndex);
-    return _willAcceptIndex;
+    return _willAcceptIndex!;
   }
 
   int _onSort(int fromIndex, int toIndex) {
     toIndex = widget.onSortHandler?.call(fromIndex, toIndex) ?? toIndex;
-    final int maxIndex = _itemKeys.length - 1;
-    final int validFromIndex = fromIndex.clamp(0, maxIndex).toInt();
-    final int validToIndex = toIndex.clamp(0, maxIndex).toInt();
+    final maxIndex = _itemKeys.length - 1;
+    final validFromIndex = fromIndex.clamp(0, maxIndex).toInt();
+    final validToIndex = toIndex.clamp(0, maxIndex).toInt();
     if (validFromIndex != validToIndex) {
-      final GlobalKey<State<StatefulWidget>> fromKey = _itemKeys[validFromIndex];
+      final fromKey = _itemKeys[validFromIndex];
       _itemKeys.removeAt(validFromIndex);
       _itemKeys.insert(validToIndex, fromKey);
     }
     return validToIndex;
   }
 
-  bool _onWillAccept(DragSortData data, int index) {
-    if (data._state != this) {
+  bool _onWillAccept(DragSortData? data, int index) {
+    if (data?._state != this) {
       // 不是当前控件
       return false;
     }
-    final int fromIndex = _willAcceptIndex ?? data.index;
-    final bool accept = fromIndex != index;
+    final fromIndex = _willAcceptIndex ?? data!.index;
+    final accept = fromIndex != index;
     if (accept) {
-      final int toIndex = _onSort(fromIndex, index);
+      final toIndex = _onSort(fromIndex, index);
       if (fromIndex == toIndex) {
         return false;
       }
@@ -210,13 +209,12 @@ class DraggableSortState extends State<DraggableSort> {
   /// 创建排序item
   Widget createItem(int index, Widget child) {
     assert(index >= 0 && _itemKeys.length > index);
-    assert(child != null);
-    final DragSortData dragSortData = DragSortData(this, index);
-    Widget feedback;
+    final dragSortData = DragSortData(this, index);
+    Widget? feedback;
     if (widget.feedbackBuilder != null) {
       feedback = Builder(
         builder: (BuildContext context) {
-          return widget.feedbackBuilder(context, index, child);
+          return widget.feedbackBuilder!(context, index, child);
         },
       );
     }
@@ -235,8 +233,8 @@ class DraggableSortState extends State<DraggableSort> {
         child: AnimatedDragTarget<DragSortData>(
           duration: const Duration(milliseconds: 300),
           curve: Curves.linearToEaseOut,
-          onWillAccept: (DragSortData data) => _onWillAccept(data, index),
-          builder: (BuildContext context, List<DragSortData> candidateData, List<dynamic> rejectedData) => child,
+          onWillAccept: (DragSortData? data) => _onWillAccept(data, index),
+          builder: (BuildContext context, List<DragSortData?> candidateData, List<dynamic> rejectedData) => child,
         ),
       ),
     );

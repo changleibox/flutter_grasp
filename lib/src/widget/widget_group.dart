@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:math';
@@ -14,23 +14,17 @@ import 'child_delegate.dart';
 class WidgetGroup extends StatelessWidget {
   /// 构造函数
   WidgetGroup({
-    Key key,
+    Key? key,
     this.alignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.mainAxisSize = MainAxisSize.max,
     this.textDirection,
     this.verticalDirection = VerticalDirection.down,
     this.textBaseline,
-    @required List<Widget> children,
-    Widget divider,
-    Axis direction = Axis.horizontal,
-  })  : direction = direction ?? Axis.horizontal,
-        assert(direction != null),
-        assert(alignment != null),
-        assert(mainAxisSize != null),
-        assert(crossAxisAlignment != null),
-        assert(verticalDirection != null),
-        assert(crossAxisAlignment != CrossAxisAlignment.baseline || textBaseline != null),
+    required List<Widget>? children,
+    Widget? divider,
+    this.direction = Axis.horizontal,
+  })  : assert(crossAxisAlignment != CrossAxisAlignment.baseline || textBaseline != null),
         childrenDelegate = divider == null || children == null
             ? ChildListDelegate(
                 children ?? <Widget>[],
@@ -40,7 +34,7 @@ class WidgetGroup extends StatelessWidget {
               )
             : ChildBuilderDelegate(
                 (BuildContext context, int index) {
-                  final int itemIndex = index ~/ 2;
+                  final itemIndex = index ~/ 2;
                   Widget widget;
                   if (index.isEven) {
                     widget = children[itemIndex];
@@ -61,19 +55,26 @@ class WidgetGroup extends StatelessWidget {
 
   /// 可以加分割距离
   factory WidgetGroup.spacing({
-    Key key,
+    Key? key,
     MainAxisAlignment alignment = MainAxisAlignment.start,
     CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.center,
     MainAxisSize mainAxisSize = MainAxisSize.max,
-    TextDirection textDirection,
+    TextDirection? textDirection,
     VerticalDirection verticalDirection = VerticalDirection.down,
-    TextBaseline textBaseline,
-    @required List<Widget> children,
-    double spacing = 0,
+    TextBaseline? textBaseline,
+    required List<Widget>? children,
+    double? spacing = 0,
     Axis direction = Axis.horizontal,
   }) {
     assert(spacing == null || spacing >= 0);
-    direction = direction ?? Axis.horizontal;
+    Widget? divider;
+    if (spacing != null && spacing > 0) {
+      divider = Container(
+        width: direction == Axis.vertical ? null : spacing,
+        height: direction == Axis.vertical ? spacing : null,
+        padding: EdgeInsets.zero,
+      );
+    }
     return WidgetGroup(
       key: key,
       alignment: alignment,
@@ -82,37 +83,25 @@ class WidgetGroup extends StatelessWidget {
       textDirection: textDirection,
       verticalDirection: verticalDirection,
       textBaseline: textBaseline,
-      children: children,
       direction: direction,
-      divider: spacing == 0
-          ? null
-          : Container(
-              width: direction == Axis.vertical ? null : spacing,
-              height: direction == Axis.vertical ? spacing : null,
-              padding: EdgeInsets.zero,
-            ),
+      divider: divider,
+      children: children,
     );
   }
 
   /// 自定义item
   WidgetGroup.builder({
-    Key key,
+    Key? key,
     this.alignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.mainAxisSize = MainAxisSize.max,
-    @required IndexedWidgetBuilder itemBuilder,
-    @required int itemCount,
+    required IndexedWidgetBuilder itemBuilder,
+    required int? itemCount,
     this.textDirection,
     this.verticalDirection = VerticalDirection.down,
     this.textBaseline,
-    Axis direction = Axis.horizontal,
-  })  : direction = direction ?? Axis.horizontal,
-        assert(direction != null),
-        assert(alignment != null),
-        assert(mainAxisSize != null),
-        assert(crossAxisAlignment != null),
-        assert(verticalDirection != null),
-        assert(crossAxisAlignment != CrossAxisAlignment.baseline || textBaseline != null),
+    this.direction = Axis.horizontal,
+  })  : assert(crossAxisAlignment != CrossAxisAlignment.baseline || textBaseline != null),
         assert(itemCount == null || itemCount >= 0),
         childrenDelegate = ChildBuilderDelegate(
           itemBuilder,
@@ -125,43 +114,31 @@ class WidgetGroup extends StatelessWidget {
 
   /// build item和分割器
   WidgetGroup.separated({
-    Key key,
+    Key? key,
     this.alignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.mainAxisSize = MainAxisSize.max,
-    @required IndexedWidgetBuilder itemBuilder,
-    @required IndexedWidgetBuilder separatorBuilder,
-    @required int itemCount,
+    required IndexedWidgetBuilder itemBuilder,
+    required IndexedWidgetBuilder separatorBuilder,
+    required int? itemCount,
     this.textDirection,
     this.verticalDirection = VerticalDirection.down,
     this.textBaseline,
-    Axis direction = Axis.horizontal,
-  })  : direction = direction ?? Axis.horizontal,
-        assert(direction != null),
-        assert(alignment != null),
-        assert(mainAxisSize != null),
-        assert(crossAxisAlignment != null),
-        assert(verticalDirection != null),
-        assert(crossAxisAlignment != CrossAxisAlignment.baseline || textBaseline != null),
+    this.direction = Axis.horizontal,
+  })  : assert(crossAxisAlignment != CrossAxisAlignment.baseline || textBaseline != null),
         assert(itemCount == null || itemCount >= 0),
         childrenDelegate = ChildBuilderDelegate(
           (BuildContext context, int index) {
-            final int itemIndex = index ~/ 2;
+            final itemIndex = index ~/ 2;
             Widget widget;
             if (index.isEven) {
               widget = itemBuilder(context, itemIndex);
             } else {
               widget = separatorBuilder(context, itemIndex);
-              assert(() {
-                if (widget == null) {
-                  throw FlutterError('separatorBuilder cannot return null.');
-                }
-                return true;
-              }());
             }
             return widget;
           },
-          childCount: _computeActualChildCount(itemCount),
+          childCount: _computeActualChildCount(itemCount!),
           addAutomaticKeepAlives: false,
           addRepaintBoundaries: false,
           addSemanticIndexes: false,
@@ -173,19 +150,16 @@ class WidgetGroup extends StatelessWidget {
 
   /// 自定义
   const WidgetGroup.custom({
-    Key key,
+    Key? key,
     this.alignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.mainAxisSize = MainAxisSize.max,
-    @required this.childrenDelegate,
+    required this.childrenDelegate,
     this.textDirection,
     this.verticalDirection = VerticalDirection.down,
     this.textBaseline,
-    Axis direction = Axis.horizontal,
-  })  : direction = direction ?? Axis.horizontal,
-        assert(direction != null),
-        assert(childrenDelegate != null),
-        super(key: key);
+    this.direction = Axis.horizontal,
+  }) : super(key: key);
 
   /// 主轴对齐方式
   final MainAxisAlignment alignment;
@@ -197,13 +171,13 @@ class WidgetGroup extends StatelessWidget {
   final CrossAxisAlignment crossAxisAlignment;
 
   /// [textDirection]
-  final TextDirection textDirection;
+  final TextDirection? textDirection;
 
   /// 处置方向的[TextDirection]
   final VerticalDirection verticalDirection;
 
   /// 设置对准基线
-  final TextBaseline textBaseline;
+  final TextBaseline? textBaseline;
 
   /// 方向
   final Axis direction;
@@ -213,37 +187,33 @@ class WidgetGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int childCount = childrenDelegate.estimatedChildCount;
-    final List<Widget> children = List<Widget>.generate(childCount, (int index) {
-      return childrenDelegate.build(context, index);
+    final childCount = childrenDelegate.estimatedChildCount ?? 0;
+    final children = List<Widget>.generate(childCount, (int index) {
+      return childrenDelegate.build(context, index)!;
     });
 
     switch (direction) {
       case Axis.horizontal:
         return Row(
-          mainAxisAlignment: alignment ?? MainAxisAlignment.start,
-          mainAxisSize: mainAxisSize ?? MainAxisSize.max,
-          crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
-          children: children,
+          mainAxisAlignment: alignment,
+          mainAxisSize: mainAxisSize,
+          crossAxisAlignment: crossAxisAlignment,
           textDirection: textDirection,
           verticalDirection: verticalDirection,
           textBaseline: textBaseline,
+          children: children,
         );
-        break;
       case Axis.vertical:
         return Column(
-          mainAxisAlignment: alignment ?? MainAxisAlignment.start,
-          mainAxisSize: mainAxisSize ?? MainAxisSize.max,
-          crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
-          children: children,
+          mainAxisAlignment: alignment,
+          mainAxisSize: mainAxisSize,
+          crossAxisAlignment: crossAxisAlignment,
           textDirection: textDirection,
           verticalDirection: verticalDirection,
           textBaseline: textBaseline,
+          children: children,
         );
-        break;
     }
-    assert(false);
-    return null;
   }
 
   // Helper method to compute the actual child count for the separated constructor.

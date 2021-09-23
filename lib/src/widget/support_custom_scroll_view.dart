@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/cupertino.dart';
@@ -28,31 +28,31 @@ class LoadOptions {
     this.onRefresh,
     this.onLoadNext,
     this.hasNext = false,
-  }) : assert(onLoadNext == null || hasNext != null);
+  });
 
   /// 刷新控制器
-  final RefreshScrollController controller;
+  final RefreshScrollController? controller;
 
   /// 刷新回调
-  final SupportRefreshCallback onRefresh;
+  final SupportRefreshCallback? onRefresh;
 
   /// 读取下一页回调
-  final SupportRefreshCallback onLoadNext;
+  final SupportRefreshCallback? onLoadNext;
 
   /// 是否有下一页
   final bool hasNext;
 
   /// 复制
   LoadOptions copyWith({
-    SupportRefreshCallback onRefresh,
-    SupportRefreshCallback onLoadNext,
-    bool hasNext,
+    SupportRefreshCallback? onRefresh,
+    SupportRefreshCallback? onLoadNext,
+    bool? hasNext,
   }) {
     return LoadOptions(
       controller: controller,
       onRefresh: onRefresh ?? this.onRefresh,
       onLoadNext: onLoadNext ?? this.onLoadNext,
-      hasNext: hasNext ?? this.hasNext ?? false,
+      hasNext: hasNext ?? this.hasNext,
     );
   }
 }
@@ -60,7 +60,7 @@ class LoadOptions {
 /// 加载配置的包裹类，可以继承该类，实现统一的加载配置
 abstract class LoadOptionsBuilder {
   /// load配置
-  LoadOptions get loadOptions;
+  LoadOptions? get loadOptions;
 }
 
 /// 默认加载配置
@@ -68,8 +68,7 @@ class DefaultLoadOptionsBuilder implements LoadOptionsBuilder {
   /// 构造函数
   const DefaultLoadOptionsBuilder({
     LoadOptions loadOptions = const LoadOptions(),
-  })  : assert(loadOptions != null),
-        _loadOptions = loadOptions;
+  }) : _loadOptions = loadOptions;
 
   final LoadOptions _loadOptions;
 
@@ -77,7 +76,7 @@ class DefaultLoadOptionsBuilder implements LoadOptionsBuilder {
   LoadOptions get loadOptions => _loadOptions;
 
   /// 复制
-  LoadOptionsBuilder copyWith({LoadOptions loadOptions}) {
+  LoadOptionsBuilder copyWith({LoadOptions? loadOptions}) {
     return DefaultLoadOptionsBuilder(loadOptions: loadOptions ?? _loadOptions);
   }
 }
@@ -88,7 +87,7 @@ class DefaultLoadOptionsBuilder implements LoadOptionsBuilder {
 class SupportCustomScrollView extends StatefulWidget {
   /// 构造函数
   SupportCustomScrollView({
-    Key key,
+    Key? key,
     this.controller,
     this.slivers,
     this.scrollDirection = Axis.vertical,
@@ -102,17 +101,17 @@ class SupportCustomScrollView extends StatefulWidget {
     this.semanticChildCount,
     this.dragStartBehavior = DragStartBehavior.start,
     this.padding,
-    SupportRefreshCallback onRefresh,
-    SupportRefreshCallback onLoadNext,
+    SupportRefreshCallback? onRefresh,
+    SupportRefreshCallback? onLoadNext,
     bool hasNext = false,
     this.hasElements = true,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.loadNextBuilder = buildLoadNext,
     this.placeholderBuilder = buildPlaceholder,
-  })  : assert(hasElements != null),
-        assert(loadNextBuilder != null),
-        assert(placeholderBuilder != null),
-        loadOptions = LoadOptions(
+    this.restorationId,
+    this.clipBehavior = Clip.hardEdge,
+    this.scrollBehavior,
+  })  : loadOptions = LoadOptions(
           onRefresh: onRefresh,
           onLoadNext: onLoadNext,
           hasNext: hasNext,
@@ -121,8 +120,8 @@ class SupportCustomScrollView extends StatefulWidget {
 
   /// builder构造器
   SupportCustomScrollView.builder({
-    Key key,
-    @required LoadOptionsBuilder builder,
+    Key? key,
+    required LoadOptionsBuilder builder,
     this.controller,
     this.slivers,
     this.scrollDirection = Axis.vertical,
@@ -140,17 +139,16 @@ class SupportCustomScrollView extends StatefulWidget {
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.loadNextBuilder = buildLoadNext,
     this.placeholderBuilder = buildPlaceholder,
-  })  : assert(hasElements != null),
-        assert(builder != null),
-        assert(loadNextBuilder != null),
-        assert(placeholderBuilder != null),
-        loadOptions = builder.loadOptions ?? const LoadOptions(),
+    this.restorationId,
+    this.clipBehavior = Clip.hardEdge,
+    this.scrollBehavior,
+  })  : loadOptions = builder.loadOptions ?? const LoadOptions(),
         super(key: key);
 
   /// 可以用一个[LoadOptions]构造
   const SupportCustomScrollView.options({
-    Key key,
-    @required this.loadOptions,
+    Key? key,
+    required this.loadOptions,
     this.controller,
     this.slivers,
     this.scrollDirection = Axis.vertical,
@@ -168,17 +166,16 @@ class SupportCustomScrollView extends StatefulWidget {
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.loadNextBuilder = buildLoadNext,
     this.placeholderBuilder = buildPlaceholder,
-  })  : assert(hasElements != null),
-        assert(loadOptions != null),
-        assert(loadNextBuilder != null),
-        assert(placeholderBuilder != null),
-        super(key: key);
+    this.restorationId,
+    this.clipBehavior = Clip.hardEdge,
+    this.scrollBehavior,
+  }) : super(key: key);
 
   /// children
-  final List<Widget> slivers;
+  final List<Widget>? slivers;
 
   /// 滚动控制器
-  final ScrollController controller;
+  final ScrollController? controller;
 
   /// 滚动方向
   final Axis scrollDirection;
@@ -187,10 +184,10 @@ class SupportCustomScrollView extends StatefulWidget {
   final bool reverse;
 
   /// 是否使用[PrimaryScrollController]
-  final bool primary;
+  final bool? primary;
 
   /// 插值器，可以自定义滚动效果
-  final ScrollPhysics physics;
+  final ScrollPhysics? physics;
 
   /// 是否压缩包裹
   final bool shrinkWrap;
@@ -212,7 +209,7 @@ class SupportCustomScrollView extends StatefulWidget {
   /// See also:
   ///
   ///  * [anchor], which controls where the [center] as aligned in the viewport.
-  final Key center;
+  final Key? center;
 
   /// {@template flutter.widgets.scroll_view.anchor}
   /// The relative position of the zero scroll offset.
@@ -227,7 +224,7 @@ class SupportCustomScrollView extends StatefulWidget {
   final double anchor;
 
   /// {@macro flutter.rendering.RenderViewportBase.cacheExtent}
-  final double cacheExtent;
+  final double? cacheExtent;
 
   /// The number of children that will contribute semantic information.
   ///
@@ -242,13 +239,13 @@ class SupportCustomScrollView extends StatefulWidget {
   /// See also:
   ///
   ///  * [SemanticsConfiguration.scrollChildCount], the corresponding semantics property.
-  final int semanticChildCount;
+  final int? semanticChildCount;
 
   /// {@macro flutter.widgets.scrollable.dragStartBehavior}
   final DragStartBehavior dragStartBehavior;
 
   /// 内边距
-  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? padding;
 
   /// [LoadOptions]
   final LoadOptions loadOptions;
@@ -268,6 +265,22 @@ class SupportCustomScrollView extends StatefulWidget {
   /// 占位图
   final PlaceholderBuilder placeholderBuilder;
 
+  /// {@macro flutter.widgets.scrollable.restorationId}
+  final String? restorationId;
+
+  /// {@macro flutter.material.Material.clipBehavior}
+  ///
+  /// Defaults to [Clip.hardEdge].
+  final Clip clipBehavior;
+
+  /// {@macro flutter.widgets.shadow.scrollBehavior}
+  ///
+  /// [ScrollBehavior]s also provide [ScrollPhysics]. If an explicit
+  /// [ScrollPhysics] is provided in [physics], it will take precedence,
+  /// followed by [scrollBehavior], and then the inherited ancestor
+  /// [ScrollBehavior].
+  final ScrollBehavior? scrollBehavior;
+
   /// 构建默认的上拉加载控件
   static Widget buildLoadNext(BuildContext context, bool hasNext, bool isLoading, Axis scrollDirection) {
     return LoadNextWidget(
@@ -279,7 +292,7 @@ class SupportCustomScrollView extends StatefulWidget {
 
   /// 构建默认的占位图
   static Widget buildPlaceholder(BuildContext context, bool isLoading, Axis scrollDirection) {
-    final bool isVertical = scrollDirection == Axis.vertical;
+    final isVertical = scrollDirection == Axis.vertical;
     return SizedBox.fromSize(
       size: isVertical ? const Size.fromHeight(300) : const Size.fromWidth(300),
       child: DefaultPagePlaceholderView(
@@ -295,11 +308,11 @@ class SupportCustomScrollView extends StatefulWidget {
 class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
   final ValueNotifier<bool> _isLoadingNotifier = ValueNotifier<bool>(false);
 
-  SupportRefreshCallback get _refresh => widget.loadOptions.onRefresh;
+  SupportRefreshCallback? get _refresh => widget.loadOptions.onRefresh;
 
-  SupportRefreshCallback get _loadNext => widget.loadOptions.onLoadNext;
+  SupportRefreshCallback? get _loadNext => widget.loadOptions.onLoadNext;
 
-  bool get _hasSlivers => widget.slivers != null && widget.slivers.isNotEmpty;
+  bool get _hasSlivers => widget.slivers != null && widget.slivers!.isNotEmpty;
 
   bool get _showSlivers => _hasSlivers && widget.hasElements;
 
@@ -314,14 +327,14 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
   Future<void> _onRefresh() async {
     if (!_isLoading && _showRefresh) {
       _loadStart();
-      await _refresh().whenComplete(_loadComplete);
+      await _refresh!().whenComplete(_loadComplete);
     }
   }
 
   Future<void> _onLoadNext() async {
     if (!_isLoading && _showLoadNext && _hasNext) {
       _loadStart();
-      await _loadNext().whenComplete(_loadComplete);
+      await _loadNext!().whenComplete(_loadComplete);
     }
   }
 
@@ -330,25 +343,18 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
   }
 
   void _loadComplete() {
-    SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
+    SchedulerBinding.instance!.addPostFrameCallback((Duration timeStamp) {
       _isLoadingNotifier.value = false;
     });
   }
 
   bool _onNotification(ScrollNotification notification) {
-    if (widget.keyboardDismissBehavior == ScrollViewKeyboardDismissBehavior.onDrag &&
-        notification is ScrollUpdateNotification) {
-      final FocusScopeNode focusScope = FocusScope.of(context);
-      if (notification.dragDetails != null && focusScope.hasFocus) {
-        focusScope.unfocus();
-      }
-    }
     if (notification.depth != 0 || notification is! ScrollEndNotification) {
       return false;
     }
-    final ScrollMetrics metrics = notification.metrics;
-    final double pixels = metrics.pixels;
-    final double maxScrollExtent = metrics.maxScrollExtent;
+    final metrics = notification.metrics;
+    final pixels = metrics.pixels;
+    final maxScrollExtent = metrics.maxScrollExtent;
     if (pixels >= maxScrollExtent) {
       _onLoadNext();
     }
@@ -371,48 +377,48 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isVertical = widget.scrollDirection == Axis.vertical;
-    EdgeInsetsGeometry effectivePadding = widget.padding;
-    EdgeInsetsGeometry mediaQueryPadding;
-    final MediaQueryData mediaQuery = MediaQuery.of(context);
+    final isVertical = widget.scrollDirection == Axis.vertical;
+    var effectivePadding = widget.padding;
+    EdgeInsetsGeometry? mediaQueryPadding;
+    final MediaQueryData? mediaQuery = MediaQuery.of(context);
     if (widget.padding == null && mediaQuery != null) {
       // Automatically pad sliver with padding from MediaQuery.
-      final EdgeInsets mediaQueryHorizontalPadding = mediaQuery.padding.copyWith(top: 0.0, bottom: 0.0);
-      final EdgeInsets mediaQueryVerticalPadding = mediaQuery.padding.copyWith(left: 0.0, right: 0.0);
+      final mediaQueryHorizontalPadding = mediaQuery.padding.copyWith(top: 0.0, bottom: 0.0);
+      final mediaQueryVerticalPadding = mediaQuery.padding.copyWith(left: 0.0, right: 0.0);
       // Consume the main axis padding with SliverPadding.
       effectivePadding = isVertical ? mediaQueryVerticalPadding : mediaQueryHorizontalPadding;
       mediaQueryPadding = isVertical ? mediaQueryHorizontalPadding : mediaQueryVerticalPadding;
     }
 
-    final EdgeInsets padding = effectivePadding?.resolve(Directionality.of(context));
+    final padding = effectivePadding?.resolve(Directionality.of(context));
 
     Widget buildSliver(Widget sliver, bool isFirst, bool isLast) {
-      if (padding == null) {
+      if (padding == null || padding == EdgeInsets.zero) {
         return sliver;
       }
-      EdgeInsets copyPadding = padding.copyWith();
+      var copiedPadding = padding.copyWith();
       if (!isFirst) {
-        copyPadding = padding.copyWith(
+        copiedPadding = padding.copyWith(
           left: isVertical ? padding.left : 0,
           top: isVertical ? 0 : padding.top,
         );
       }
       if (!isLast) {
-        copyPadding = copyPadding.copyWith(
+        copiedPadding = copiedPadding.copyWith(
           right: isVertical ? padding.right : 0,
           bottom: isVertical ? 0 : padding.bottom,
         );
       }
 
       return SliverPadding(
-        padding: copyPadding,
+        padding: copiedPadding,
         sliver: sliver,
       );
     }
 
-    final RefreshScrollController controller = widget.loadOptions.controller;
+    final controller = widget.loadOptions.controller;
 
-    final List<Widget> slivers = <Widget>[];
+    final slivers = <Widget>[];
     if (_showRefresh && controller?.style == RefreshControllerStyle.cupertino) {
       final Widget child = SupportSliverRefreshIndicator(
         key: controller?.refreshKey,
@@ -421,18 +427,18 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
       slivers.add(child);
     }
     if (_hasSlivers) {
-      final int length = widget.slivers.length;
+      final length = widget.slivers!.length;
       slivers.addAll(List<Widget>.generate(length, (int index) {
-        final bool isFirst = index == 0;
-        final bool isLast = index == length - 1 && !_showLoadNext && _showSlivers;
-        return buildSliver(widget.slivers[index], isFirst, isLast);
+        final isFirst = index == 0;
+        final isLast = index == length - 1 && !_showLoadNext && _showSlivers;
+        return buildSliver(widget.slivers![index], isFirst, isLast);
       }));
     }
     if (!_showSlivers) {
       final Widget sliver = SliverToBoxAdapter(
         child: ValueListenableBuilder<bool>(
           valueListenable: _isLoadingNotifier,
-          builder: (BuildContext context, bool value, Widget child) {
+          builder: (BuildContext context, bool value, Widget? child) {
             return widget.placeholderBuilder(context, value, widget.scrollDirection);
           },
         ),
@@ -443,7 +449,7 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
       final Widget sliver = SliverToBoxAdapter(
         child: ValueListenableBuilder<bool>(
           valueListenable: _isLoadingNotifier,
-          builder: (BuildContext context, bool value, Widget child) {
+          builder: (BuildContext context, bool value, Widget? child) {
             return widget.loadNextBuilder(context, _hasNext, value, widget.scrollDirection);
           },
         ),
@@ -462,6 +468,10 @@ class _SupportCustomScrollViewState extends State<SupportCustomScrollView> {
       cacheExtent: widget.cacheExtent,
       semanticChildCount: widget.semanticChildCount,
       dragStartBehavior: widget.dragStartBehavior,
+      keyboardDismissBehavior: widget.keyboardDismissBehavior,
+      clipBehavior: widget.clipBehavior,
+      restorationId: widget.restorationId,
+      scrollBehavior: widget.scrollBehavior,
       slivers: slivers,
     );
     if (mediaQuery != null && mediaQueryPadding != null) {

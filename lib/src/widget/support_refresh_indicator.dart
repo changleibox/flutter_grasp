@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:math' as math;
@@ -16,13 +16,11 @@ const double _defaultRefreshIndicatorExtent = 60.0;
 class SupportSliverRefreshIndicator extends StatelessWidget {
   /// 构造函数
   const SupportSliverRefreshIndicator({
-    Key key,
+    Key? key,
     this.onRefresh,
     this.refreshTriggerPullDistance = _defaultRefreshTriggerPullDistance,
     this.refreshIndicatorExtent = _defaultRefreshIndicatorExtent,
-  })  : assert(refreshTriggerPullDistance != null),
-        assert(refreshTriggerPullDistance > 0.0),
-        assert(refreshIndicatorExtent != null),
+  })  : assert(refreshTriggerPullDistance > 0.0),
         assert(refreshIndicatorExtent >= 0.0),
         assert(
             refreshTriggerPullDistance >= refreshIndicatorExtent,
@@ -31,7 +29,7 @@ class SupportSliverRefreshIndicator extends StatelessWidget {
         super(key: key);
 
   /// 刷新回调
-  final RefreshCallback onRefresh;
+  final RefreshCallback? onRefresh;
 
   /// 刷新距离
   final double refreshTriggerPullDistance;
@@ -61,8 +59,8 @@ class SupportSliverRefreshIndicator extends StatelessWidget {
     double refreshIndicatorExtent,
   ) {
     const Curve opacityCurve = Interval(0.4, 1.0, curve: Curves.easeInOut);
-    final double opacityOffset = math.min(pulledExtent / refreshIndicatorExtent, 1.0);
-    final double progressOffset = math.min(pulledExtent / refreshTriggerPullDistance, 1.0);
+    final opacityOffset = math.min(pulledExtent / refreshIndicatorExtent, 1.0);
+    final progressOffset = math.min(pulledExtent / refreshTriggerPullDistance, 1.0);
     Widget child = Opacity(
       opacity: opacityCurve.transform(opacityOffset),
       child: const SupportCupertinoActivityIndicator(

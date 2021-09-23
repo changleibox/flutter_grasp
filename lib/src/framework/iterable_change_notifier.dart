@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:collection';
@@ -10,7 +10,7 @@ import 'package:flutter_grasp/src/framework/future_change_notifier.dart';
 
 /// Created by changlei on 2020-02-13.
 ///
-/// [Iterable]类型的的异步请求扩展类
+/// [Iterable]类型的[ChangeNotifier]的异步请求扩展类
 abstract class IterableChangeNotifier<E> extends FutureChangeNotifier<Iterable<E>>
     with IterableMixin<E>
     implements LoadOptionsBuilder {
@@ -70,7 +70,7 @@ abstract class IterableChangeNotifier<E> extends FutureChangeNotifier<Iterable<E
   }
 
   @override
-  Future<void> onQuery(String queryText) async {
+  Future<void> onQuery(String? queryText) async {
     if (!isQueryChanged(queryText)) {
       return;
     }
@@ -80,7 +80,7 @@ abstract class IterableChangeNotifier<E> extends FutureChangeNotifier<Iterable<E
   @protected
   @override
   // ignore: avoid_renaming_method_parameters
-  Iterable<E> resolve(Iterable<E> objects) {
+  Iterable<E> resolve(Iterable<E>? objects) {
     _objects.clear();
     if (objects != null && objects.isNotEmpty) {
       _objects.addAll(objects);
@@ -90,10 +90,10 @@ abstract class IterableChangeNotifier<E> extends FutureChangeNotifier<Iterable<E
 
   @override
   // ignore: avoid_renaming_method_parameters
-  void onLoaded(Iterable<E> objects) {}
+  void onLoaded(Iterable<E>? objects) {}
 
   /// 设置默认缓存数据，会在加载完成的时候覆盖
-  void setObjects(Iterable<E> objects) {
+  void setObjects(Iterable<E>? objects) {
     resolve(objects);
     notifyListeners();
   }

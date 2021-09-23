@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/cupertino.dart';
@@ -11,11 +11,10 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 class DefaultPagePlaceholderView extends StatelessWidget {
   /// 构造函数
   const DefaultPagePlaceholderView({
-    Key key,
+    Key? key,
     this.message = '暂无数据',
     this.isLoading = false,
-  })  : assert(isLoading != null),
-        super(key: key);
+  }) : super(key: key);
 
   /// message
   final String message;
@@ -42,19 +41,17 @@ class DefaultPagePlaceholderView extends StatelessWidget {
 class PagePlaceholderView extends StatefulWidget {
   /// 构造函数
   const PagePlaceholderView({
-    Key key,
-    @required this.icon,
+    Key? key,
+    required this.icon,
     this.message = '暂无数据',
     this.isLoading = false,
-  })  : assert(icon != null),
-        assert(isLoading != null),
-        super(key: key);
+  })  : super(key: key);
 
   /// icon
   final Widget icon;
 
   /// message
-  final String message;
+  final String? message;
 
   /// 是否正在加载
   final bool isLoading;
@@ -64,8 +61,8 @@ class PagePlaceholderView extends StatefulWidget {
 }
 
 class _PagePlaceholderViewState extends State<PagePlaceholderView> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-  CurvedAnimation _curvedAnimation;
+  late AnimationController _controller;
+  late CurvedAnimation _curvedAnimation;
 
   @override
   void initState() {
@@ -89,11 +86,11 @@ class _PagePlaceholderViewState extends State<PagePlaceholderView> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    String message = widget.message;
+    var message = widget.message;
     if (widget.isLoading) {
       message = '正在加载…';
     }
-    Widget loadingWidget = widget.icon;
+    var loadingWidget = widget.icon;
     //    if (isLoading) {
     //      loadingWidget = SizedBox(
     //        width: 163,

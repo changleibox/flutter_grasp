@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:async';
@@ -15,7 +15,7 @@ class AnimatedOverlay {
   AnimatedOverlay(
     this.context, {
     this.rootOverlay = false,
-  }) : assert(rootOverlay != null);
+  });
 
   /// context
   final BuildContext context;
@@ -23,9 +23,9 @@ class AnimatedOverlay {
   /// 是否是根overlay
   final bool rootOverlay;
 
-  AnimationController _controller;
-  OverlayEntry _overlay;
-  Completer<void> _completer;
+  AnimationController? _controller;
+  OverlayEntry? _overlay;
+  Completer<void>? _completer;
 
   /// 是否正在显示
   bool get isShowing => _overlay != null;
@@ -36,45 +36,42 @@ class AnimatedOverlay {
       callback();
     }
 
-    _completer?.future?.then<void>(thunk, onError: thunk);
+    _completer?.future.then<void>(thunk, onError: thunk);
   }
 
   /// 显示
   void insert({
-    @required RoutePageBuilder builder,
-    @required RouteTransitionsBuilder transitionBuilder,
+    required RoutePageBuilder builder,
+    required RouteTransitionsBuilder transitionBuilder,
     Duration transitionDuration = const Duration(milliseconds: 300),
     Curve curve = Curves.linear,
     bool isAnimate = true,
   }) {
-    assert(builder != null);
-    assert(transitionBuilder != null);
-    assert(transitionDuration != null);
-    assert(curve != null);
-    assert(isAnimate != null);
     if (_controller != null) {
       _dispose();
     }
 
-    final OverlayState overlayState = Overlay.of(context, rootOverlay: rootOverlay);
-    final AnimationController toolbarController = AnimationController(
+    final overlayState = Overlay.of(context, rootOverlay: rootOverlay)!;
+    final toolbarController = AnimationController(
       vsync: overlayState,
       duration: transitionDuration,
     );
 
-    final Animation<double> animation = toolbarController.view;
+    final animation = toolbarController.view;
 
     final Widget child = AnimatedBuilder(
       animation: animation,
+      builder: (BuildContext context, Widget? child) {
+        return transitionBuilder(context, animation, animation, child!);
+      },
       child: builder(context, animation, animation),
-      builder: (BuildContext context, Widget child) => transitionBuilder(context, animation, animation, child),
     );
 
     void _insertOverlay() {
       _overlay = OverlayEntry(
         builder: (BuildContext context) => child,
       );
-      overlayState.insert(_overlay);
+      overlayState.insert(_overlay!);
 
       if (isAnimate) {
         toolbarController.animateTo(
@@ -99,19 +96,16 @@ class AnimatedOverlay {
     Curve curve = Curves.linear,
     bool isAnimate = true,
   }) {
-    assert(transitionDuration != null);
-    assert(curve != null);
-    assert(isAnimate != null);
     if (_controller == null || !isAnimate) {
       _dispose();
       return;
     }
-    final TickerFuture animateBack = _controller.animateBack(
-      _controller.lowerBound,
+    final animateBack = _controller!.animateBack(
+      _controller!.lowerBound,
       duration: transitionDuration,
       curve: curve,
     );
-    final OverlayEntry oldOverlay = _overlay;
+    final oldOverlay = _overlay;
     animateBack.whenCompleteOrCancel(() {
       if (oldOverlay != _overlay) {
         return;
@@ -132,9 +126,9 @@ class AnimatedOverlay {
     });
   }
 
-  void _onPostFrame(VoidCallback callback) {
-    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
-      SchedulerBinding.instance.addPostFrameCallback((Duration duration) {
+  void _onPostFrame(VoidCallback? callback) {
+    if (SchedulerBinding.instance!.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance!.addPostFrameCallback((Duration duration) {
         callback?.call();
       });
     } else {

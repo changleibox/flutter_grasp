@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'dart:async';
@@ -16,15 +16,13 @@ const int normalPageSize = 20;
 
 /// Created by changlei on 2020-02-13.
 ///
-/// [Iterable]类型的的异步请求扩展类
+/// [Iterable]类型的[Presenter]的异步请求扩展类
 abstract class PageResponsePresenter<T extends StatefulWidget, E> extends IterablePresenter<T, E> {
   /// [Iterable]类型的的异步请求扩展类
   PageResponsePresenter({
     int normalFirstPage = normalFirstPage,
     int normalPageSize = normalPageSize,
-  })  : assert(normalFirstPage != null),
-        assert(normalPageSize != null),
-        _normalFirstPage = normalFirstPage,
+  })  : _normalFirstPage = normalFirstPage,
         _normalPageSize = normalPageSize,
         _currentPage = normalFirstPage,
         _currentPageSize = normalPageSize;
@@ -49,10 +47,13 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
   bool get isFirstPage => _currentPage == _normalFirstPage;
 
   @override
-  LoadOptions get loadOptions => super.loadOptions.copyWith(
-        onLoadNext: onLoadNext,
-        hasNext: hasNext,
-      );
+  LoadOptions get loadOptions {
+    final loadOptions = super.loadOptions;
+    return loadOptions.copyWith(
+      onLoadNext: onLoadNext,
+      hasNext: hasNext,
+    );
+  }
 
   /// 刷新数据，可以指定一个pageSize
   Future<void> onRefreshAsPageSize(int size) {
@@ -86,7 +87,7 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
   }
 
   @override
-  Future<void> onQuery(String queryText) async {
+  Future<void> onQuery(String? queryText) async {
     if (!isQueryChanged(queryText)) {
       return;
     }
@@ -103,9 +104,9 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
 
   @mustCallSuper
   @override
-  Future<List<E>> request(bool showProgress, CancelToken cancelToken) async {
-    final Completer<List<E>> completer = Completer<List<E>>.sync();
-    onLoad(showProgress, cancelToken).then((List<E> pageResponse) {
+  Future<List<E>?> request(bool showProgress, CancelToken? cancelToken) {
+    final completer = Completer<List<E>>();
+    onLoad(showProgress, cancelToken).then((pageResponse) {
       completer.complete(_callback(pageResponse));
     }).catchError((Object error) {
       completer.completeError(error);
@@ -115,21 +116,21 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
 
   @protected
   @override
-  Future<List<E>> onLoad(bool showProgress, CancelToken cancelToken);
+  Future<List<E>?> onLoad(bool showProgress, CancelToken? cancelToken);
 
-  List<E> _callback(List<E> pageResponse) {
-    final List<E> existedObjects = List<E>.of(super.objects);
+  List<E> _callback(List<E>? pageResponse) {
+    final existedObjects = List<E>.of(super.objects);
     if (pageResponse == null) {
       _currentPage = _normalFirstPage;
       existedObjects.clear();
       _hasNext = false;
     } else {
-      final bool isFirstPage = _currentPage == _normalFirstPage;
+      final isFirstPage = _currentPage == _normalFirstPage;
       _hasNext = pageResponse.length == _currentPageSize;
       if (_hasNext) {
         _currentPage++;
       }
-      final List<E> objects = pageResponse;
+      final objects = pageResponse;
       if (isFirstPage) {
         existedObjects.clear();
       }
@@ -139,7 +140,7 @@ abstract class PageResponsePresenter<T extends StatefulWidget, E> extends Iterab
   }
 
   @override
-  void setObjects(Iterable<E> objects) {
+  void setObjects(Iterable<E>? objects) {
     _currentPage = _normalFirstPage;
     _hasNext = false;
     super.setObjects(objects);

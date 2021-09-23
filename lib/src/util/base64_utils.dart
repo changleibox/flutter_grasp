@@ -1,6 +1,9 @@
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
+
 import 'dart:convert' as convert;
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 
@@ -12,8 +15,8 @@ class Base64Utils {
 
   /// 编码
   static String base64Encode(String data) {
-    final List<int> content = convert.utf8.encode(data);
-    final String digest = convert.base64Encode(content);
+    final content = convert.utf8.encode(data);
+    final digest = convert.base64Encode(content);
     return digest;
   }
 
@@ -29,7 +32,7 @@ class Base64Utils {
 
   /// 编码图片
   static Future<String> image2Base64(String path) async {
-    final File file = File(path);
+    final file = File(path);
     final List<int> imageBytes = await file.readAsBytes();
     return convert.base64Encode(imageBytes);
   }
@@ -47,7 +50,7 @@ class Base64Utils {
     double height = 100,
     BoxFit fit = BoxFit.fitWidth,
   }) {
-    final Uint8List decodeTxt = convert.base64.decode(base64Txt);
+    final decodeTxt = convert.base64.decode(base64Txt);
     return Image.memory(
       decodeTxt,
       width: width,

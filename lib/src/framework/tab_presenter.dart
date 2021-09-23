@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CHANGLEI. All rights reserved.
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
 import 'package:flutter/material.dart';
@@ -9,8 +9,8 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 ///
 /// 监听tab切换，实现在tab切换时刷新数据
 mixin TabPresenterMixin<T extends StatefulWidget> on Presenter<T> {
-  TabController _tabController;
-  int _index;
+  TabController? _tabController;
+  late int _index;
 
   @mustCallSuper
   @override
@@ -22,7 +22,7 @@ mixin TabPresenterMixin<T extends StatefulWidget> on Presenter<T> {
   @mustCallSuper
   @override
   void didChangeDependencies() {
-    final TabController newTabController = DefaultTabController.of(context);
+    final newTabController = DefaultTabController.of(context);
     assert(() {
       if (newTabController == null) {
         throw FlutterError('No TabController for ${widget.runtimeType}.\n'
@@ -37,7 +37,7 @@ mixin TabPresenterMixin<T extends StatefulWidget> on Presenter<T> {
       return;
     }
     _tabController?.removeListener(onTabChanged);
-    _tabController = newTabController;
+    _tabController = newTabController!;
     _tabController?.addListener(onTabChanged);
     super.didChangeDependencies();
   }
@@ -56,15 +56,12 @@ mixin TabPresenterMixin<T extends StatefulWidget> on Presenter<T> {
   int get tabIndex;
 
   /// 判断是否在当前页
-  bool get isCurrentTab {
-    final int index = _tabController?.index;
-    return index == tabIndex;
-  }
+  bool get isCurrentTab => _tabController?.index == tabIndex;
 
   /// 判断tab是否从其他页面回到当前页面
   bool get isTabChanged {
-    final int index = _tabController?.index;
-    if (index == _index || indexIsChanging) {
+    final index = _tabController?.index;
+    if (index == null || index == _index || indexIsChanging) {
       return false;
     }
     _index = index;
@@ -72,10 +69,8 @@ mixin TabPresenterMixin<T extends StatefulWidget> on Presenter<T> {
   }
 
   /// 返回[TabController]是否正在改变
-  bool get indexIsChanging {
-    return _tabController?.indexIsChanging == true;
-  }
+  bool get indexIsChanging => _tabController?.indexIsChanging == true;
 
   /// [TabController]动画对象
-  Animation<double> get animation => _tabController?.animation;
+  Animation<double>? get animation => _tabController?.animation;
 }
