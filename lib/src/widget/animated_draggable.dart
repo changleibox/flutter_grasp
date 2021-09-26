@@ -318,7 +318,9 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   void _onDragEnd(DraggableDetails details) {
     final originSize = _originSize ?? Size.zero;
     final lastSize = _lastSize ?? Size.zero;
-    final tickerFuture = _controller.reverse();
+    final tickerFuture = _controller.reverse(
+      from: _controller.upperBound,
+    );
     tickerFuture.whenCompleteOrCancel(() {
       if (!mounted) {
         return;
