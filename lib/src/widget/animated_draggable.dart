@@ -231,10 +231,10 @@ class AnimatedDraggable<T extends Object> extends StatefulWidget {
 class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<T>> with TickerProviderStateMixin {
   late AnimationController _controller;
   late CurvedAnimation _curvedAnimation;
+
   _DragAvatar? _dragAvatar;
   SizeTween? _feedbackTween;
   Size? _originSize;
-  Size? _lastSize;
   Offset? _dragStartPoint;
   Alignment? _dragStartAlignment;
 
@@ -248,27 +248,33 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
       parent: _controller,
       curve: widget.curve,
     );
-    _controller.value = _controller.upperBound;
     super.initState();
   }
 
   @override
   void didUpdateWidget(AnimatedDraggable<T> oldWidget) {
     if (widget.data != oldWidget.data) {
-      SchedulerBinding.instance!.addPostFrameCallback((Duration timeStamp) {
-        final currentSize = localToGlobal(context).size;
-        if (_lastSize == null || currentSize == _lastSize) {
-          return;
-        }
-        _feedbackTween = SizeTween(
-          begin: _lastSize,
-          end: currentSize,
-        );
-        _lastSize = currentSize;
-        _controller.forward();
-      });
+      SchedulerBinding.instance!.addPostFrameCallback(_onPostFrame);
     }
     super.didUpdateWidget(oldWidget);
+  }
+
+  void _onPostFrame(Duration timeStamp) {
+    if (_dragAvatar != null) {
+      return;
+    }
+    final currentSize = localToGlobal(context).size;
+    final lastSize = _lastSize ?? Size.zero;
+    if (currentSize == lastSize) {
+      return;
+    }
+    _feedbackTween = SizeTween(
+      begin: lastSize,
+      end: currentSize,
+    );
+    _controller.forward(
+      from: _controller.lowerBound,
+    );
   }
 
   @override
@@ -277,13 +283,15 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     super.dispose();
   }
 
+  Size? get _lastSize => _feedbackTween?.evaluate(_curvedAnimation);
+
   Rect _globalToLocalRect() {
     final position = globalToLocal(context);
     return -position.topLeft & position.size;
   }
 
   void _onDragStarted() {
-    _originSize = _lastSize = localToGlobal(context).size;
+    _originSize = localToGlobal(context).size;
     if (_dragStartPoint != null && _originSize != null) {
       final originAlignment = Alignment(
         _dragStartPoint!.dx / _originSize!.width,
@@ -292,7 +300,13 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
       _dragStartAlignment = originAlignment * 2 - Alignment.bottomRight;
     }
 
-    _controller.reverse();
+    _feedbackTween = SizeTween(
+      begin: _originSize,
+      end: _originSize,
+    );
+    _controller.forward(
+      from: _controller.lowerBound,
+    );
 
     widget.onDragStarted?.call();
   }
@@ -304,21 +318,22 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   void _onDragEnd(DraggableDetails details) {
     final originSize = _originSize ?? Size.zero;
     final lastSize = _lastSize ?? Size.zero;
-    final tickerFuture = _controller.forward();
+    final tickerFuture = _controller.reverse();
     tickerFuture.whenCompleteOrCancel(() {
       if (!mounted) {
         return;
       }
       setState(() {
+        _feedbackTween = null;
+        _originSize = null;
         _dragAvatar = null;
         _dragStartPoint = null;
         _dragStartAlignment = null;
-        _originSize = _lastSize = null;
       });
     });
+    final beginRect = _globalToLocalRect();
     final offset = _resolveSizeChangedOffset(originSize, lastSize);
-    final beginRect = (details.offset + offset) & lastSize;
-    final endRect = _globalToLocalRect();
+    final endRect = (details.offset + offset) & lastSize;
     final animation = _curvedAnimation.drive(RectTween(
       begin: beginRect,
       end: endRect,
@@ -353,14 +368,14 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     return AnimatedOpacity(
       opacity: _dragAvatar == null ? 1.0 : 0.0,
       duration: Duration.zero,
-      curve: _curvedAnimation.curve,
+      curve: widget.curve,
       child: widget.child,
     );
   }
 
   Widget get _feedback {
     return _AnimationScope(
-      animation: ReverseAnimation(_curvedAnimation),
+      animation: _curvedAnimation,
       child: widget.feedback ?? widget.child,
     );
   }
@@ -368,7 +383,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   Widget _buildFeedback(BuildContext context) {
     final originSize = _originSize ?? Size.zero;
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _curvedAnimation,
       builder: (BuildContext context, Widget? child) {
         final currentSize = _feedbackTween?.evaluate(_curvedAnimation) ?? originSize;
         return Transform.translate(
@@ -387,7 +402,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     return AnimatedOpacity(
       opacity: 0.0,
       duration: Duration.zero,
-      curve: _curvedAnimation.curve,
+      curve: widget.curve,
       child: widget.childWhenDragging ?? widget.child,
     );
   }
@@ -456,8 +471,8 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
       child: AnimatedOffset(
         vsync: this,
         alignment: widget.alignment,
-        duration: _controller.duration!,
-        curve: _curvedAnimation.curve,
+        duration: widget.duration,
+        curve: widget.curve,
         child: widget._isLongPressDrag ? _buildLongPressDraggable() : _buildDraggable(),
       ),
     );
