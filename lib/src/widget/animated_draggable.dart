@@ -280,6 +280,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   @override
   void dispose() {
     _controller.dispose();
+    _dragAvatar?.dispose();
     super.dispose();
   }
 
@@ -558,7 +559,7 @@ class _DragAvatar {
     required this.child,
   }) {
     _entry = OverlayEntry(builder: _build);
-    overlay.insert(_entry);
+    overlay.insert(_entry!);
     animation.addStatusListener(_onAnimationStatusChanged);
   }
 
@@ -566,7 +567,7 @@ class _DragAvatar {
   final Animation<Rect> animation;
   final Widget child;
 
-  late OverlayEntry _entry;
+  OverlayEntry? _entry;
 
   Widget _build(BuildContext context) {
     final box = overlay.context.findRenderObject()! as RenderBox;
@@ -588,13 +589,19 @@ class _DragAvatar {
     switch (status) {
       case AnimationStatus.dismissed:
       case AnimationStatus.completed:
-        _entry.remove();
+        _entry?.remove();
+        _entry = null;
         break;
       case AnimationStatus.forward:
         break;
       case AnimationStatus.reverse:
         break;
     }
+  }
+
+  void dispose() {
+    _entry?.remove();
+    _entry = null;
   }
 }
 
