@@ -281,6 +281,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   void dispose() {
     _controller.dispose();
     _dragAvatar?.dispose();
+    _dragAvatar = null;
     super.dispose();
   }
 
@@ -329,6 +330,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
       setState(() {
         _feedbackTween = null;
         _originSize = null;
+        _dragAvatar?.dispose();
         _dragAvatar = null;
         _dragStartPoint = null;
         _dragStartAlignment = null;
@@ -341,6 +343,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
       begin: beginRect,
       end: endRect,
     ) as Animatable<Rect>);
+    _dragAvatar?.dispose();
     _dragAvatar = _DragAvatar(
       overlay: Overlay.of(
         context,
