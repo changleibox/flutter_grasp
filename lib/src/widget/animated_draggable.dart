@@ -221,8 +221,8 @@ class AnimatedDraggable<T extends Object> extends StatefulWidget {
   /// Defaults to [kLongPressTimeout].
   Duration get _delay => Duration.zero;
 
-  /// 获取动画
-  static Animation<double>? of(BuildContext context) => _AnimationScope.of(context);
+  /// 获取[feedback]动画
+  static Animation<double>? feedbackAnimation(BuildContext context) => _AnimationScope.of(context);
 
   @override
   _AnimatedDraggableState<T> createState() => _AnimatedDraggableState<T>();
