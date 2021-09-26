@@ -466,17 +466,21 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (TapDownDetails details) {
-        _dragStartPoint = globalToLocal(context, point: details.globalPosition).topLeft;
-      },
-      child: AnimatedOffset(
+    var child = widget._isLongPressDrag ? _buildLongPressDraggable() : _buildDraggable();
+    if (widget.duration != Duration.zero) {
+      child = AnimatedOffset(
         vsync: this,
         alignment: widget.alignment,
         duration: widget.duration,
         curve: widget.curve,
-        child: widget._isLongPressDrag ? _buildLongPressDraggable() : _buildDraggable(),
-      ),
+        child: child,
+      );
+    }
+    return GestureDetector(
+      onTapDown: (TapDownDetails details) {
+        _dragStartPoint = globalToLocal(context, point: details.globalPosition).topLeft;
+      },
+      child: child,
     );
   }
 }
