@@ -326,7 +326,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
         rootOverlay: widget.rootOverlay,
       )!,
       animation: animation,
-      child: widget.child,
+      child: widget.feedback ?? widget.child,
     );
 
     widget.onDragEnd?.call(details);
@@ -530,9 +530,9 @@ class _DragAvatar {
     animation.addStatusListener(_onAnimationStatusChanged);
   }
 
-  late final Animation<Rect> animation;
-  late final Widget child;
   final OverlayState overlay;
+  final Animation<Rect> animation;
+  final Widget child;
 
   OverlayEntry? _entry;
 
