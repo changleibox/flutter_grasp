@@ -522,7 +522,7 @@ class _DragAvatar {
     required this.child,
   }) {
     _entry = OverlayEntry(builder: _build);
-    Overlay.of(context, rootOverlay: true)!.insert(_entry!);
+    Overlay.of(context, rootOverlay: false)!.insert(_entry!);
     animation.addStatusListener(_onAnimationStatusChanged);
   }
 
