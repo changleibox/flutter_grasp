@@ -320,7 +320,11 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
       end: endRect,
     ) as Animatable<Rect>);
     _dragAvatar = _DragAvatar(
-      context: context,
+      overlay: Overlay.of(
+        context,
+        debugRequiredFor: widget,
+        rootOverlay: widget.rootOverlay,
+      )!,
       animation: animation,
       child: widget.child,
     );
@@ -517,26 +521,29 @@ class AnimatedLongPressDraggable<T extends Object> extends AnimatedDraggable<T> 
 
 class _DragAvatar {
   _DragAvatar({
-    required BuildContext context,
+    required this.overlay,
     required this.animation,
     required this.child,
   }) {
     _entry = OverlayEntry(builder: _build);
-    Overlay.of(context, rootOverlay: false)!.insert(_entry!);
+    overlay.insert(_entry!);
     animation.addStatusListener(_onAnimationStatusChanged);
   }
 
   late final Animation<Rect> animation;
   late final Widget child;
+  final OverlayState overlay;
 
   OverlayEntry? _entry;
 
   Widget _build(BuildContext context) {
+    final box = overlay.context.findRenderObject()! as RenderBox;
+    final overlayTopLeft = box.localToGlobal(Offset.zero);
     return AnimatedBuilder(
       animation: animation,
       builder: (BuildContext context, Widget? child) {
         return Positioned.fromRect(
-          rect: animation.value,
+          rect: animation.value.shift(-overlayTopLeft),
           child: child!,
         );
       },
