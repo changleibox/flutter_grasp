@@ -222,7 +222,7 @@ class AnimatedDraggable<T extends Object> extends StatefulWidget {
   Duration get _delay => Duration.zero;
 
   /// 获取[feedback]动画
-  static Animation<double>? feedbackAnimation(BuildContext context) => _AnimationScope.of(context);
+  static Animation<double>? feedbackAnimation(BuildContext context) => _FeedbackAnimationScope.of(context);
 
   @override
   _AnimatedDraggableState<T> createState() => _AnimatedDraggableState<T>();
@@ -380,7 +380,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   }
 
   Widget get _feedback {
-    return _AnimationScope(
+    return _FeedbackAnimationScope(
       animation: _curvedAnimation,
       child: widget.feedback ?? widget.child,
     );
@@ -609,9 +609,9 @@ class _DragAvatar {
 }
 
 /// 下穿[Animation<double>]
-class _AnimationScope extends InheritedWidget {
+class _FeedbackAnimationScope extends InheritedWidget {
   /// 下穿[Animation<double>]
-  const _AnimationScope({
+  const _FeedbackAnimationScope({
     Key? key,
     required Widget child,
     required this.animation,
@@ -622,11 +622,11 @@ class _AnimationScope extends InheritedWidget {
 
   /// 获取
   static Animation<double>? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<_AnimationScope>()?.animation;
+    return context.dependOnInheritedWidgetOfExactType<_FeedbackAnimationScope>()?.animation;
   }
 
   @override
-  bool updateShouldNotify(covariant _AnimationScope oldWidget) {
+  bool updateShouldNotify(covariant _FeedbackAnimationScope oldWidget) {
     return animation != oldWidget.animation;
   }
 }
