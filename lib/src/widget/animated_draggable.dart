@@ -248,6 +248,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
       parent: _controller,
       curve: widget.curve,
     );
+    _controller.value = _controller.upperBound;
     super.initState();
   }
 
@@ -264,7 +265,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
           end: currentSize,
         );
         _lastSize = currentSize;
-        _controller.forward(from: _controller.lowerBound);
+        _controller.forward();
       });
     }
     super.didUpdateWidget(oldWidget);
@@ -291,6 +292,8 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
       _dragStartAlignment = originAlignment * 2 - Alignment.bottomRight;
     }
 
+    _controller.reverse();
+
     widget.onDragStarted?.call();
   }
 
@@ -301,9 +304,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   void _onDragEnd(DraggableDetails details) {
     final originSize = _originSize ?? Size.zero;
     final lastSize = _lastSize ?? Size.zero;
-    final tickerFuture = _controller.forward(
-      from: _controller.lowerBound,
-    );
+    final tickerFuture = _controller.forward();
     tickerFuture.whenCompleteOrCancel(() {
       if (!mounted) {
         return;
@@ -328,9 +329,8 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
         debugRequiredFor: widget,
         rootOverlay: widget.rootOverlay,
       )!,
-      parent: _curvedAnimation,
       animation: animation,
-      child: widget.feedback ?? widget.child,
+      child: _feedback,
     );
 
     widget.onDragEnd?.call(details);
@@ -358,6 +358,13 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     );
   }
 
+  Widget get _feedback {
+    return _AnimationScope(
+      animation: ReverseAnimation(_curvedAnimation),
+      child: widget.feedback ?? widget.child,
+    );
+  }
+
   Widget _buildFeedback(BuildContext context) {
     final originSize = _originSize ?? Size.zero;
     return AnimatedBuilder(
@@ -372,7 +379,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
           ),
         );
       },
-      child: widget.feedback ?? widget.child,
+      child: _feedback,
     );
   }
 
@@ -526,7 +533,6 @@ class AnimatedLongPressDraggable<T extends Object> extends AnimatedDraggable<T> 
 class _DragAvatar {
   _DragAvatar({
     required this.overlay,
-    required this.parent,
     required this.animation,
     required this.child,
   }) {
@@ -536,7 +542,6 @@ class _DragAvatar {
   }
 
   final OverlayState overlay;
-  final Animation<double> parent;
   final Animation<Rect> animation;
   final Widget child;
 
@@ -545,18 +550,15 @@ class _DragAvatar {
   Widget _build(BuildContext context) {
     final box = overlay.context.findRenderObject()! as RenderBox;
     final overlayTopLeft = box.localToGlobal(Offset.zero);
-    return _AnimationScope(
-      animation: parent,
-      child: AnimatedBuilder(
-        animation: parent,
-        builder: (BuildContext context, Widget? child) {
-          return Positioned.fromRect(
-            rect: animation.value.shift(-overlayTopLeft),
-            child: child!,
-          );
-        },
-        child: child,
-      ),
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (BuildContext context, Widget? child) {
+        return Positioned.fromRect(
+          rect: animation.value.shift(-overlayTopLeft),
+          child: child!,
+        );
+      },
+      child: child,
     );
   }
 
