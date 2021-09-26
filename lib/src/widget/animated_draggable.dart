@@ -221,6 +221,9 @@ class AnimatedDraggable<T extends Object> extends StatefulWidget {
   /// Defaults to [kLongPressTimeout].
   Duration get _delay => Duration.zero;
 
+  /// 获取动画
+  static Animation<double>? of(BuildContext context) => _AnimationScope.of(context);
+
   @override
   _AnimatedDraggableState<T> createState() => _AnimatedDraggableState<T>();
 }
@@ -325,6 +328,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
         debugRequiredFor: widget,
         rootOverlay: widget.rootOverlay,
       )!,
+      parent: _curvedAnimation,
       animation: animation,
       child: widget.feedback ?? widget.child,
     );
@@ -522,6 +526,7 @@ class AnimatedLongPressDraggable<T extends Object> extends AnimatedDraggable<T> 
 class _DragAvatar {
   _DragAvatar({
     required this.overlay,
+    required this.parent,
     required this.animation,
     required this.child,
   }) {
@@ -531,6 +536,7 @@ class _DragAvatar {
   }
 
   final OverlayState overlay;
+  final Animation<double> parent;
   final Animation<Rect> animation;
   final Widget child;
 
@@ -539,15 +545,18 @@ class _DragAvatar {
   Widget _build(BuildContext context) {
     final box = overlay.context.findRenderObject()! as RenderBox;
     final overlayTopLeft = box.localToGlobal(Offset.zero);
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (BuildContext context, Widget? child) {
-        return Positioned.fromRect(
-          rect: animation.value.shift(-overlayTopLeft),
-          child: child!,
-        );
-      },
-      child: child,
+    return _AnimationScope(
+      animation: parent,
+      child: AnimatedBuilder(
+        animation: parent,
+        builder: (BuildContext context, Widget? child) {
+          return Positioned.fromRect(
+            rect: animation.value.shift(-overlayTopLeft),
+            child: child!,
+          );
+        },
+        child: child,
+      ),
     );
   }
 
@@ -563,5 +572,28 @@ class _DragAvatar {
       case AnimationStatus.reverse:
         break;
     }
+  }
+}
+
+/// 下穿[Animation<double>]
+class _AnimationScope extends InheritedWidget {
+  /// 下穿[Animation<double>]
+  const _AnimationScope({
+    Key? key,
+    required Widget child,
+    required this.animation,
+  }) : super(key: key, child: child);
+
+  /// 下穿[Animation<double>]
+  final Animation<double> animation;
+
+  /// 获取
+  static Animation<double>? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_AnimationScope>()?.animation;
+  }
+
+  @override
+  bool updateShouldNotify(covariant _AnimationScope oldWidget) {
+    return animation != oldWidget.animation;
   }
 }
