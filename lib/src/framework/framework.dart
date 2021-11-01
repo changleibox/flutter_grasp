@@ -42,24 +42,43 @@ abstract class StateMethods<T extends StatefulWidget> {
   /// 页面在第一次绘制完成时回调
   void onPostFrame(Duration timeStamp);
 
+  /// 页面动画执行完成或者完全稳定以后，在[onPostFrame]之后执行
+  void onStabled();
+
   /// 隐藏键盘
   void hideKeyboard();
 }
 
 /// [StateMethods]的[State]具体实现类
 abstract class CompatibleState<T extends StatefulWidget> extends State<T> implements StateMethods<T> {
+  Animation<double>? _animation;
+
   @protected
   @mustCallSuper
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback(onPostFrame);
+    WidgetsBinding.instance!.addPostFrameCallback(_onPostFrame);
+  }
+
+  @protected
+  @mustCallSuper
+  @override
+  void dispose() {
+    _animation?.removeStatusListener(_onAnimationStatusChanged);
+    _animation = null;
+    super.dispose();
   }
 
   @protected
   @mustCallSuper
   @override
   void onPostFrame(Duration timeStamp) {}
+
+  @protected
+  @mustCallSuper
+  @override
+  void onStabled() {}
 
   @protected
   @mustCallSuper
@@ -76,6 +95,26 @@ abstract class CompatibleState<T extends StatefulWidget> extends State<T> implem
   @override
   void hideKeyboard() {
     FocusScope.of(context).unfocus();
+  }
+
+  void _onPostFrame(Duration timeStamp) {
+    onPostFrame(timeStamp);
+    final animation = ModalRoute.of(context)?.animation;
+    if (animation == null) {
+      onStabled();
+    } else {
+      animation.addStatusListener(_onAnimationStatusChanged);
+      _animation = animation;
+    }
+  }
+
+  void _onAnimationStatusChanged(AnimationStatus status) {
+    if (status != AnimationStatus.completed) {
+      return;
+    }
+    _animation?.removeStatusListener(_onAnimationStatusChanged);
+    _animation = null;
+    onStabled();
   }
 }
 
@@ -293,6 +332,10 @@ abstract class Presenter<T extends StatefulWidget> implements StateMethods<T> {
   @mustCallSuper
   @override
   void onPostFrame(Duration timeStamp) {}
+
+  @mustCallSuper
+  @override
+  void onStabled() {}
 
   @protected
   @override
