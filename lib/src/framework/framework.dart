@@ -100,7 +100,7 @@ abstract class CompatibleState<T extends StatefulWidget> extends State<T> implem
   void _onPostFrame(Duration timeStamp) {
     onPostFrame(timeStamp);
     final animation = ModalRoute.of(context)?.animation;
-    if (animation == null) {
+    if (animation == null || animation.isCompleted) {
       onStabled();
     } else {
       animation.addStatusListener(_onAnimationStatusChanged);
