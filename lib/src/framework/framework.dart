@@ -114,7 +114,9 @@ abstract class CompatibleState<T extends StatefulWidget> extends State<T> implem
     }
     _animation?.removeStatusListener(_onAnimationStatusChanged);
     _animation = null;
-    onStabled();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      onStabled();
+    });
   }
 }
 
