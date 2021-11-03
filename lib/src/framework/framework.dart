@@ -226,6 +226,14 @@ abstract class HostState<T extends StatefulWidget, P extends Presenter<T>> exten
   @mustCallSuper
   @protected
   @override
+  void onStabled() {
+    super.onStabled();
+    presenter.onStabled();
+  }
+
+  @mustCallSuper
+  @protected
+  @override
   void didUpdateWidget(covariant T oldWidget) {
     super.didUpdateWidget(oldWidget);
     presenter.didUpdateWidget(oldWidget);
