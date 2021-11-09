@@ -4,7 +4,6 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_grasp/src/widget/animated_drag_target.dart';
 import 'package:flutter_grasp/src/widget/draggable_sort.dart';
 
 /// 拖动排序回调
@@ -34,7 +33,7 @@ class DraggableSortGroup extends StatefulWidget {
     this.onSortHandler,
     this.feedbackBuilder,
     this.axis,
-  })  : super(key: key);
+  }) : super(key: key);
 
   /// child
   final WidgetBuilder builder;
@@ -122,8 +121,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
 
   /// 创建排序组item
   Widget createGroupItem(int groupIndex, Widget child) {
-    return AnimatedDragTarget<DragSortData>(
-      duration: Duration.zero,
+    return DragTarget<DragSortData>(
       onWillAccept: (DragSortData? data) => _onWillAccept(data, groupIndex),
       builder: (BuildContext context, List<DragSortData?> candidateData, List<dynamic> rejectedData) {
         return child;
