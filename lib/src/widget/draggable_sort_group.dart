@@ -123,7 +123,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
   /// 创建排序组item
   Widget createGroupItem(int groupIndex, Widget child) {
     return AnimatedDragTarget<DragSortData>(
-      duration: const Duration(milliseconds: 300),
+      duration: Duration.zero,
       onWillAccept: (DragSortData? data) => _onWillAccept(data, groupIndex),
       builder: (BuildContext context, List<DragSortData?> candidateData, List<dynamic> rejectedData) {
         return child;
