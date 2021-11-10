@@ -13,7 +13,7 @@ import 'package:flutter_grasp/src/widget/animated_shifted_box_boundary.dart';
 typedef DraggableSortCallback = void Function(int fromIndex, int toIndex);
 
 /// 自定义拖动排序
-typedef DraggableSortHandler = int Function(int fromIndex, int toIndex);
+typedef DraggableSortHandler = int Function(int fromIndex, int toIndex, bool dragging);
 
 /// 构建拖动时的[feedback]
 typedef DraggableSortFeedbackBuilder = Widget Function(BuildContext context, int index, Widget child);
@@ -153,7 +153,7 @@ class DraggableSortState extends State<DraggableSort> {
     if (fromIndex == toIndex) {
       return toIndex;
     }
-    final willAcceptIndex = _onSort(fromIndex, toIndex);
+    final willAcceptIndex = _onSort(fromIndex, toIndex, dragging);
     if (dragging) {
       _willAcceptIndex = willAcceptIndex;
     }
@@ -163,8 +163,8 @@ class DraggableSortState extends State<DraggableSort> {
     return willAcceptIndex;
   }
 
-  int _onSort(int fromIndex, int toIndex) {
-    toIndex = widget.onSortHandler?.call(fromIndex, toIndex) ?? toIndex;
+  int _onSort(int fromIndex, int toIndex, [bool dragging = true]) {
+    toIndex = widget.onSortHandler?.call(fromIndex, toIndex, dragging) ?? toIndex;
     final maxIndex = _itemKeys.length - 1;
     final validFromIndex = fromIndex.clamp(0, maxIndex).toInt();
     final validToIndex = toIndex.clamp(0, maxIndex).toInt();
