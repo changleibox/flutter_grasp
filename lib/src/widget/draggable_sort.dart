@@ -149,13 +149,18 @@ class DraggableSortState extends State<DraggableSort> {
   }
 
   /// 主动排序，尽量不要使用这个方法，因为他没有经过严格的测试，目前在测试阶段，是提供给[DraggableSortGroup]使用的
-  int sort(int fromIndex, int toIndex) {
+  int sort(int fromIndex, int toIndex, {bool dragging = true, bool feedback = true}) {
     if (fromIndex == toIndex) {
       return toIndex;
     }
-    _willAcceptIndex = _onSort(fromIndex, toIndex);
-    widget.onDragSort?.call(fromIndex, toIndex);
-    return _willAcceptIndex!;
+    final willAcceptIndex = _onSort(fromIndex, toIndex);
+    if (dragging) {
+      _willAcceptIndex = willAcceptIndex;
+    }
+    if (feedback) {
+      widget.onDragSort?.call(fromIndex, toIndex);
+    }
+    return willAcceptIndex;
   }
 
   int _onSort(int fromIndex, int toIndex) {
@@ -164,8 +169,7 @@ class DraggableSortState extends State<DraggableSort> {
     final validFromIndex = fromIndex.clamp(0, maxIndex).toInt();
     final validToIndex = toIndex.clamp(0, maxIndex).toInt();
     if (validFromIndex != validToIndex) {
-      final fromKey = _itemKeys[validFromIndex];
-      _itemKeys.removeAt(validFromIndex);
+      final fromKey = _itemKeys.removeAt(validFromIndex);
       _itemKeys.insert(validToIndex, fromKey);
     }
     return validToIndex;
