@@ -166,15 +166,20 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
   void _onDragSort(int fromIndex, int toIndex) {
     final fromIndexes = _collapseIndex(fromIndex);
     final toIndexes = _collapseIndex(toIndex);
+    final fromGroupIndex = fromIndexes.groupIndex;
+    final toGroupIndex = toIndexes.groupIndex;
+    widget.onDragSort?.call(
+      fromGroupIndex,
+      toGroupIndex,
+      fromIndexes.index,
+      toIndexes.index,
+    );
+    if (fromGroupIndex < toGroupIndex) {
+      toIndex -= 1;
+    }
     _lastDragSortData = DragSortData(
       _sortKey.currentState!,
       toIndex,
-    );
-    widget.onDragSort?.call(
-      fromIndexes.groupIndex,
-      toIndexes.groupIndex,
-      fromIndexes.index,
-      toIndexes.index,
     );
   }
 
@@ -198,7 +203,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
       return fromIndex;
     }
     if (fromGroupIndex < toGroupIndex) {
-      return toIndex - 1;
+      toIndex -= 1;
     }
     return toIndex;
   }
