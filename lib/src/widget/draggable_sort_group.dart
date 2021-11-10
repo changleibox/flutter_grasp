@@ -7,10 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_grasp/src/widget/draggable_sort.dart';
 
 /// 拖动排序回调
-typedef DraggableSortGroupCallback = void Function(int fromGroupIndex, int toGroupIndex, int fromIndex, int toIndex);
+typedef DraggableSortGroupCallback = void Function(
+  int fromGroupIndex,
+  int toGroupIndex,
+  int fromIndex,
+  int toIndex,
+);
 
 /// 自定拖动排序规则
-typedef DraggableSortGroupHandler = bool Function(int fromGroupIndex, int toGroupIndex, int fromIndex, int toIndex);
+typedef DraggableSortGroupHandler = bool Function(
+  int fromGroupIndex,
+  int toGroupIndex,
+  int fromIndex,
+  int toIndex,
+  bool dragging,
+);
 
 /// 构建[feedback]
 typedef DraggableSortGroupFeedbackBuilder = Widget Function(
@@ -74,6 +85,8 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
   int _itemCount = 0;
   DragSortData? _lastDragSortData;
 
+  DraggableSortState get _sort => _sortKey.currentState!;
+
   @override
   void initState() {
     if (widget.itemCounts.isNotEmpty) {
@@ -108,15 +121,51 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
       toGroupIndex,
       indexes.index,
       toIndex,
+      true,
     );
     if (isIntercept == true) {
       return false;
     }
-    _sortKey.currentState?.sort(
+    _sort.sort(
       _lastDragSortData!.index,
       _expandIndex(toGroupIndex, toIndex),
     );
     return true;
+  }
+
+  /// 手动排序
+  void sort(
+    int fromGroupIndex,
+    int toGroupIndex,
+    int fromIndex,
+    int toIndex, {
+    bool dragging = true,
+    bool feedback = true,
+  }) {
+    final isIntercept = widget.onSortHandler?.call(
+      fromGroupIndex,
+      toGroupIndex,
+      fromIndex,
+      toIndex,
+      dragging,
+    );
+    if (isIntercept == true) {
+      return;
+    }
+    final sortFromIndex = _expandIndex(fromGroupIndex, fromIndex);
+    final sortToIndex = _expandIndex(toGroupIndex, toIndex);
+    _sort.sort(sortFromIndex, sortToIndex, dragging: dragging, feedback: false);
+    if (dragging) {
+      _lastDragSortData = DragSortData(
+        _sort,
+        _expandIndex(fromGroupIndex, fromIndex),
+      );
+    } else {
+      _lastDragSortData = null;
+    }
+    if (feedback) {
+      widget.onDragSort?.call(fromGroupIndex, toGroupIndex, fromIndex, toIndex);
+    }
   }
 
   /// 创建排序组item
@@ -130,8 +179,8 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
   }
 
   /// 创建排序item
-  Widget? createItem(int groupIndex, int index, Widget child) {
-    return _sortKey.currentState?.createItem(_expandIndex(groupIndex, index), child);
+  Widget createItem(int groupIndex, int index, Widget child) {
+    return _sort.createItem(_expandIndex(groupIndex, index), child);
   }
 
   int _expandIndex(int groupIndex, int index) {
@@ -177,10 +226,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
     if (fromGroupIndex < toGroupIndex) {
       toIndex -= 1;
     }
-    _lastDragSortData = DragSortData(
-      _sortKey.currentState!,
-      toIndex,
-    );
+    _lastDragSortData = DragSortData(_sort, toIndex);
   }
 
   void _onDragEnd(DragSortData dragSortData) {
@@ -188,7 +234,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
     setState(() {});
   }
 
-  int _onSortHandler(int fromIndex, int toIndex) {
+  int _onSortHandler(int fromIndex, int toIndex, bool dragging) {
     final fromIndexes = _collapseIndex(fromIndex);
     final toIndexes = _collapseIndex(toIndex);
     final fromGroupIndex = fromIndexes.groupIndex;
@@ -198,6 +244,7 @@ class DraggableSortGroupState extends State<DraggableSortGroup> {
       toGroupIndex,
       fromIndexes.index,
       toIndexes.index,
+      dragging,
     );
     if (isIntercept == true) {
       return fromIndex;
