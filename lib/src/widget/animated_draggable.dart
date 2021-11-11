@@ -349,7 +349,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     _autoScrollIfNecessary();
   }
 
-  Future<void> _autoScrollIfNecessary([bool a = false]) async {
+  Future<void> _autoScrollIfNecessary() async {
     final size = _lastSize;
     final scrollable = _scrollable;
     final scrollDirection = _scrollDirection;
@@ -398,7 +398,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
         );
         _autoScrolling = false;
         if (_lastSize != null) {
-          await _autoScrollIfNecessary(true);
+          await _autoScrollIfNecessary();
         }
       }
     }
