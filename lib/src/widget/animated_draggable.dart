@@ -2,6 +2,8 @@
  * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
+import 'dart:math';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
@@ -231,12 +233,15 @@ class AnimatedDraggable<T extends Object> extends StatefulWidget {
 class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<T>> with TickerProviderStateMixin {
   late AnimationController _controller;
   late CurvedAnimation _curvedAnimation;
+  late ScrollableState _scrollable;
 
   _DragAvatar? _dragAvatar;
   SizeTween? _feedbackTween;
   Size? _originSize;
-  Offset? _dragStartPoint;
-  Alignment? _dragStartAlignment;
+  Alignment? _dragAlignment;
+  bool _autoScrolling = false;
+  Offset? _dragPosition;
+  Offset? _dragOffset;
 
   @override
   void initState() {
@@ -249,6 +254,16 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
       curve: widget.curve,
     );
     super.initState();
+  }
+
+  Axis get _scrollDirection => axisDirectionToAxis(_scrollable.axisDirection);
+
+  bool get _reverse => _scrollable.axisDirection == AxisDirection.up || _scrollable.axisDirection == AxisDirection.left;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scrollable = Scrollable.of(context)!;
   }
 
   @override
@@ -294,12 +309,13 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
 
   void _onDragStarted() {
     _originSize = localToGlobal(context).size;
-    if (_dragStartPoint != null && _originSize != null) {
+    final dragStartPoint = globalToLocal(context, point: _dragPosition).topLeft;
+    if (_originSize != null) {
       final originAlignment = Alignment(
-        _dragStartPoint!.dx / _originSize!.width,
-        _dragStartPoint!.dy / _originSize!.height,
+        dragStartPoint.dx / _originSize!.width,
+        dragStartPoint.dy / _originSize!.height,
       );
-      _dragStartAlignment = originAlignment * 2 - Alignment.bottomRight;
+      _dragAlignment = originAlignment * 2 - Alignment.bottomRight;
     }
 
     _feedbackTween = SizeTween(
@@ -315,6 +331,67 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
 
   void _onDragUpdate(DragUpdateDetails details) {
     widget.onDragUpdate?.call(details);
+    final delta = _restrictAxis(details.delta, _scrollDirection);
+    final dragPosition = _dragPosition;
+    if (dragPosition != null) {
+      _dragPosition = delta + dragPosition;
+    }
+    _autoScrollIfNecessary();
+  }
+
+  Future<void> _autoScrollIfNecessary([bool a = false]) async {
+    final size = _lastSize;
+    final scrollable = Scrollable.of(context);
+    if (!_autoScrolling && scrollable != null && size != null) {
+      double? newOffset;
+      const duration = Duration(milliseconds: 14);
+      const step = 1.0;
+      const overDragMax = 20.0;
+      const overDragCoef = 10;
+
+      final scrollRenderBox = scrollable.context.findRenderObject()! as RenderBox;
+      final scrollOrigin = scrollRenderBox.localToGlobal(Offset.zero);
+      final scrollStart = _offsetExtent(scrollOrigin, _scrollDirection);
+      final scrollEnd = scrollStart + _sizeExtent(scrollRenderBox.size, _scrollDirection);
+
+      final dragPosition = _dragPosition!;
+      final dragOffset = _dragOffset!;
+      final proxyStart = _offsetExtent(dragPosition - dragOffset, _scrollDirection);
+      final proxyEnd = proxyStart + _sizeExtent(size, _scrollDirection);
+
+      final position = scrollable.position;
+      if (_reverse) {
+        if (proxyEnd > scrollEnd && position.pixels > position.minScrollExtent) {
+          final overDrag = max(proxyEnd - scrollEnd, overDragMax);
+          newOffset = max(position.minScrollExtent, position.pixels - step * overDrag / overDragCoef);
+        } else if (proxyStart < scrollStart && position.pixels < position.maxScrollExtent) {
+          final overDrag = max(scrollStart - proxyStart, overDragMax);
+          newOffset = min(position.maxScrollExtent, position.pixels + step * overDrag / overDragCoef);
+        }
+      } else {
+        if (proxyStart < scrollStart && position.pixels > position.minScrollExtent) {
+          final overDrag = max(scrollStart - proxyStart, overDragMax);
+          newOffset = max(position.minScrollExtent, position.pixels - step * overDrag / overDragCoef);
+        } else if (proxyEnd > scrollEnd && position.pixels < position.maxScrollExtent) {
+          final overDrag = max(proxyEnd - scrollEnd, overDragMax);
+          newOffset = min(position.maxScrollExtent, position.pixels + step * overDrag / overDragCoef);
+        }
+      }
+
+      if (newOffset != null && (newOffset - position.pixels).abs() >= 1.0) {
+        _autoScrolling = true;
+        await position.animateTo(
+          newOffset,
+          duration: duration,
+          curve: Curves.linear,
+        );
+        _autoScrolling = false;
+        if (_lastSize != null) {
+          // ignore: unawaited_futures
+          _autoScrollIfNecessary(true);
+        }
+      }
+    }
   }
 
   void _onDragEnd(DraggableDetails details) {
@@ -332,8 +409,8 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
         _originSize = null;
         _dragAvatar?.dispose();
         _dragAvatar = null;
-        _dragStartPoint = null;
-        _dragStartAlignment = null;
+        _dragPosition = null;
+        _dragAlignment = null;
       });
     });
     final beginRect = _globalToLocalRect();
@@ -367,7 +444,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
 
   Offset _resolveSizeChangedOffset(Size originSize, Size currentSize) {
     final sizeOffset = originSize - currentSize as Offset;
-    return _dragStartAlignment?.alongOffset(sizeOffset) ?? Offset.zero;
+    return _dragAlignment?.alongOffset(sizeOffset) ?? Offset.zero;
   }
 
   Widget _buildChild(BuildContext context) {
@@ -480,9 +557,11 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
         child: child,
       );
     }
-    return GestureDetector(
-      onTapDown: (TapDownDetails details) {
-        _dragStartPoint = globalToLocal(context, point: details.globalPosition).topLeft;
+    return Listener(
+      onPointerDown: (event) {
+        final position = event.position;
+        _dragPosition = position;
+        _dragOffset = (context.findRenderObject() as RenderBox).globalToLocal(position);
       },
       child: child,
     );
@@ -628,5 +707,32 @@ class _FeedbackAnimationScope extends InheritedWidget {
   @override
   bool updateShouldNotify(covariant _FeedbackAnimationScope oldWidget) {
     return animation != oldWidget.animation;
+  }
+}
+
+double _sizeExtent(Size size, Axis scrollDirection) {
+  switch (scrollDirection) {
+    case Axis.horizontal:
+      return size.width;
+    case Axis.vertical:
+      return size.height;
+  }
+}
+
+double _offsetExtent(Offset offset, Axis scrollDirection) {
+  switch (scrollDirection) {
+    case Axis.horizontal:
+      return offset.dx;
+    case Axis.vertical:
+      return offset.dy;
+  }
+}
+
+Offset _restrictAxis(Offset offset, Axis scrollDirection) {
+  switch (scrollDirection) {
+    case Axis.horizontal:
+      return Offset(offset.dx, 0.0);
+    case Axis.vertical:
+      return Offset(0.0, offset.dy);
   }
 }
