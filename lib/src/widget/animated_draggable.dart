@@ -258,7 +258,10 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
 
   Axis get _scrollDirection => axisDirectionToAxis(_scrollable.axisDirection);
 
-  bool get _reverse => _scrollable.axisDirection == AxisDirection.up || _scrollable.axisDirection == AxisDirection.left;
+  bool get _reverse {
+    final axisDirection = _scrollable.axisDirection;
+    return axisDirection == AxisDirection.up || axisDirection == AxisDirection.left;
+  }
 
   @override
   void didChangeDependencies() {
