@@ -333,6 +333,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     );
 
     widget.onDragStarted?.call();
+    _autoScrollIfNecessary();
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
