@@ -563,8 +563,9 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     return Listener(
       onPointerDown: (event) {
         final position = event.position;
+        final renderObject = context.findRenderObject() as RenderBox;
+        _dragOffset = renderObject.globalToLocal(position);
         _dragPosition = position;
-        _dragOffset = (context.findRenderObject() as RenderBox).globalToLocal(position);
       },
       child: child,
     );
