@@ -233,7 +233,6 @@ class AnimatedDraggable<T extends Object> extends StatefulWidget {
 class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<T>> with TickerProviderStateMixin {
   late AnimationController _controller;
   late CurvedAnimation _curvedAnimation;
-  late ScrollableState _scrollable;
 
   _DragAvatar? _dragAvatar;
   SizeTween? _feedbackTween;
@@ -242,6 +241,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   bool _autoScrolling = false;
   Offset? _dragPosition;
   Offset? _dragOffset;
+  ScrollableState? _scrollable;
 
   @override
   void initState() {
@@ -256,17 +256,20 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     super.initState();
   }
 
-  Axis get _scrollDirection => axisDirectionToAxis(_scrollable.axisDirection);
+  Axis? get _scrollDirection {
+    final scrollable = _scrollable;
+    return scrollable == null ? null : axisDirectionToAxis(scrollable.axisDirection);
+  }
 
   bool get _reverse {
-    final axisDirection = _scrollable.axisDirection;
+    final axisDirection = _scrollable?.axisDirection;
     return axisDirection == AxisDirection.up || axisDirection == AxisDirection.left;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _scrollable = Scrollable.of(context)!;
+    _scrollable = Scrollable.of(context);
   }
 
   @override
@@ -334,7 +337,11 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
 
   void _onDragUpdate(DragUpdateDetails details) {
     widget.onDragUpdate?.call(details);
-    final delta = _restrictAxis(details.delta, _scrollDirection);
+    final scrollDirection = _scrollDirection;
+    if (scrollDirection == null) {
+      return;
+    }
+    final delta = _restrictAxis(details.delta, scrollDirection);
     final dragPosition = _dragPosition;
     if (dragPosition != null) {
       _dragPosition = delta + dragPosition;
@@ -344,8 +351,9 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
 
   Future<void> _autoScrollIfNecessary([bool a = false]) async {
     final size = _lastSize;
-    final scrollable = Scrollable.of(context);
-    if (!_autoScrolling && scrollable != null && size != null) {
+    final scrollable = _scrollable;
+    final scrollDirection = _scrollDirection;
+    if (!_autoScrolling && scrollable != null && scrollDirection != null && size != null) {
       double? newOffset;
       const duration = Duration(milliseconds: 14);
       const step = 1.0;
@@ -354,13 +362,13 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
 
       final scrollRenderBox = scrollable.context.findRenderObject()! as RenderBox;
       final scrollOrigin = scrollRenderBox.localToGlobal(Offset.zero);
-      final scrollStart = _offsetExtent(scrollOrigin, _scrollDirection);
-      final scrollEnd = scrollStart + _sizeExtent(scrollRenderBox.size, _scrollDirection);
+      final scrollStart = _offsetExtent(scrollOrigin, scrollDirection);
+      final scrollEnd = scrollStart + _sizeExtent(scrollRenderBox.size, scrollDirection);
 
       final dragPosition = _dragPosition!;
       final dragOffset = _dragOffset!;
-      final proxyStart = _offsetExtent(dragPosition - dragOffset, _scrollDirection);
-      final proxyEnd = proxyStart + _sizeExtent(size, _scrollDirection);
+      final proxyStart = _offsetExtent(dragPosition - dragOffset, scrollDirection);
+      final proxyEnd = proxyStart + _sizeExtent(size, scrollDirection);
 
       final position = scrollable.position;
       if (_reverse) {
@@ -390,8 +398,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
         );
         _autoScrolling = false;
         if (_lastSize != null) {
-          // ignore: unawaited_futures
-          _autoScrollIfNecessary(true);
+          await _autoScrollIfNecessary(true);
         }
       }
     }
