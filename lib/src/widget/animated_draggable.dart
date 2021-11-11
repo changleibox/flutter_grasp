@@ -338,13 +338,12 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   void _onDragUpdate(DragUpdateDetails details) {
     widget.onDragUpdate?.call(details);
     final scrollDirection = _scrollDirection;
-    if (scrollDirection == null) {
-      return;
-    }
-    final delta = _restrictAxis(details.delta, scrollDirection);
-    final dragPosition = _dragPosition;
-    if (dragPosition != null) {
-      _dragPosition = delta + dragPosition;
+    if (scrollDirection != null) {
+      final delta = _restrictAxis(details.delta, scrollDirection);
+      final dragPosition = _dragPosition;
+      if (dragPosition != null) {
+        _dragPosition = delta + dragPosition;
+      }
     }
     _autoScrollIfNecessary();
   }
