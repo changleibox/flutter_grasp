@@ -560,7 +560,6 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     var child = widget._isLongPressDrag ? _buildLongPressDraggable() : _buildDraggable();
     if (widget.duration != Duration.zero) {
       child = AnimatedOffset(
-        vsync: this,
         alignment: widget.alignment,
         duration: widget.duration,
         curve: widget.curve,
