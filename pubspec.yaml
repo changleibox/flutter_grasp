@@ -8,26 +8,26 @@ environment:
   flutter: ">=1.17.0 <2.0.0"
 
 dependencies:
-  dio: ^4.0.0
+  dio: ^4.0.3
   flutter:
     sdk: flutter
 
   # 处理图片
-  image: ^3.0.1
+  image: ^3.0.8
   intl: ^0.17.0
-  url_launcher: ^6.0.4
+  url_launcher: ^6.0.12
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  pedantic: ^1.11.0
+  pedantic: ^1.11.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^1.0.0
+  flutter_lints: ^1.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
