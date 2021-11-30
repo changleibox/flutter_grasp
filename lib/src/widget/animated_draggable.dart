@@ -233,6 +233,7 @@ class AnimatedDraggable<T extends Object> extends StatefulWidget {
 class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<T>> with TickerProviderStateMixin {
   late AnimationController _controller;
   late CurvedAnimation _curvedAnimation;
+  late AnimationController _feedbackController;
 
   _DragAvatar? _dragAvatar;
   SizeTween? _feedbackTween;
@@ -252,6 +253,10 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
     _curvedAnimation = CurvedAnimation(
       parent: _controller,
       curve: widget.curve,
+    );
+    _feedbackController = AnimationController(
+      vsync: this,
+      duration: widget.duration,
     );
     super.initState();
   }
@@ -301,6 +306,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   @override
   void dispose() {
     _controller.dispose();
+    _feedbackController.dispose();
     _dragAvatar?.dispose();
     _dragAvatar = null;
     super.dispose();
@@ -314,6 +320,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   }
 
   void _onDragStarted() {
+    _feedbackController.forward();
     _originSize = localToGlobal(context).size;
     final dragStartPoint = globalToLocal(context, point: _dragPosition).topLeft;
     if (_originSize != null) {
@@ -405,6 +412,7 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
   }
 
   void _onDragEnd(DraggableDetails details) {
+    _feedbackController.reverse();
     final originSize = _originSize ?? Size.zero;
     final lastSize = _lastSize ?? Size.zero;
     final tickerFuture = _controller.reverse(
@@ -468,7 +476,10 @@ class _AnimatedDraggableState<T extends Object> extends State<AnimatedDraggable<
 
   Widget get _feedback {
     return _FeedbackAnimationScope(
-      animation: _curvedAnimation,
+      animation: CurvedAnimation(
+        parent: _feedbackController,
+        curve: widget.curve,
+      ),
       child: widget.feedback ?? widget.child,
     );
   }
