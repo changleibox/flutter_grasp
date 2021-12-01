@@ -7,6 +7,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
 
+/// 默认刷新策略
+enum DefaultRefreshStrategy {
+  /// 不刷新
+  none,
+
+  /// 在[Presenter.initState]刷新
+  initState,
+
+  /// 在[Presenter.onPostFrame]刷新
+  onPostFrame,
+
+  /// 在[Presenter.onStabled]刷新
+  onStabled,
+}
+
 /// Created by changlei on 2020-02-13.
 ///
 /// [Presenter]的异步请求扩展类
@@ -75,6 +90,16 @@ mixin FuturePresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
   @protected
   Future<void> onDefaultRefresh() async {
     return onRefresh();
+  }
+
+  @mustCallSuper
+  @override
+  void initState() {
+    super.initState();
+    // ignore: deprecated_member_use_from_same_package
+    if (defaultRefresh && defaultRefreshStrategy == DefaultRefreshStrategy.initState) {
+      onDefaultRefresh();
+    }
   }
 
   @mustCallSuper
@@ -164,15 +189,3 @@ mixin FuturePresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
 
 /// presenter的异步请求扩展类
 abstract class FuturePresenter<T extends StatefulWidget, E> extends Presenter<T> with FuturePresenterMixin<T, E> {}
-
-/// 默认刷新策略
-enum DefaultRefreshStrategy {
-  /// 不刷新
-  none,
-
-  /// 在[Presenter.onPostFrame]刷新
-  onPostFrame,
-
-  /// 在[Presenter.onStabled]刷新
-  onStabled,
-}
