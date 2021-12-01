@@ -22,8 +22,16 @@ mixin FuturePresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
   String? get queryText => _queryText;
 
   /// 是否在页面加载完成的时候调用异步请求，默认返回true
+  @Deprecated('Use `defaultRefreshStrategy` instead. Will be removed in 6.5.0 release')
   @protected
   bool get defaultRefresh => true;
+
+  /// 默认刷新策略，默认返回true
+  @protected
+  DefaultRefreshStrategy get defaultRefreshStrategy {
+    // ignore: deprecated_member_use_from_same_package
+    return defaultRefresh ? DefaultRefreshStrategy.onPostFrame : DefaultRefreshStrategy.none;
+  }
 
   /// 是否需要显示加载进度条
   @protected
@@ -63,18 +71,28 @@ mixin FuturePresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
     return _load(showProgress);
   }
 
-  /// 当[defaultRefresh]返回true的时候，页面加载完成，回调此方发
+  /// 当[defaultRefreshStrategy]不等于[DefaultRefreshStrategy.none]的时候，页面加载完成，回调此方发
   @protected
   Future<void> onDefaultRefresh() async {
     return onRefresh();
   }
 
-  /// 当页面加载完成的时候
   @mustCallSuper
   @override
   void onPostFrame(Duration timeStamp) {
     super.onPostFrame(timeStamp);
-    if (defaultRefresh) {
+    // ignore: deprecated_member_use_from_same_package
+    if (defaultRefresh && defaultRefreshStrategy == DefaultRefreshStrategy.onPostFrame) {
+      onDefaultRefresh();
+    }
+  }
+
+  @mustCallSuper
+  @override
+  void onStabled() {
+    super.onStabled();
+    // ignore: deprecated_member_use_from_same_package
+    if (defaultRefresh && defaultRefreshStrategy == DefaultRefreshStrategy.onStabled) {
       onDefaultRefresh();
     }
   }
@@ -146,3 +164,15 @@ mixin FuturePresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
 
 /// presenter的异步请求扩展类
 abstract class FuturePresenter<T extends StatefulWidget, E> extends Presenter<T> with FuturePresenterMixin<T, E> {}
+
+/// 默认刷新策略
+enum DefaultRefreshStrategy {
+  /// 不刷新
+  none,
+
+  /// 在[Presenter.onPostFrame]刷新
+  onPostFrame,
+
+  /// 在[Presenter.onStabled]刷新
+  onStabled,
+}
