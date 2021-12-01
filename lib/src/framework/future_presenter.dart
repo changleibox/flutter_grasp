@@ -36,7 +36,7 @@ mixin FuturePresenterMixin<T extends StatefulWidget, E> on Presenter<T> {
   /// 搜索的文本
   String? get queryText => _queryText;
 
-  /// 默认刷新策略，默认返回true
+  /// 默认刷新策略，默认返回[DefaultRefreshStrategy.onPostFrame]
   @protected
   DefaultRefreshStrategy get defaultRefreshStrategy => DefaultRefreshStrategy.onPostFrame;
 
