@@ -191,6 +191,9 @@ class CustomTextInput implements CustomTextInputClient {
       case 'TextInput.setStyle':
         _setStyle(call.arguments as Map<String, dynamic>);
         break;
+      case 'TextInput.finishAutofillContext':
+        _finishAutofillContext(shouldSave: call.arguments as bool);
+        break;
     }
   }
 
@@ -259,8 +262,22 @@ class CustomTextInput implements CustomTextInputClient {
     );
   }
 
+  void _finishAutofillContext({bool shouldSave = true}) {
+    connection?.finishAutofillContext(shouldSave: shouldSave);
+  }
+
   void _onReceiveUserMessage(MethodCall call) {
     connection?.onReceiveUserMessage(call);
+  }
+}
+
+/// 处理自定义键盘输入
+class DeltaCustomTextInput extends CustomTextInput implements DeltaCustomTextInputClient {
+  @override
+  Future<void> updateEditingValueWithDeltas(List<Map<String, dynamic>> textEditingDeltas) {
+    return _handlePlatformMessage('TextInputClient.updateEditingStateWithDeltas', <String, dynamic>{
+      'deltas': textEditingDeltas,
+    });
   }
 }
 
@@ -315,6 +332,36 @@ abstract class CustomTextInputClient {
   ///
   /// [TextInputClient] should cleanup its connection and finalize editing.
   Future<void> connectionClosed();
+}
+
+/// An interface to receive granular information from [TextInput].
+///
+/// See also:
+///
+///  * [TextInput.attach]
+///  * [TextInputConfiguration], to opt-in to receive [TextEditingDelta]'s from
+///    the platforms [TextInput] you must set [TextInputConfiguration.enableDeltaModel]
+///    to true.
+abstract class DeltaCustomTextInputClient extends CustomTextInputClient {
+  /// Requests that this client update its editing state by applying the deltas
+  /// received from the engine.
+  ///
+  /// The list of [TextEditingDelta]'s are treated as changes that will be applied
+  /// to the client's editing state. A change is any mutation to the raw text
+  /// value, or any updates to the selection and/or composing region.
+  ///
+  /// Here is an example of what implementation of this method could look like:
+  /// {@tool snippet}
+  /// @override
+  /// void updateEditingValueWithDeltas(List<TextEditingDelta> textEditingDeltas) {
+  ///   TextEditingValue newValue = _previousValue;
+  ///   for (final TextEditingDelta delta in textEditingDeltas) {
+  ///     newValue = delta.apply(newValue);
+  ///   }
+  ///   _localValue = newValue;
+  /// }
+  /// {@end-tool}
+  Future<void> updateEditingValueWithDeltas(List<Map<String, dynamic>> textEditingDeltas);
 }
 
 /// 详情请阅读[TextInput]源码
@@ -391,6 +438,14 @@ abstract class CustomTextInputConnection {
     TextDirection? textDirection,
     TextAlign? textAlign,
   );
+
+  /// Finishes the current autofill context, and potentially saves the user
+  /// input for future use if `shouldSave` is true.
+  ///
+  /// Typically, this method should be called when the user has finalized their
+  /// input. For example, in a [Form], it's typically done immediately before or
+  /// after its content is submitted.
+  void finishAutofillContext({bool shouldSave = true});
 
   /// 接收到终端信息，顾名思义就是从TextField发来的消息
   void onReceiveUserMessage(MethodCall call);
