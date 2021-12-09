@@ -92,7 +92,7 @@ class CustomTextInput implements CustomTextInputClient {
   Future<void> updateFloatingCursor(RawFloatingCursorPoint point) {
     return _handlePlatformMessage('TextInputClient.updateFloatingCursor', <dynamic>[
       point.state.toString(),
-      _toTextPointJson(point.state, point.offset),
+      TextInputDecoder.toTextPointJson(point.state, point.offset),
     ]);
   }
 
@@ -197,7 +197,7 @@ class CustomTextInput implements CustomTextInputClient {
   void _setClient(List<dynamic> args) {
     _client = args.first as int;
     final clientArgs = args[1] as Map<String, dynamic>;
-    connection?.setClient(_client, _toTextInputConfiguration(clientArgs));
+    connection?.setClient(_client, TextInputDecoder.toTextInputConfiguration(clientArgs));
   }
 
   void _show() {
@@ -217,7 +217,7 @@ class CustomTextInput implements CustomTextInputClient {
   }
 
   void _updateConfig(Map<String, dynamic> args) {
-    connection?.updateConfig(_toTextInputConfiguration(args));
+    connection?.updateConfig(TextInputDecoder.toTextInputConfiguration(args));
   }
 
   void _setEditingState(Map<String, dynamic> args) {
@@ -396,119 +396,134 @@ abstract class CustomTextInputConnection {
   void onReceiveUserMessage(MethodCall call);
 }
 
-TextInputConfiguration _toTextInputConfiguration(Map<String, dynamic> clientArgs) {
-  return TextInputConfiguration(
-    inputType: _toTextInputType(clientArgs['inputType'] as Map<String, dynamic>),
-    obscureText: clientArgs['obscureText'] as bool,
-    autocorrect: clientArgs['autocorrect'] as bool,
-    smartDashesType: SmartDashesType.values[int.tryParse(clientArgs['smartDashesType'] as String)!],
-    smartQuotesType: SmartQuotesType.values[int.tryParse(clientArgs['smartQuotesType'] as String)!],
-    enableSuggestions: clientArgs['enableSuggestions'] as bool,
-    actionLabel: clientArgs['actionLabel'] as String,
-    inputAction: _toTextInputAction(clientArgs['inputAction'] as String),
-    textCapitalization: _toTextCapitalization(clientArgs['textCapitalization'] as String),
-    keyboardAppearance: _toBrightness(clientArgs['keyboardAppearance'] as String),
-    autofillConfiguration: _toAutofillConfiguration(clientArgs['autofill'] as Map<String, dynamic>),
-  );
-}
+/// [TextInput]相关数据解析器
+class TextInputDecoder {
+  const TextInputDecoder._();
 
-TextInputType _toTextInputType(Map<String, dynamic> args) {
-  final name = args['name'] as String;
-  switch (name) {
-    case 'TextInputType.text':
-      return TextInputType.text;
-    case 'TextInputType.multiline':
-      return TextInputType.multiline;
-    case 'TextInputType.number':
-      return TextInputType.numberWithOptions(
-        signed: args['signed'] as bool,
-        decimal: args['decimal'] as bool,
-      );
-    case 'TextInputType.phone':
-      return TextInputType.phone;
-    case 'TextInputType.datetime':
-      return TextInputType.datetime;
-    case 'TextInputType.emailAddress':
-      return TextInputType.emailAddress;
-    case 'TextInputType.url':
-      return TextInputType.url;
-    case 'TextInputType.visiblePassword':
-      return TextInputType.visiblePassword;
-    case 'TextInputType.name':
-      return TextInputType.name;
-    case 'TextInputType.address':
-      return TextInputType.streetAddress;
+  /// json转[TextInputConfiguration]
+  static TextInputConfiguration toTextInputConfiguration(Map<String, dynamic> clientArgs) {
+    return TextInputConfiguration(
+      inputType: toTextInputType(clientArgs['inputType'] as Map<String, dynamic>),
+      readOnly: clientArgs['readOnly'] as bool,
+      obscureText: clientArgs['obscureText'] as bool,
+      autocorrect: clientArgs['autocorrect'] as bool,
+      smartDashesType: SmartDashesType.values[int.tryParse(clientArgs['smartDashesType'] as String)!],
+      smartQuotesType: SmartQuotesType.values[int.tryParse(clientArgs['smartQuotesType'] as String)!],
+      enableSuggestions: clientArgs['enableSuggestions'] as bool,
+      actionLabel: clientArgs['actionLabel'] as String,
+      inputAction: _toTextInputAction(clientArgs['inputAction'] as String),
+      textCapitalization: _toTextCapitalization(clientArgs['textCapitalization'] as String),
+      keyboardAppearance: _toBrightness(clientArgs['keyboardAppearance'] as String),
+      enableIMEPersonalizedLearning: clientArgs['enableIMEPersonalizedLearning'] as bool,
+      autofillConfiguration: _toAutofillConfiguration(clientArgs['autofill'] as Map<String, dynamic>?),
+      enableDeltaModel: clientArgs['enableDeltaModel'] as bool,
+    );
   }
-  throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text input type: $args')]);
-}
 
-AutofillConfiguration _toAutofillConfiguration(Map<String, dynamic> args) {
-  final editingValueJson = args['editingValue'] as Map<String, dynamic>;
-  return AutofillConfiguration(
-    uniqueIdentifier: args['uniqueIdentifier'] as String,
-    autofillHints: args['hints'] as List<String>,
-    currentEditingValue: TextEditingValue.fromJSON(editingValueJson),
-  );
-}
-
-Brightness _toBrightness(String name) {
-  switch (name) {
-    case 'Brightness.dark':
-      return Brightness.dark;
-    case 'Brightness.light':
-      return Brightness.light;
+  /// json转[TextInputType]
+  static TextInputType toTextInputType(Map<String, dynamic> args) {
+    final name = args['name'] as String;
+    switch (name) {
+      case 'TextInputType.text':
+        return TextInputType.text;
+      case 'TextInputType.multiline':
+        return TextInputType.multiline;
+      case 'TextInputType.number':
+        return TextInputType.numberWithOptions(
+          signed: args['signed'] as bool,
+          decimal: args['decimal'] as bool,
+        );
+      case 'TextInputType.phone':
+        return TextInputType.phone;
+      case 'TextInputType.datetime':
+        return TextInputType.datetime;
+      case 'TextInputType.emailAddress':
+        return TextInputType.emailAddress;
+      case 'TextInputType.url':
+        return TextInputType.url;
+      case 'TextInputType.visiblePassword':
+        return TextInputType.visiblePassword;
+      case 'TextInputType.name':
+        return TextInputType.name;
+      case 'TextInputType.address':
+        return TextInputType.streetAddress;
+    }
+    throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text input type: $args')]);
   }
-  throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown brightness: $name')]);
-}
 
-TextCapitalization _toTextCapitalization(String name) {
-  switch (name) {
-    case 'TextCapitalization.none':
-      return TextCapitalization.none;
-    case 'TextCapitalization.characters':
-      return TextCapitalization.characters;
-    case 'TextCapitalization.sentences':
-      return TextCapitalization.sentences;
-    case 'TextCapitalization.words':
-      return TextCapitalization.words;
+  static AutofillConfiguration _toAutofillConfiguration(Map<String, dynamic>? args) {
+    if (args == null) {
+      return AutofillConfiguration.disabled;
+    }
+    final editingValueJson = args['editingValue'] as Map<String, dynamic>;
+    return AutofillConfiguration(
+      uniqueIdentifier: args['uniqueIdentifier'] as String,
+      autofillHints: args['hints'] as List<String>,
+      currentEditingValue: TextEditingValue.fromJSON(editingValueJson),
+      hintText: args['hintText'] as String?,
+    );
   }
-  throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text capitalization: $name')]);
-}
 
-TextInputAction _toTextInputAction(String action) {
-  switch (action) {
-    case 'TextInputAction.none':
-      return TextInputAction.none;
-    case 'TextInputAction.unspecified':
-      return TextInputAction.unspecified;
-    case 'TextInputAction.go':
-      return TextInputAction.go;
-    case 'TextInputAction.search':
-      return TextInputAction.search;
-    case 'TextInputAction.send':
-      return TextInputAction.send;
-    case 'TextInputAction.next':
-      return TextInputAction.next;
-    case 'TextInputAction.previous':
-      return TextInputAction.previous;
-    case 'TextInputAction.continue_action':
-      return TextInputAction.continueAction;
-    case 'TextInputAction.join':
-      return TextInputAction.join;
-    case 'TextInputAction.route':
-      return TextInputAction.route;
-    case 'TextInputAction.emergencyCall':
-      return TextInputAction.emergencyCall;
-    case 'TextInputAction.done':
-      return TextInputAction.done;
-    case 'TextInputAction.newline':
-      return TextInputAction.newline;
+  static Brightness _toBrightness(String name) {
+    switch (name) {
+      case 'Brightness.dark':
+        return Brightness.dark;
+      case 'Brightness.light':
+        return Brightness.light;
+    }
+    throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown brightness: $name')]);
   }
-  throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text input action: $action')]);
-}
 
-Map<String, dynamic> _toTextPointJson(FloatingCursorDragState? state, Offset? encoded) {
-  return state == FloatingCursorDragState.Update
-      ? <String, dynamic>{'X': encoded?.dx, 'Y': encoded?.dy}
-      : <String, dynamic>{'X': 0, 'Y': 0};
+  static TextCapitalization _toTextCapitalization(String name) {
+    switch (name) {
+      case 'TextCapitalization.none':
+        return TextCapitalization.none;
+      case 'TextCapitalization.characters':
+        return TextCapitalization.characters;
+      case 'TextCapitalization.sentences':
+        return TextCapitalization.sentences;
+      case 'TextCapitalization.words':
+        return TextCapitalization.words;
+    }
+    throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text capitalization: $name')]);
+  }
+
+  static TextInputAction _toTextInputAction(String action) {
+    switch (action) {
+      case 'TextInputAction.none':
+        return TextInputAction.none;
+      case 'TextInputAction.unspecified':
+        return TextInputAction.unspecified;
+      case 'TextInputAction.go':
+        return TextInputAction.go;
+      case 'TextInputAction.search':
+        return TextInputAction.search;
+      case 'TextInputAction.send':
+        return TextInputAction.send;
+      case 'TextInputAction.next':
+        return TextInputAction.next;
+      case 'TextInputAction.previous':
+        return TextInputAction.previous;
+      case 'TextInputAction.continue_action':
+        return TextInputAction.continueAction;
+      case 'TextInputAction.join':
+        return TextInputAction.join;
+      case 'TextInputAction.route':
+        return TextInputAction.route;
+      case 'TextInputAction.emergencyCall':
+        return TextInputAction.emergencyCall;
+      case 'TextInputAction.done':
+        return TextInputAction.done;
+      case 'TextInputAction.newline':
+        return TextInputAction.newline;
+    }
+    throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text input action: $action')]);
+  }
+
+  /// [FloatingCursorDragState]和[Offset]转json
+  static Map<String, dynamic> toTextPointJson(FloatingCursorDragState? state, Offset? encoded) {
+    return state == FloatingCursorDragState.Update
+        ? <String, dynamic>{'X': encoded?.dx, 'Y': encoded?.dy}
+        : <String, dynamic>{'X': 0, 'Y': 0};
+  }
 }
