@@ -3,7 +3,6 @@
  */
 
 import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_grasp/src/rendering/animated_boundary.dart';
 import 'package:flutter_grasp/src/rendering/animated_shifted_box_boundary.dart';

@@ -5,7 +5,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/rendering.dart';
 
 /// Created by changlei on 2020/5/20.
 ///

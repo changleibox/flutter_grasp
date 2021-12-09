@@ -42,16 +42,12 @@ class TextUtils {
     }
     int length;
     if (a != null && b != null && (length = a.length) == b.length) {
-      if (a is String && b is String) {
-        return a == b;
-      } else {
-        for (var i = 0; i < length; i++) {
-          if (a[i] != b[i]) {
-            return false;
-          }
+      for (var i = 0; i < length; i++) {
+        if (a[i] != b[i]) {
+          return false;
         }
-        return true;
       }
+      return true;
     }
     return false;
   }

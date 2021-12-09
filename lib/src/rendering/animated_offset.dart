@@ -2,10 +2,7 @@
  * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
-import 'package:flutter/animation.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
 
 import 'animated_shifted_box.dart';
 

@@ -2,13 +2,10 @@
  * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
-import 'package:flutter_grasp/src/widget/load_next_widget.dart';
 import 'package:flutter_grasp/src/widget/support_refresh_indicator.dart';
 
 /// 刷新回调

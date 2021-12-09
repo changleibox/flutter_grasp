@@ -2,10 +2,6 @@
  * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
-import 'package:flutter/animation.dart';
-import 'package:flutter/physics.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
 import 'animated_shifted_box.dart';

@@ -442,10 +442,7 @@ TextInputType _toTextInputType(Map<String, dynamic> args) {
   throw FlutterError.fromParts(<DiagnosticsNode>[ErrorSummary('Unknown text input type: $args')]);
 }
 
-AutofillConfiguration? _toAutofillConfiguration(Map<String, dynamic>? args) {
-  if (args == null) {
-    return null;
-  }
+AutofillConfiguration _toAutofillConfiguration(Map<String, dynamic> args) {
   final editingValueJson = args['editingValue'] as Map<String, dynamic>;
   return AutofillConfiguration(
     uniqueIdentifier: args['uniqueIdentifier'] as String,

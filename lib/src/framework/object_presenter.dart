@@ -2,7 +2,6 @@
  * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
 
