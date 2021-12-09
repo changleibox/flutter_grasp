@@ -403,7 +403,7 @@ class TextInputDecoder {
   /// json转[TextInputConfiguration]
   static TextInputConfiguration toTextInputConfiguration(Map<String, dynamic> clientArgs) {
     return TextInputConfiguration(
-      inputType: toTextInputType(clientArgs['inputType'] as Map<String, dynamic>),
+      inputType: _toTextInputType(clientArgs['inputType'] as Map<String, dynamic>),
       readOnly: clientArgs['readOnly'] as bool,
       obscureText: clientArgs['obscureText'] as bool,
       autocorrect: clientArgs['autocorrect'] as bool,
@@ -420,8 +420,7 @@ class TextInputDecoder {
     );
   }
 
-  /// json转[TextInputType]
-  static TextInputType toTextInputType(Map<String, dynamic> args) {
+  static TextInputType _toTextInputType(Map<String, dynamic> args) {
     final name = args['name'] as String;
     switch (name) {
       case 'TextInputType.text':
