@@ -122,15 +122,16 @@ class CustomTextInput implements CustomTextInputClient {
   /// ui.window because the Window may be dependency injected elsewhere with
   /// a different instance. However, static access at this location seems to be
   /// the least bad option.
-  static Future<ByteData> sendPlatformMessage(MethodCall methodCall) {
-    final completer = Completer<ByteData>();
+  static Future<T?> sendPlatformMessage<T>(MethodCall methodCall) async {
+    final completer = Completer<ByteData?>();
     // ui.window is accessed directly instead of using ServicesBinding.instance.window
     // because this method might be invoked before any binding is initialized.
     // This issue was reported in #27541. It is not ideal to statically access
     // ui.window because the Window may be dependency injected elsewhere with
     // a different instance. However, static access at this location seems to be
     // the least bad option.
-    ui.window.sendPlatformMessage(_textInput.name, _textInput.codec.encodeMethodCall(methodCall), (ByteData? reply) {
+    final codec = _textInput.codec;
+    ui.window.sendPlatformMessage(_textInput.name, codec.encodeMethodCall(methodCall), (ByteData? reply) {
       try {
         completer.complete(reply);
       } catch (exception, stack) {
@@ -142,7 +143,11 @@ class CustomTextInput implements CustomTextInputClient {
         ));
       }
     });
-    return completer.future;
+    final result = await completer.future;
+    if (result == null) {
+      return null;
+    }
+    return codec.decodeEnvelope(result) as T?;
   }
 
   MethodCall _methodCall(String name, dynamic arguments) {
