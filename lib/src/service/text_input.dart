@@ -517,7 +517,7 @@ class TextInputDecoder {
     final editingValueJson = args['editingValue'] as Map<String, dynamic>;
     return AutofillConfiguration(
       uniqueIdentifier: args['uniqueIdentifier'] as String,
-      autofillHints: args['hints'] as List<String>,
+      autofillHints: (args['hints'] as List<dynamic>).cast<String>(),
       currentEditingValue: TextEditingValue.fromJSON(editingValueJson),
       hintText: args['hintText'] as String?,
     );
