@@ -8,14 +8,14 @@ environment:
   flutter: ">=1.17.0 <2.0.0"
 
 dependencies:
-  dio: ^4.0.3
+  dio: ^4.0.4
   flutter:
     sdk: flutter
 
   # 处理图片
-  image: ^3.0.8
+  image: ^3.1.0
   intl: ^0.17.0
-  url_launcher: ^6.0.12
+  url_launcher: ^6.0.17
 
 dev_dependencies:
   flutter_test:
