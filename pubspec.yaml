@@ -13,9 +13,9 @@ dependencies:
     sdk: flutter
 
   # 处理图片
-  image: ^3.1.0
+  image: ^3.1.1
   intl: ^0.17.0
-  url_launcher: ^6.0.17
+  url_launcher: ^6.0.18
 
 dev_dependencies:
   flutter_test:
