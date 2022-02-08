@@ -5,7 +5,6 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
-import 'package:vector_math/hash.dart' as quiver;
 import 'package:vector_math/vector_math_64.dart';
 
 /// Created by box on 2020/4/4.
@@ -640,7 +639,7 @@ class ColorMatrix {
   }
 
   @override
-  int get hashCode => quiver.hashObjects(_m5storage);
+  int get hashCode => Object.hashAll(_m5storage);
 }
 
 /// [Matrix4]
@@ -774,7 +773,7 @@ class Vector5 {
       (_v5storage[4] == other._v5storage[4]);
 
   @override
-  int get hashCode => quiver.hashObjects(_v5storage);
+  int get hashCode => Object.hashAll(_v5storage);
 
   /// Negate.
   Vector5 operator -() => clone()..negate();

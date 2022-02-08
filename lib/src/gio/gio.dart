@@ -74,7 +74,7 @@ class IResponse with MapMixin<String, dynamic> {
 
   @override
   Object? remove(Object? key) {
-    _originalData.remove(key);
+    return _originalData.remove(key);
   }
 }
 
