@@ -47,7 +47,8 @@ class RenderAnimatedOffset extends RenderAnimatedShiftedBox {
           curve: curve,
         );
 
-  final Tween<Offset> _offsetTween = Tween<Offset>();
+  final _offsetTween = Tween<Offset?>();
+
   Offset? _originOffset;
 
   Offset? get _animatedOffset {
